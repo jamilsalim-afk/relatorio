@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Horários - IFRO Campus Cacoal (Gist)</title>
+    <!-- Carrega o Tailwind CSS para o estilo responsivo e moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuração do tema Tailwind com a fonte Inter -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // Cor principal institucional alterada para verde (Green 600)
+                        'ifro-primary': '#16A34A', 
+                        'ifro-light': '#F3F4F6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos personalizados para a tabela e o cabeçalho */
+        .header-bg {
+            /* Usa a cor principal verde */
+            background-color: #16A34A;
+            color: white;
+        }
+        .container-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    <!-- Script para gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="bg-ifro-light font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-xl container-shadow overflow-hidden">
+        
+        <!-- CABEÇALHO INSTITUCIONAL -->
+        <header class="header-bg p-6 text-center rounded-t-xl">
+            <h1 class="text-3xl font-extrabold mb-1">INSTITUTO FEDERAL DE RONDÔNIA</h1>
+            <h2 class="text-2xl font-semibold italic mb-4">CAMPUS CACOAL</h2>
+            <div class="h-0.5 bg-white opacity-20 mx-auto w-3/4 mb-4"></div>
+            <p class="text-sm font-light mb-1">DEPARTAMENTO DE APOIO AO ENSINO</p>
+            <p class="text-sm font-medium">COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS</p>
+        </header>
+
+        <!-- CORPO DA CONSULTA -->
+        <main class="p-6 md:p-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2">Consulta de Horários por Turma e Disciplina</h3>
+            
+            <!-- INDICADOR DE CARREGAMENTO -->
+            <div id="loadingIndicator" class="text-center p-4 bg-ifro-light rounded-lg font-bold text-ifro-primary">
+                A carregar dados do Gist (Link Externo)...
+            </div>
+
+            <!-- ÁREA DE FILTROS -->
+            <div id="filterArea" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 hidden">
+                <div>
+                    <label for="turmaSelect" class="block text-sm font-bold text-gray-700 mb-1">TURMA</label>
+                    <select id="turmaSelect" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-ifro-primary focus:border-ifro-primary transition duration-150 ease-in-out">
+                        <option value="">-- Selecione a Turma --</option>
+                        <!-- As opções serão preenchidas via JavaScript -->
+                    </select>
+                </div>
+                <div>
+                    <label for="disciplinaSelect" class="block text-sm font-bold text-gray-700 mb-1">DISCIPLINA</label>
+                    <select id="disciplinaSelect" disabled class="w-full p-3 border border-gray-300 bg-gray-100 rounded-lg shadow-sm focus:ring-ifro-primary focus:border-ifro-primary transition duration-150 ease-in-out">
+                        <option value="">-- Selecione uma Disciplina --</option>
+                        <!-- As opções serão preenchidas após a seleção da turma -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- BOTÃO DE EXPORTAÇÃO E SUMÁRIO DE DIAS -->
+            <div id="exportArea" class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 p-4 bg-ifro-light rounded-lg border border-gray-200 hidden">
+                <button id="exportPdfBtn" disabled class="w-full sm:w-auto px-6 py-3 text-lg font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150 ease-in-out shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                    Exportar Relatório em PDF
+                </button>
+                <div class="text-gray-700 text-base font-semibold">
+                    Total de Dias de Aula da Disciplina: <span id="totalDias" class="text-xl text-ifro-primary font-extrabold">0</span>
+                </div>
+            </div>
+
+            <!-- TABELA DE RESULTADOS (Onde o relatório será exibido) -->
+            <div id="tableContainer" class="overflow-x-auto border border-gray-300 rounded-lg shadow-lg">
+                <table id="horariosTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Mês</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Dia do Mês</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Dia da Semana</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Horário da Aula</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">Aguardando dados do Gist...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Mensagem de feedback (ex: erro no PDF) -->
+            <div id="feedbackMessage" class="hidden mt-4 p-3 rounded-lg text-center font-medium"></div>
+        </main>
+
+        <!-- RODAPÉ -->
+        <footer class="p-4 bg-gray-100 text-center text-xs text-gray-600 border-t rounded-b-xl">
+            <span id="dataRelatorio"></span> / Campus Cacoal
+        </footer>
+
+    </div>
+
+    <script type="module">
+        
+        // =========================================================================
+        // 1. CONFIGURAÇÃO DA FONTE DE DADOS (GIST)
+        // =========================================================================
+        
+        // !!! URL RAW (bruto) do Gist fornecido pelo utilizador !!!
+        const GIST_DATA_URL = 'https://gist.githubusercontent.com/jamilsalim-afk/9190f1ffef7618a7ccd8d2b82adb6b9e/raw/65c8b45a18b17eb70c633b9c34b0da5568d27ce4/gistfile1.txt';
+        
+        // Dados estáticos de fallback (usados apenas se o Gist falhar)
+        const fallbackScheduleData = [
+            // Ordem: Mês, Dia do Mês, Dia da Semana, Horário, Turma, Disciplina
+            "Setembro, 5, Terça-feira, 19:00 - 20:40, TADS - 2023, Programação Web I",
+            "Setembro, 7, Quinta-feira, 20:50 - 22:30, TADS - 2023, Programação Web I",
+            "Outubro, 3, Terça-feira, 19:00 - 20:40, TADS - 2023, Banco de Dados I",
+            "Agosto, 10, Segunda-feira, 07:30 - 09:10, Agropecuária Integrado - 2024, Matemática I",
+        ].map(line => {
+             // Simula o formato JSON para o fallback para que a função de processamento funcione
+             const parts = line.split(',').map(p => p.trim());
+             return {
+                A: parts[0],
+                B: parts[1],
+                C: parts[2],
+                D: parts[3],
+                E: parts[4],
+                F: parts[5]
+             };
+        });
+
+        // =========================================================================
+        // 2. VARIÁVEIS DE ESTADO E REFERÊNCIAS DOM
+        // =========================================================================
+        
+        let processedData = {};
+        let currentSchedule = [];
+        
+        // Referências aos elementos do DOM
+        const turmaSelect = document.getElementById('turmaSelect');
+        const disciplinaSelect = document.getElementById('disciplinaSelect');
+        const tableBody = document.getElementById('tableBody');
+        const totalDiasSpan = document.getElementById('totalDias');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const dataRelatorioSpan = document.getElementById('dataRelatorio');
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const filterArea = document.getElementById('filterArea');
+        const exportArea = document.getElementById('exportArea');
+        
+        // =========================================================================
+        // 3. FUNÇÕES UTILITÁRIAS E CARREGAMENTO DE DADOS
+        // =========================================================================
+
+        /**
+         * Gera um ID seguro para uso como chave no objeto processado.
+         * @param {string} name - O nome da turma ou disciplina.
+         * @returns {string} ID normalizado.
+         */
+        function generateId(name) {
+            return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\s-]/g, '').toLowerCase().trim().replace(/\s+/g, '-');
+        }
+        
+        /**
+         * Carrega os dados do Gist (URL RAW) e processa como JSON.
+         */
+        async function loadDataFromGist() {
+            try {
+                console.log(`DEBUG: A tentar carregar dados de: ${GIST_DATA_URL}`);
+                const response = await fetch(GIST_DATA_URL);
+
+                if (!response.ok) {
+                    throw new Error(`Erro de rede ao carregar o Gist. Status: ${response.statusText}`);
+                }
+
+                const rawText = await response.text();
+                // DEBUG: Log do conteúdo bruto para verificar se os dados foram realmente lidos.
+                console.log("DEBUG: Conteúdo RAW (Primeiros 500 chars):", rawText.substring(0, 500)); 
+                
+                // --- NOVO: Tenta analisar o texto bruto como JSON ---
+                let rawDataArray;
+                try {
+                    rawDataArray = JSON.parse(rawText);
+                    if (!Array.isArray(rawDataArray)) {
+                        throw new Error("O Gist não contém uma array JSON válida.");
+                    }
+                } catch (e) {
+                    // Se falhar a análise JSON, lançar um erro mais explícito
+                    console.error("ERRO CRÍTICO: Falha ao analisar JSON. A estrutura do Gist não é JSON válida.", e);
+                    throw new Error("O Gist tem um formato JSON inválido. Não é possível ler os dados.");
+                }
+
+                console.log(`DEBUG: Total de ${rawDataArray.length} objetos JSON lidos.`);
+
+                if (rawDataArray.length === 0) {
+                    throw new Error("O Gist está vazio ou os dados JSON estão mal formatados.");
+                }
+
+                processAndRenderData(rawDataArray);
+
+            } catch (error) {
+                console.error("ERRO CRÍTICO: Erro ao carregar dados do Gist. Usando dados de fallback.", error);
+                showFeedback('Erro ao carregar dados do link externo. Usando dados de exemplo.', 'bg-red-100 text-red-800');
+                // Usa dados de fallback em caso de falha
+                processAndRenderData(fallbackScheduleData);
+            } finally {
+                // Esconde o indicador de carregamento e mostra os filtros
+                loadingIndicator.classList.add('hidden');
+                filterArea.classList.remove('hidden');
+                exportArea.classList.remove('hidden');
+            }
+        }
+        
+        /**
+         * Processa a lista de objetos JSON para a estrutura hierárquica Turma > Disciplina > Horário.
+         * @param {object[]} dataArray - Array de objetos JSON (com chaves A, B, C, D, E, F).
+         */
+        function processAndRenderData(dataArray) {
+            const data = {};
+            
+            // Lógica para pular a linha de cabeçalho JSON (que tem os nomes das colunas)
+            let processedItems = [...dataArray]; // Copia o array
+            if (processedItems.length > 0 && processedItems[0].A === 'mês' && processedItems[0].F === 'disciplina') {
+                console.log("DEBUG: Ignorando o primeiro objeto JSON presumido como cabeçalho:", processedItems[0]);
+                processedItems.shift(); 
+            }
+
+            console.log(`DEBUG: Itens restantes para processamento: ${processedItems.length}`);
+
+            processedItems.forEach((item, index) => {
+                // Mapeamento de JSON: A=Mês, B=Dia do Mês, C=Dia da Semana, D=Horário, E=Turma, F=Disciplina
+                const turmaName = item.E?.toString().trim();
+                const disciplinaName = item.F?.toString().trim();
+                const month = item.A?.toString().trim();
+                const dayOfMonth = item.B; // Pode ser um número ou string
+                const dayOfWeek = item.C?.toString().trim();
+                const time = item.D?.toString().trim();
+
+                // Verifica se os campos essenciais existem
+                if (!turmaName || !disciplinaName || !month || !dayOfWeek || !time || isNaN(parseInt(dayOfMonth, 10))) {
+                    console.warn(`DEBUG WARNING: Objeto JSON incompleto ou inválido na Posição ${index + 1}. Item:`, item);
+                    return; // Pula este item se estiver incompleto
+                }
+                
+                const turmaId = generateId(turmaName);
+                const disciplinaId = generateId(disciplinaName);
+
+                // 1. Inicializa a Turma se não existir
+                if (!data[turmaId]) {
+                    data[turmaId] = {
+                        name: turmaName,
+                        disciplines: {}
+                    };
+                }
+
+                // 2. Inicializa a Disciplina se não existir
+                if (!data[turmaId].disciplines[disciplinaId]) {
+                    data[turmaId].disciplines[disciplinaId] = {
+                        name: disciplinaName,
+                        schedule: []
+                    };
+                }
+
+                // 3. Adiciona o horário
+                data[turmaId].disciplines[disciplinaId].schedule.push({
+                    month: month,
+                    dayOfMonth: parseInt(dayOfMonth, 10),
+                    dayOfWeek: dayOfWeek,
+                    time: time,
+                    // ID único para fins de depuração, baseado nos valores
+                    id: generateId(`${turmaName}-${disciplinaName}-${month}-${dayOfMonth}-${time}`) 
+                });
+            });
+
+            processedData = data;
+            
+            // Re-renderiza a UI
+            populateTurmaSelect();
+            
+            if (Object.keys(processedData).length > 0) {
+                 console.log(`DEBUG: Processamento concluído. ${Object.keys(processedData).length} Turmas encontradas.`);
+                 
+                 // Tenta manter a disciplina selecionada se possível
+                if (turmaSelect.value) {
+                    handleTurmaChange({ target: { value: turmaSelect.value } });
+                    if (disciplinaSelect.value) {
+                        handleDisciplinaChange({ target: { value: disciplinaSelect.value } });
+                    }
+                } else {
+                     renderTable([]);
+                }
+            } else {
+                console.log("DEBUG: Processamento concluído, mas NENHUMA Turma foi encontrada. Verifique se o Gist tem a estrutura correta (A-F).");
+                renderTable([]); // Renderiza a tabela com a mensagem de "sem dados"
+            }
+        }
+
+
+        // =========================================================================
+        // 4. FUNÇÕES DE LÓGICA (UI)
+        // =========================================================================
+        
+        function initApp() {
+            // Preenche o rodapé com a data atual
+            dataRelatorioSpan.textContent = new Date().toLocaleDateString('pt-BR');
+
+            // Adiciona listeners
+            turmaSelect.addEventListener('change', handleTurmaChange);
+            disciplinaSelect.addEventListener('change', handleDisciplinaChange);
+            exportPdfBtn.addEventListener('click', exportReportToPdf);
+            
+            // Inicia o carregamento de dados do Gist
+            loadDataFromGist();
+        }
+        
+        function populateTurmaSelect() {
+            // Guarda a seleção atual para tentar restaurar
+            const currentTurmaValue = turmaSelect.value;
+
+            // Limpa o select de disciplinas e desabilita o botão
+            disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
+            disciplinaSelect.disabled = true;
+            disciplinaSelect.classList.add('bg-gray-100');
+            exportPdfBtn.disabled = true;
+            
+            // Limpa as opções atuais do select de turmas (exceto a primeira)
+            turmaSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
+            
+            // Preenche o dropdown de Turmas com base em 'processedData'
+            for (const key in processedData) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = processedData[key].name;
+                turmaSelect.appendChild(option);
+            }
+            
+            // Tenta restaurar a seleção
+            if (currentTurmaValue && processedData[currentTurmaValue]) {
+                turmaSelect.value = currentTurmaValue;
+            }
+
+            // Habilita o select de turmas se houver dados
+            if (Object.keys(processedData).length > 0) {
+                turmaSelect.disabled = false;
+                turmaSelect.classList.remove('bg-gray-100');
+            } else {
+                turmaSelect.disabled = true;
+                turmaSelect.classList.add('bg-gray-100');
+            }
+        }
+
+        function handleTurmaChange(event) {
+            const selectedTurma = event.target.value;
+            const currentDisciplineValue = disciplinaSelect.value;
+            
+            // Limpa e habilita/desabilita a seleção de Disciplina
+            disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
+            disciplinaSelect.disabled = true;
+            disciplinaSelect.classList.add('bg-gray-100');
+            
+            // Limpa a tabela e o contador
+            renderTable([]);
+            exportPdfBtn.disabled = true;
+
+            if (selectedTurma && processedData[selectedTurma]) {
+                const disciplines = processedData[selectedTurma].disciplines;
+                
+                for (const key in disciplines) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = disciplines[key].name;
+                    disciplinaSelect.appendChild(option);
+                }
+                
+                disciplinaSelect.disabled = false;
+                disciplinaSelect.classList.remove('bg-gray-100');
+                
+                // Tenta restaurar a seleção da disciplina
+                if (currentDisciplineValue && disciplines[currentDisciplineValue]) {
+                    disciplinaSelect.value = currentDisciplineValue;
+                    handleDisciplinaChange({ target: { value: currentDisciplineValue } });
+                }
+            }
+        }
+
+        function handleDisciplinaChange(event) {
+            const selectedTurma = turmaSelect.value;
+            const selectedDiscipline = event.target.value;
+            
+            currentSchedule = [];
+            exportPdfBtn.disabled = true;
+
+            if (selectedTurma && selectedDiscipline) {
+                const schedule = processedData[selectedTurma].disciplines[selectedDiscipline].schedule;
+                currentSchedule = schedule;
+                renderTable(schedule);
+                exportPdfBtn.disabled = schedule.length === 0;
+            } else {
+                renderTable([]);
+            }
+        }
+
+        function renderTable(schedule) {
+            tableBody.innerHTML = '';
+            
+            if (schedule && schedule.length > 0) {
+                schedule.forEach((item, index) => {
+                    const row = tableBody.insertRow();
+                    row.classList.add('hover:bg-gray-50', index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
+
+                    // As chaves do objeto schedule são: month, dayOfMonth, dayOfWeek, time
+                    row.insertCell().textContent = item.month;
+                    row.insertCell().textContent = item.dayOfMonth;
+                    row.insertCell().textContent = item.dayOfWeek;
+                    row.insertCell().textContent = item.time;
+                    
+                    // Estilização das células
+                    Array.from(row.cells).forEach(cell => {
+                        cell.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-900');
+                    });
+                });
+                totalDiasSpan.textContent = schedule.length;
+            } else {
+                const row = tableBody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 4;
+                cell.classList.add('px-6', 'py-4', 'text-center', 'text-sm', 'text-gray-500', 'italic');
+                
+                // Mensagem mais clara para o utilizador
+                cell.textContent = turmaSelect.value 
+                    ? 'Nenhum horário encontrado para a disciplina selecionada.' 
+                    : 'Selecione uma turma e uma disciplina no menu acima.';
+                
+                totalDiasSpan.textContent = 0;
+            }
+        }
+        
+        /**
+         * Gera e descarrega o relatório de horários em formato PDF.
+         */
+        async function exportReportToPdf() {
+            
+            if (!disciplinaSelect.value) {
+                showFeedback('Selecione uma Turma e uma Disciplina antes de exportar.', 'bg-red-100 text-red-800');
+                return;
+            }
+
+            exportPdfBtn.disabled = true;
+            exportPdfBtn.textContent = 'Gerando PDF...';
+            showFeedback('Gerando relatório PDF...', 'bg-yellow-100 text-yellow-800');
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 15;
+            let y = margin;
+            
+            const selectedTurmaText = turmaSelect.options[turmaSelect.selectedIndex].text;
+            const selectedDisciplinaText = disciplinaSelect.options[disciplinaSelect.selectedIndex].text;
+            const totalDiasText = totalDiasSpan.textContent;
+
+            const addCenteredText = (text, size, style = 'normal') => {
+                doc.setFont('helvetica', style);
+                doc.setFontSize(size);
+                const textWidth = doc.getStringUnitWidth(text) * size / doc.internal.scaleFactor;
+                const x = (pageWidth - textWidth) / 2;
+                doc.text(text, x, y);
+                y += size * 0.4;
+            };
+
+            y += 5;
+            addCenteredText('INSTITUTO FEDERAL DE RONDÔNIA', 14, 'bold');
+            addCenteredText('CAMPUS CACOAL', 12, 'italic');
+            y += 5;
+            addCenteredText('DEPARTAMENTO DE APOIO AO ENSINO', 10);
+            addCenteredText('COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS', 10);
+            
+            y += 10;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Relatório de Horários de Aula', margin, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Turma: ${selectedTurmaText}`, margin, y);
+            y += 5;
+            doc.text(`Disciplina: ${selectedDisciplinaText}`, margin, y);
+            y += 5;
+            doc.text(`Total de Dias de Aula: ${totalDiasText}`, margin, y);
+            y += 10;
+            
+            const headers = [["Mês", "Dia do Mês", "Dia da Semana", "Horário da Aula"]];
+            const data = currentSchedule.map(item => [item.month, item.dayOfMonth.toString(), item.dayOfWeek, item.time]);
+
+            doc.autoTable({
+                head: headers,
+                body: data,
+                startY: y,
+                theme: 'striped',
+                // Cor de preenchimento do cabeçalho do PDF alterada para verde (Green 600 RGB)
+                headStyles: { fillColor: [22, 163, 74], fontStyle: 'bold' },
+                styles: { fontSize: 8, cellPadding: 2 },
+                margin: { top: margin, bottom: margin, left: margin, right: margin },
+                didDrawPage: function (data) {
+                    const footerText = `${dataRelatorioSpan.textContent} / Campus Cacoal`;
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    const textWidth = doc.getStringUnitWidth(footerText) * 8 / doc.internal.scaleFactor;
+                    const x = (pageWidth - textWidth) / 2;
+                    doc.text(footerText, x, doc.internal.pageSize.getHeight() - 10);
+                }
+            });
+
+            const fileName = `Relatorio_${selectedTurmaText.replace(/\s/g, '_')}_${selectedDisciplinaText.replace(/\s/g, '_')}.pdf`;
+            doc.save(fileName);
+
+            exportPdfBtn.disabled = false;
+            exportPdfBtn.textContent = 'Exportar Relatório em PDF';
+            showFeedback('Relatório PDF gerado com sucesso!', 'bg-green-100 text-green-800');
+        }
+        
+        /**
+         * Exibe uma mensagem de feedback temporária no UI.
+         * @param {string} message - A mensagem a exibir.
+         * @param {string} className - As classes Tailwind para o estilo.
+         */
+        function showFeedback(message, className) {
+            feedbackMessage.classList.remove('hidden', 'bg-yellow-100', 'text-yellow-800', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            feedbackMessage.classList.add(...className.split(' ')); 
+            feedbackMessage.textContent = message;
+            
+            setTimeout(() => {
+                feedbackMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Inicializa a aplicação ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+             // Necessário carregar o plugin autoTable para a geração da tabela no PDF
+            const autoTableScript = document.createElement('script');
+            autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
+            document.head.appendChild(autoTableScript);
+
+            autoTableScript.onload = initApp;
+        });
+
+    </script>
+
+</body>
+</html>
