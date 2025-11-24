@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Horários - IFRO Campus Cacoal (Gist)</title>
+    <title>Consulta de Horários - IFRO Campus Cacoal (Multianual)</title>
     <!-- Carrega o Tailwind CSS para o estilo responsivo e moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Configuração do tema Tailwind com a fonte Inter -->
     <script>
         tailwind.config = {
             theme: {
@@ -15,7 +14,6 @@
                         sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        // Cor principal institucional alterada para verde (Green 600)
                         'ifro-primary': '#16A34A', 
                         'ifro-light': '#F3F4F6',
                     }
@@ -23,18 +21,7 @@
             }
         }
     </script>
-    <style>
-        /* Estilos personalizados para a tabela e o cabeçalho */
-        .header-bg {
-            /* Usa a cor principal verde */
-            background-color: #16A34A;
-            color: white;
-        }
-        .container-shadow {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-    </style>
-    <!-- Script para gerar PDF -->
+    <!-- Scripts para gerar PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -53,27 +40,37 @@
 
         <!-- CORPO DA CONSULTA -->
         <main class="p-6 md:p-8">
-            <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2">Consulta de Horários por Turma e Disciplina</h3>
+            <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2">Consulta de Horários por Ano, Turma e Disciplina</h3>
             
             <!-- INDICADOR DE CARREGAMENTO -->
             <div id="loadingIndicator" class="text-center p-4 bg-ifro-light rounded-lg font-bold text-ifro-primary">
-                A carregar dados do Gist (Link Externo)...
+                A carregar dados iniciais...
             </div>
 
             <!-- ÁREA DE FILTROS -->
-            <div id="filterArea" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 hidden">
+            <div id="filterArea" class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 hidden">
+                
+                <!-- 1. SELETOR DE ANO -->
                 <div>
-                    <label for="turmaSelect" class="block text-sm font-bold text-gray-700 mb-1">TURMA</label>
-                    <select id="turmaSelect" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-ifro-primary focus:border-ifro-primary transition duration-150 ease-in-out">
-                        <option value="">-- Selecione a Turma --</option>
-                        <!-- As opções serão preenchidas via JavaScript -->
+                    <label for="yearSelect" class="block text-sm font-bold text-gray-700 mb-1">ANO LETIVO</label>
+                    <select id="yearSelect" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-ifro-primary focus:border-ifro-primary transition duration-150 ease-in-out">
+                        <!-- Opções preenchidas via JavaScript -->
                     </select>
                 </div>
+
+                <!-- 2. SELETOR DE TURMA -->
+                <div>
+                    <label for="turmaSelect" class="block text-sm font-bold text-gray-700 mb-1">TURMA</label>
+                    <select id="turmaSelect" disabled class="w-full p-3 border border-gray-300 bg-gray-100 rounded-lg shadow-sm focus:ring-ifro-primary focus:border-ifro-primary transition duration-150 ease-in-out">
+                        <option value="">-- Selecione a Turma --</option>
+                    </select>
+                </div>
+
+                <!-- 3. SELETOR DE DISCIPLINA -->
                 <div>
                     <label for="disciplinaSelect" class="block text-sm font-bold text-gray-700 mb-1">DISCIPLINA</label>
                     <select id="disciplinaSelect" disabled class="w-full p-3 border border-gray-300 bg-gray-100 rounded-lg shadow-sm focus:ring-ifro-primary focus:border-ifro-primary transition duration-150 ease-in-out">
                         <option value="">-- Selecione uma Disciplina --</option>
-                        <!-- As opções serão preenchidas após a seleção da turma -->
                     </select>
                 </div>
             </div>
@@ -88,7 +85,7 @@
                 </div>
             </div>
 
-            <!-- TABELA DE RESULTADOS (Onde o relatório será exibido) -->
+            <!-- TABELA DE RESULTADOS -->
             <div id="tableContainer" class="overflow-x-auto border border-gray-300 rounded-lg shadow-lg">
                 <table id="horariosTable" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -97,17 +94,18 @@
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Dia do Mês</th>
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Dia da Semana</th>
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Horário da Aula</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Professor</th> <!-- Coluna de Professor separada no relatório -->
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">Aguardando dados do Gist...</td>
+                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 italic">Aguardando dados...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
-            <!-- Mensagem de feedback (ex: erro no PDF) -->
+            <!-- Mensagem de feedback -->
             <div id="feedbackMessage" class="hidden mt-4 p-3 rounded-lg text-center font-medium"></div>
         </main>
 
@@ -121,31 +119,33 @@
     <script type="module">
         
         // =========================================================================
-        // 1. CONFIGURAÇÃO DA FONTE DE DADOS (GIST)
+        // 1. CONFIGURAÇÃO DA FONTE DE DADOS (GIST) - **ATUALIZAR AQUI**
+        // -------------------------------------------------------------------------
+        // A estrutura JSON esperada é: 
+        // A=Mês, B=Dia do Mês, C=Dia da Semana, D=Horário, E=Turma, 
+        // F=Disciplina e Professor (Ex: "Programação Web I - Prof. Jamil Salim")
+        // O código irá separar a disciplina do professor para o relatório.
         // =========================================================================
         
-        // !!! URL RAW (bruto) do Gist fornecido pelo utilizador !!!
-        const GIST_DATA_URL = 'https://gist.githubusercontent.com/jamilsalim-afk/9190f1ffef7618a7ccd8d2b82adb6b9e/raw/65c8b45a18b17eb70c633b9c34b0da5568d27ce4/gistfile1.txt';
+        // Mapeamento dos anos para as URLs RAW (brutas) dos Gists
+        const GIST_URLS = {
+            '2025': 'https://placeholder.com/2025_gist_url', // <-- SUBSTITUA ESTE URL
+            '2026': 'https://gist.githubusercontent.com/jamilsalim-afk/9190f1ffef7618a7ccd8d2b82adb6b9e/raw/65c8b45a18b17eb70c633b9c34b0da5568d27ce4/gistfile1.txt',
+            '2027': 'https://placeholder.com/2027_gist_url', // <-- SUBSTITUA ESTE URL
+            '2028': 'https://placeholder.com/2028_gist_url', // <-- SUBSTITUA ESTE URL
+            '2029': 'https://placeholder.com/2029_gist_url', // <-- SUBSTITUA ESTE URL
+            '2030': 'https://placeholder.com/2030_gist_url'  // <-- SUBSTITUA ESTE URL
+        };
         
-        // Dados estáticos de fallback (usados apenas se o Gist falhar)
+        // Define o ano padrão para carregar no início
+        const DEFAULT_YEAR = '2026';
+
+        // Dados estáticos de fallback (agora com F contendo Disciplina - Professor)
         const fallbackScheduleData = [
-            // Ordem: Mês, Dia do Mês, Dia da Semana, Horário, Turma, Disciplina
-            "Setembro, 5, Terça-feira, 19:00 - 20:40, TADS - 2023, Programação Web I",
-            "Setembro, 7, Quinta-feira, 20:50 - 22:30, TADS - 2023, Programação Web I",
-            "Outubro, 3, Terça-feira, 19:00 - 20:40, TADS - 2023, Banco de Dados I",
-            "Agosto, 10, Segunda-feira, 07:30 - 09:10, Agropecuária Integrado - 2024, Matemática I",
-        ].map(line => {
-             // Simula o formato JSON para o fallback para que a função de processamento funcione
-             const parts = line.split(',').map(p => p.trim());
-             return {
-                A: parts[0],
-                B: parts[1],
-                C: parts[2],
-                D: parts[3],
-                E: parts[4],
-                F: parts[5]
-             };
-        });
+            {A: "Setembro", B: "5", C: "Terça-feira", D: "19:00 - 20:40", E: "TADS - 2023", F: "Programação Web I - Prof. Jamil Salim"},
+            {A: "Setembro", B: "7", C: "Quinta-feira", D: "20:50 - 22:30", E: "TADS - 2023", F: "Banco de Dados I - Prof. Ana Paula"},
+            {A: "Agosto", B: "10", C: "Segunda-feira", D: "07:30 - 09:10", E: "Agropecuária Integrado - 2024", F: "Matemática I - Prof. Carlos Souza"}
+        ];
 
         // =========================================================================
         // 2. VARIÁVEIS DE ESTADO E REFERÊNCIAS DOM
@@ -153,8 +153,10 @@
         
         let processedData = {};
         let currentSchedule = [];
+        let currentYear = DEFAULT_YEAR; 
         
         // Referências aos elementos do DOM
+        const yearSelect = document.getElementById('yearSelect'); 
         const turmaSelect = document.getElementById('turmaSelect');
         const disciplinaSelect = document.getElementById('disciplinaSelect');
         const tableBody = document.getElementById('tableBody');
@@ -171,97 +173,108 @@
         // =========================================================================
 
         /**
-         * Gera um ID seguro para uso como chave no objeto processado.
-         * @param {string} name - O nome da turma ou disciplina.
-         * @returns {string} ID normalizado.
+         * Gera um ID seguro para uso como chave.
          */
         function generateId(name) {
             return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\s-]/g, '').toLowerCase().trim().replace(/\s+/g, '-');
         }
         
         /**
-         * Carrega os dados do Gist (URL RAW) e processa como JSON.
+         * Carrega os dados do Gist (URL RAW) para o ano especificado.
+         * @param {string} year - O ano para o qual carregar os dados.
          */
-        async function loadDataFromGist() {
+        async function loadDataFromGist(year) {
+            const url = GIST_URLS[year];
+            if (!url || url.includes('placeholder')) {
+                showFeedback(`URL do Gist para ${year} não configurada. Usando dados de exemplo.`, 'bg-red-100 text-red-800');
+                processAndRenderData(fallbackScheduleData);
+                return;
+            }
+
+            loadingIndicator.textContent = `A carregar horários para o ano ${year}...`;
+            turmaSelect.disabled = true;
+            disciplinaSelect.disabled = true;
+            exportPdfBtn.disabled = true;
+            
             try {
-                console.log(`DEBUG: A tentar carregar dados de: ${GIST_DATA_URL}`);
-                const response = await fetch(GIST_DATA_URL);
+                const response = await fetch(url);
 
                 if (!response.ok) {
-                    throw new Error(`Erro de rede ao carregar o Gist. Status: ${response.statusText}`);
+                    throw new Error(`Erro de rede ao carregar o Gist para ${year}. Status: ${response.statusText}`);
                 }
 
                 const rawText = await response.text();
-                // DEBUG: Log do conteúdo bruto para verificar se os dados foram realmente lidos.
-                console.log("DEBUG: Conteúdo RAW (Primeiros 500 chars):", rawText.substring(0, 500)); 
                 
-                // --- NOVO: Tenta analisar o texto bruto como JSON ---
                 let rawDataArray;
                 try {
+                    // Tenta analisar o texto bruto como JSON
                     rawDataArray = JSON.parse(rawText);
                     if (!Array.isArray(rawDataArray)) {
                         throw new Error("O Gist não contém uma array JSON válida.");
                     }
                 } catch (e) {
-                    // Se falhar a análise JSON, lançar um erro mais explícito
-                    console.error("ERRO CRÍTICO: Falha ao analisar JSON. A estrutura do Gist não é JSON válida.", e);
+                    console.error("ERRO CRÍTICO: Falha ao analisar JSON.", e);
                     throw new Error("O Gist tem um formato JSON inválido. Não é possível ler os dados.");
                 }
 
-                console.log(`DEBUG: Total de ${rawDataArray.length} objetos JSON lidos.`);
-
-                if (rawDataArray.length === 0) {
-                    throw new Error("O Gist está vazio ou os dados JSON estão mal formatados.");
-                }
-
+                console.log(`DEBUG: Total de ${rawDataArray.length} objetos JSON lidos para ${year}.`);
                 processAndRenderData(rawDataArray);
 
             } catch (error) {
-                console.error("ERRO CRÍTICO: Erro ao carregar dados do Gist. Usando dados de fallback.", error);
-                showFeedback('Erro ao carregar dados do link externo. Usando dados de exemplo.', 'bg-red-100 text-red-800');
+                console.error(`ERRO CRÍTICO: Erro ao carregar dados do Gist para ${year}. Usando dados de fallback.`, error);
+                showFeedback(`Erro ao carregar Gist para ${year}. Usando dados de exemplo.`, 'bg-red-100 text-red-800');
                 // Usa dados de fallback em caso de falha
                 processAndRenderData(fallbackScheduleData);
-            } finally {
-                // Esconde o indicador de carregamento e mostra os filtros
-                loadingIndicator.classList.add('hidden');
-                filterArea.classList.remove('hidden');
-                exportArea.classList.remove('hidden');
             }
         }
         
         /**
          * Processa a lista de objetos JSON para a estrutura hierárquica Turma > Disciplina > Horário.
-         * @param {object[]} dataArray - Array de objetos JSON (com chaves A, B, C, D, E, F).
+         * Extrai o nome do professor da coluna F.
          */
         function processAndRenderData(dataArray) {
             const data = {};
             
-            // Lógica para pular a linha de cabeçalho JSON (que tem os nomes das colunas)
-            let processedItems = [...dataArray]; // Copia o array
+            // Lógica para pular a linha de cabeçalho JSON (se existir)
+            let processedItems = [...dataArray];
             if (processedItems.length > 0 && processedItems[0].A === 'mês' && processedItems[0].F === 'disciplina') {
-                console.log("DEBUG: Ignorando o primeiro objeto JSON presumido como cabeçalho:", processedItems[0]);
                 processedItems.shift(); 
             }
 
-            console.log(`DEBUG: Itens restantes para processamento: ${processedItems.length}`);
-
             processedItems.forEach((item, index) => {
-                // Mapeamento de JSON: A=Mês, B=Dia do Mês, C=Dia da Semana, D=Horário, E=Turma, F=Disciplina
+                // Mapeamento de JSON: A=Mês, B=Dia do Mês, C=Dia da Semana, D=Horário, E=Turma, F=Disciplina e Professor
                 const turmaName = item.E?.toString().trim();
-                const disciplinaName = item.F?.toString().trim();
+                const fullDisciplineString = item.F?.toString().trim();
                 const month = item.A?.toString().trim();
-                const dayOfMonth = item.B; // Pode ser um número ou string
+                const dayOfMonth = item.B;
                 const dayOfWeek = item.C?.toString().trim();
                 const time = item.D?.toString().trim();
 
+                // --- NOVA LÓGICA DE EXTRAÇÃO ---
+                let disciplineName = fullDisciplineString;
+                let professorName = "Não Informado";
+                
+                // Tenta separar a Disciplina do Professor usando " - " como delimitador comum
+                const parts = fullDisciplineString.split(' - ').map(p => p.trim()).filter(p => p.length > 0);
+                
+                if (parts.length >= 2) {
+                    // Assume que a disciplina é o primeiro elemento e o professor é o último
+                    disciplineName = parts[0]; 
+                    professorName = parts[parts.length - 1]; // Pega o último pedaço como Professor
+                } else {
+                    // Se não houver o delimitador, usa o nome completo como disciplina e sinaliza a ausência do professor
+                    disciplineName = fullDisciplineString;
+                    professorName = "Não Informado (Formato Inválido)";
+                }
+
                 // Verifica se os campos essenciais existem
-                if (!turmaName || !disciplinaName || !month || !dayOfWeek || !time || isNaN(parseInt(dayOfMonth, 10))) {
-                    console.warn(`DEBUG WARNING: Objeto JSON incompleto ou inválido na Posição ${index + 1}. Item:`, item);
-                    return; // Pula este item se estiver incompleto
+                if (!turmaName || !disciplineName || !month || !dayOfWeek || !time || isNaN(parseInt(dayOfMonth, 10))) {
+                    console.warn(`DEBUG WARNING: Objeto JSON incompleto ou inválido na Posição ${index + 1}. Item (F: ${fullDisciplineString}):`, item);
+                    return; 
                 }
                 
                 const turmaId = generateId(turmaName);
-                const disciplinaId = generateId(disciplinaName);
+                const disciplinaId = generateId(disciplineName); // ID baseado no nome da disciplina extraído
 
                 // 1. Inicializa a Turma se não existir
                 if (!data[turmaId]) {
@@ -274,7 +287,7 @@
                 // 2. Inicializa a Disciplina se não existir
                 if (!data[turmaId].disciplines[disciplinaId]) {
                     data[turmaId].disciplines[disciplinaId] = {
-                        name: disciplinaName,
+                        name: disciplineName, // Usa o nome puro da disciplina para o filtro
                         schedule: []
                     };
                 }
@@ -285,8 +298,7 @@
                     dayOfMonth: parseInt(dayOfMonth, 10),
                     dayOfWeek: dayOfWeek,
                     time: time,
-                    // ID único para fins de depuração, baseado nos valores
-                    id: generateId(`${turmaName}-${disciplinaName}-${month}-${dayOfMonth}-${time}`) 
+                    professor: professorName // Armazena o professor extraído
                 });
             });
 
@@ -295,22 +307,10 @@
             // Re-renderiza a UI
             populateTurmaSelect();
             
-            if (Object.keys(processedData).length > 0) {
-                 console.log(`DEBUG: Processamento concluído. ${Object.keys(processedData).length} Turmas encontradas.`);
-                 
-                 // Tenta manter a disciplina selecionada se possível
-                if (turmaSelect.value) {
-                    handleTurmaChange({ target: { value: turmaSelect.value } });
-                    if (disciplinaSelect.value) {
-                        handleDisciplinaChange({ target: { value: disciplinaSelect.value } });
-                    }
-                } else {
-                     renderTable([]);
-                }
-            } else {
-                console.log("DEBUG: Processamento concluído, mas NENHUMA Turma foi encontrada. Verifique se o Gist tem a estrutura correta (A-F).");
-                renderTable([]); // Renderiza a tabela com a mensagem de "sem dados"
-            }
+            // Esconde o indicador de carregamento e mostra os filtros
+            loadingIndicator.classList.add('hidden');
+            filterArea.classList.remove('hidden');
+            exportArea.classList.remove('hidden');
         }
 
 
@@ -322,20 +322,51 @@
             // Preenche o rodapé com a data atual
             dataRelatorioSpan.textContent = new Date().toLocaleDateString('pt-BR');
 
-            // Adiciona listeners
+            // 1. Adiciona listeners
+            yearSelect.addEventListener('change', handleYearChange);
             turmaSelect.addEventListener('change', handleTurmaChange);
             disciplinaSelect.addEventListener('change', handleDisciplinaChange);
             exportPdfBtn.addEventListener('click', exportReportToPdf);
             
-            // Inicia o carregamento de dados do Gist
-            loadDataFromGist();
+            // 2. Preenche o seletor de ano
+            populateYearSelect();
+            
+            // 3. Inicia o carregamento de dados para o ano padrão
+            loadDataFromGist(currentYear);
+        }
+        
+        function populateYearSelect() {
+            const years = Object.keys(GIST_URLS).sort((a, b) => parseInt(a) - parseInt(b));
+            yearSelect.innerHTML = '';
+            
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+            
+            // Define o ano padrão
+            yearSelect.value = DEFAULT_YEAR;
+        }
+
+        function handleYearChange(event) {
+            const selectedYear = event.target.value;
+            currentYear = selectedYear;
+            
+            // Limpa as seleções dependentes e a tabela
+            turmaSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
+            disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
+            renderTable([]);
+            
+            // Dispara o carregamento do novo Gist
+            loadDataFromGist(selectedYear);
         }
         
         function populateTurmaSelect() {
-            // Guarda a seleção atual para tentar restaurar
             const currentTurmaValue = turmaSelect.value;
-
-            // Limpa o select de disciplinas e desabilita o botão
+            
+            // Limpa e desabilita o botão
             disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
             disciplinaSelect.disabled = true;
             disciplinaSelect.classList.add('bg-gray-100');
@@ -344,7 +375,7 @@
             // Limpa as opções atuais do select de turmas (exceto a primeira)
             turmaSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
             
-            // Preenche o dropdown de Turmas com base em 'processedData'
+            // Preenche o dropdown de Turmas
             for (const key in processedData) {
                 const option = document.createElement('option');
                 option.value = key;
@@ -352,11 +383,6 @@
                 turmaSelect.appendChild(option);
             }
             
-            // Tenta restaurar a seleção
-            if (currentTurmaValue && processedData[currentTurmaValue]) {
-                turmaSelect.value = currentTurmaValue;
-            }
-
             // Habilita o select de turmas se houver dados
             if (Object.keys(processedData).length > 0) {
                 turmaSelect.disabled = false;
@@ -364,19 +390,23 @@
             } else {
                 turmaSelect.disabled = true;
                 turmaSelect.classList.add('bg-gray-100');
+                renderTable([]);
+            }
+            
+            // Tenta restaurar a seleção (se os dados para o novo ano tiverem a mesma turma)
+            if (currentTurmaValue && processedData[currentTurmaValue]) {
+                turmaSelect.value = currentTurmaValue;
+                handleTurmaChange({ target: { value: currentTurmaValue } });
             }
         }
 
         function handleTurmaChange(event) {
             const selectedTurma = event.target.value;
-            const currentDisciplineValue = disciplinaSelect.value;
             
-            // Limpa e habilita/desabilita a seleção de Disciplina
             disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
             disciplinaSelect.disabled = true;
             disciplinaSelect.classList.add('bg-gray-100');
             
-            // Limpa a tabela e o contador
             renderTable([]);
             exportPdfBtn.disabled = true;
 
@@ -386,18 +416,12 @@
                 for (const key in disciplines) {
                     const option = document.createElement('option');
                     option.value = key;
-                    option.textContent = disciplines[key].name;
+                    option.textContent = disciplines[key].name; // Usa o nome puro da disciplina
                     disciplinaSelect.appendChild(option);
                 }
                 
                 disciplinaSelect.disabled = false;
                 disciplinaSelect.classList.remove('bg-gray-100');
-                
-                // Tenta restaurar a seleção da disciplina
-                if (currentDisciplineValue && disciplines[currentDisciplineValue]) {
-                    disciplinaSelect.value = currentDisciplineValue;
-                    handleDisciplinaChange({ target: { value: currentDisciplineValue } });
-                }
             }
         }
 
@@ -426,13 +450,12 @@
                     const row = tableBody.insertRow();
                     row.classList.add('hover:bg-gray-50', index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
 
-                    // As chaves do objeto schedule são: month, dayOfMonth, dayOfWeek, time
                     row.insertCell().textContent = item.month;
                     row.insertCell().textContent = item.dayOfMonth;
                     row.insertCell().textContent = item.dayOfWeek;
                     row.insertCell().textContent = item.time;
+                    row.insertCell().textContent = item.professor; // Usa o Professor extraído
                     
-                    // Estilização das células
                     Array.from(row.cells).forEach(cell => {
                         cell.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-900');
                     });
@@ -441,13 +464,12 @@
             } else {
                 const row = tableBody.insertRow();
                 const cell = row.insertCell();
-                cell.colSpan = 4;
+                cell.colSpan = 5; 
                 cell.classList.add('px-6', 'py-4', 'text-center', 'text-sm', 'text-gray-500', 'italic');
                 
-                // Mensagem mais clara para o utilizador
                 cell.textContent = turmaSelect.value 
                     ? 'Nenhum horário encontrado para a disciplina selecionada.' 
-                    : 'Selecione uma turma e uma disciplina no menu acima.';
+                    : 'Selecione a turma e a disciplina.';
                 
                 totalDiasSpan.textContent = 0;
             }
@@ -473,9 +495,14 @@
             const margin = 15;
             let y = margin;
             
+            const selectedYearText = yearSelect.options[yearSelect.selectedIndex].text;
             const selectedTurmaText = turmaSelect.options[turmaSelect.selectedIndex].text;
             const selectedDisciplinaText = disciplinaSelect.options[disciplinaSelect.selectedIndex].text;
             const totalDiasText = totalDiasSpan.textContent;
+            
+            // Tenta obter o nome do professor principal (do primeiro registro, pois a disciplina é única)
+            const professorPrincipal = currentSchedule.length > 0 ? currentSchedule[0].professor : 'N/A';
+
 
             const addCenteredText = (text, size, style = 'normal') => {
                 doc.setFont('helvetica', style);
@@ -496,25 +523,35 @@
             y += 10;
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            doc.text('Relatório de Horários de Aula', margin, y);
+            doc.text(`Relatório de Horários de Aula - Ano ${selectedYearText}`, margin, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
             doc.text(`Turma: ${selectedTurmaText}`, margin, y);
             y += 5;
             doc.text(`Disciplina: ${selectedDisciplinaText}`, margin, y);
             y += 5;
+            doc.text(`Professor: ${professorPrincipal}`, margin, y); // Inclui o professor no cabeçalho do relatório
+            y += 5;
             doc.text(`Total de Dias de Aula: ${totalDiasText}`, margin, y);
             y += 10;
             
-            const headers = [["Mês", "Dia do Mês", "Dia da Semana", "Horário da Aula"]];
-            const data = currentSchedule.map(item => [item.month, item.dayOfMonth.toString(), item.dayOfWeek, item.time]);
+            // Cabeçalho da tabela do PDF (sem a coluna de disciplina, pois é a mesma para todas as linhas)
+            const headers = [["Mês", "Dia do Mês", "Dia da Semana", "Horário da Aula", "Professor"]]; 
+            
+            // Dados da tabela do PDF
+            const data = currentSchedule.map(item => [
+                item.month, 
+                item.dayOfMonth.toString(), 
+                item.dayOfWeek, 
+                item.time,
+                item.professor // Usa o Professor extraído
+            ]);
 
             doc.autoTable({
                 head: headers,
                 body: data,
                 startY: y,
                 theme: 'striped',
-                // Cor de preenchimento do cabeçalho do PDF alterada para verde (Green 600 RGB)
                 headStyles: { fillColor: [22, 163, 74], fontStyle: 'bold' },
                 styles: { fontSize: 8, cellPadding: 2 },
                 margin: { top: margin, bottom: margin, left: margin, right: margin },
@@ -528,7 +565,7 @@
                 }
             });
 
-            const fileName = `Relatorio_${selectedTurmaText.replace(/\s/g, '_')}_${selectedDisciplinaText.replace(/\s/g, '_')}.pdf`;
+            const fileName = `Relatorio_${selectedYearText}_${selectedTurmaText.replace(/\s/g, '_')}_${selectedDisciplinaText.replace(/\s/g, '_')}.pdf`;
             doc.save(fileName);
 
             exportPdfBtn.disabled = false;
@@ -538,8 +575,6 @@
         
         /**
          * Exibe uma mensagem de feedback temporária no UI.
-         * @param {string} message - A mensagem a exibir.
-         * @param {string} className - As classes Tailwind para o estilo.
          */
         function showFeedback(message, className) {
             feedbackMessage.classList.remove('hidden', 'bg-yellow-100', 'text-yellow-800', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
@@ -553,7 +588,7 @@
 
         // Inicializa a aplicação ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
-             // Necessário carregar o plugin autoTable para a geração da tabela no PDF
+             // Carrega o plugin autoTable (necessário para o PDF)
             const autoTableScript = document.createElement('script');
             autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
             document.head.appendChild(autoTableScript);
