@@ -126,7 +126,7 @@
         // =========================================================================
         
         const GIST_URLS = {
-            '2025': 'https://placeholder.com/2025_gist_url_csv', 
+            '2025': 'https://gist.githubusercontent.com/jamilsalim-afk/5267c51cbe267bf1be19f89b481d4991/raw/81cf2e98b4cd7a610bd9b4fc40d1a5f2a007dd0b/2025.csv', 
             // URL configurada como RAW (crua) do Gist
             // NOVO LINK PARA 2026:
             '2026': 'https://gist.githubusercontent.com/jamilsalim-afk/9190f1ffef7618a7ccd8d2b82adb6b9e/raw/8c9680d8a4a623e634998f8a539f7e5ad9b3129a/gistfile1.csv',
