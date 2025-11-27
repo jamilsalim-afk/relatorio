@@ -47,8 +47,8 @@
                 A carregar dados iniciais...
             </div>
 
-            <!-- ÁREA DE FILTROS -->
-            <div id="filterArea" class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 hidden">
+            <!-- ÁREA DE FILTROS (AGORA COM 3 COLUNAS EM TELAS GRANDES) -->
+            <div id="filterArea" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8 hidden">
                 
                 <!-- 1. SELETOR DE ANO -->
                 <div>
@@ -73,6 +73,8 @@
                         <option value="">-- Selecione uma Disciplina --</option>
                     </select>
                 </div>
+
+                <!-- O seletor de Professor foi removido daqui, pois não é mais necessário para a filtragem -->
             </div>
 
             <!-- BOTÃO DE EXPORTAÇÃO E SUMÁRIO DE DIAS -->
@@ -81,7 +83,8 @@
                     Exportar Relatório em PDF
                 </button>
                 <div class="text-gray-700 text-base font-semibold">
-                    Total de Dias de Aula da Disciplina: <span id="totalDias" class="text-xl text-ifro-primary font-extrabold">0</span>
+                    <!-- Texto atualizado para refletir o total da disciplina -->
+                    Total de Dias de Aula: <span id="totalDias" class="text-xl text-ifro-primary font-extrabold">0</span>
                 </div>
             </div>
 
@@ -119,33 +122,36 @@
     <script type="module">
         
         // =========================================================================
-        // 1. CONFIGURAÇÃO DA FONTE DE DADOS (GIST) - **ATUALIZAR AQUI**
-        // -------------------------------------------------------------------------
-        // A estrutura JSON esperada é: 
-        // A=Mês, B=Dia do Mês, C=Dia da Semana, D=Horário, E=Turma, 
-        // F=Disciplina e Professor (Ex: "Programação Web I - Prof. Jamil Salim")
-        // O código irá separar a disciplina do professor para o relatório.
+        // 1. CONFIGURAÇÃO DA FONTE DE DADOS (GIST)
         // =========================================================================
         
-        // Mapeamento dos anos para as URLs RAW (brutas) dos Gists
         const GIST_URLS = {
-            '2025': 'https://placeholder.com/2025_gist_url', // <-- SUBSTITUA ESTE URL
+            '2025': 'https://placeholder.com/2025_gist_url_csv', 
+            // URL configurada como RAW (crua) do Gist
+            // NOVO LINK PARA 2026:
             '2026': 'https://gist.githubusercontent.com/jamilsalim-afk/9190f1ffef7618a7ccd8d2b82adb6b9e/raw/8c9680d8a4a623e634998f8a539f7e5ad9b3129a/gistfile1.csv',
-            '2027': 'https://placeholder.com/2027_gist_url', // <-- SUBSTITUA ESTE URL
-            '2028': 'https://placeholder.com/2028_gist_url', // <-- SUBSTITUA ESTE URL
-            '2029': 'https://placeholder.com/2029_gist_url', // <-- SUBSTITUA ESTE URL
-            '2030': 'https://placeholder.com/2030_gist_url'  // <-- SUBSTITUA ESTE URL
+            '2027': 'https://placeholder.com/2027_gist_url_csv', 
+            '2028': 'https://placeholder.com/2028_gist_url_csv', 
+            '2029': 'https://placeholder.com/2029_gist_url_csv', 
+            '2030': 'https://placeholder.com/2030_gist_url_csv'  
         };
         
-        // Define o ano padrão para carregar no início
         const DEFAULT_YEAR = '2026';
 
-        // Dados estáticos de fallback (agora com F contendo Disciplina - Professor)
+        // Estrutura de Fallback (para testes se o Gist falhar)
         const fallbackScheduleData = [
             {A: "Setembro", B: "5", C: "Terça-feira", D: "19:00 - 20:40", E: "TADS - 2023", F: "Programação Web I - Prof. Jamil Salim"},
+            // Adicionado um segundo professor para a mesma disciplina/turma para testar a nova funcionalidade
+            {A: "Outubro", B: "12", C: "Quinta-feira", D: "19:00 - 20:40", E: "TADS - 2023", F: "Programação Web I - Prof. Ricardo Silva"},
             {A: "Setembro", B: "7", C: "Quinta-feira", D: "20:50 - 22:30", E: "TADS - 2023", F: "Banco de Dados I - Prof. Ana Paula"},
             {A: "Agosto", B: "10", C: "Segunda-feira", D: "07:30 - 09:10", E: "Agropecuária Integrado - 2024", F: "Matemática I - Prof. Carlos Souza"}
         ];
+
+        // Mapeamento das colunas CSV para as chaves internas (A, B, C, D, E, F)
+        const CSV_COLUMNS = ['A', 'B', 'C', 'D', 'E', 'F']; 
+        
+        // Delimitador padrão: PONTO E VÍRGULA (;)
+        const CSV_DELIMITER = ';'; 
 
         // =========================================================================
         // 2. VARIÁVEIS DE ESTADO E REFERÊNCIAS DOM
@@ -173,6 +179,47 @@
         // =========================================================================
 
         /**
+         * Converte o texto RAW de um CSV em uma array de objetos.
+         */
+        function parseCSV(csvText) {
+            // 1. Normaliza as quebras de linha e remove colchetes (se ainda existirem)
+            const normalizedText = csvText
+                .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+                .replace(/\[|\]/g, ''); 
+            
+            const lines = normalizedText.split('\n').filter(line => line.trim() !== '');
+            
+            if (lines.length <= 1) { 
+                console.warn("CSV PARSER: O arquivo não contém linhas de dados válidas (apenas o cabeçalho ou está vazio).");
+                return [];
+            }
+
+            // IGNORA A PRIMEIRA LINHA (CABECALHO)
+            const dataLines = lines.slice(1); 
+            const dataArray = [];
+
+            for (const line of dataLines) {
+                // Divide a linha pelo delimitador.
+                const values = line.split(CSV_DELIMITER);
+                
+                const trimmedValues = values.map(v => (v || '').trim());
+                
+                if (trimmedValues.length < CSV_COLUMNS.length) {
+                    console.warn(`CSV PARSER WARNING: Linha ignorada por número incorreto de colunas. Linha: ${line.substring(0, 100)}...`);
+                    continue;
+                }
+
+                const dataObject = {};
+                for (let i = 0; i < CSV_COLUMNS.length; i++) {
+                    dataObject[CSV_COLUMNS[i]] = trimmedValues[i]; 
+                }
+                dataArray.push(dataObject);
+            }
+            console.log(`CSV PARSER SUCESSO: Foram analisadas ${dataArray.length} linhas de dados válidas.`);
+            return dataArray;
+        }
+
+        /**
          * Gera um ID seguro para uso como chave.
          */
         function generateId(name) {
@@ -180,137 +227,157 @@
         }
         
         /**
-         * Carrega os dados do Gist (URL RAW) para o ano especificado.
-         * @param {string} year - O ano para o qual carregar os dados.
+         * Carrega os dados do Gist (URL RAW) para o ano especificado com retries (backoff).
          */
-        async function loadDataFromGist(year) {
+        async function loadDataFromGist(year, retries = 3, delay = 1000) {
             const url = GIST_URLS[year];
+            
             if (!url || url.includes('placeholder')) {
-                showFeedback(`URL do Gist para ${year} não configurada. Usando dados de exemplo.`, 'bg-red-100 text-red-800');
+                showFeedback(`URL do Gist para ${year} não configurada. Usando dados de exemplo (Fallback).`, 'bg-red-100 text-red-800');
+                loadingIndicator.classList.add('hidden');
+                filterArea.classList.remove('hidden');
+                exportArea.classList.remove('hidden');
                 processAndRenderData(fallbackScheduleData);
                 return;
             }
 
-            loadingIndicator.textContent = `A carregar horários para o ano ${year}...`;
+            loadingIndicator.textContent = `A carregar horários para o ano ${year} (Tentativa 1/${retries})...`;
             turmaSelect.disabled = true;
             disciplinaSelect.disabled = true;
             exportPdfBtn.disabled = true;
-            
-            try {
-                const response = await fetch(url);
 
-                if (!response.ok) {
-                    throw new Error(`Erro de rede ao carregar o Gist para ${year}. Status: ${response.statusText}`);
-                }
-
-                const rawText = await response.text();
-                
-                let rawDataArray;
+            for (let i = 0; i < retries; i++) {
                 try {
-                    // Tenta analisar o texto bruto como JSON
-                    rawDataArray = JSON.parse(rawText);
-                    if (!Array.isArray(rawDataArray)) {
-                        throw new Error("O Gist não contém uma array JSON válida.");
+                    loadingIndicator.textContent = `A carregar horários para o ano ${year} (Tentativa ${i + 1}/${retries})...`;
+                    
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        // Se for um erro 404/403, não faz retry, apenas falha
+                        if (response.status === 404 || response.status === 403) {
+                             throw new Error(`Erro: O recurso na URL (${url}) retornou status ${response.status}. Verifique se o link está ativo e é a versão RAW.`);
+                        }
+                        // Para outros erros (ex: 500, network issues), continua o retry
+                        throw new Error(`Erro de rede: Status ${response.status}.`);
                     }
-                } catch (e) {
-                    console.error("ERRO CRÍTICO: Falha ao analisar JSON.", e);
-                    throw new Error("O Gist tem um formato JSON inválido. Não é possível ler os dados.");
+
+                    const rawText = await response.text();
+                    
+                    let rawDataArray;
+                    try {
+                        rawDataArray = parseCSV(rawText);
+                        if (rawDataArray.length === 0) {
+                            throw new Error(`O arquivo CSV/TXT está vazio ou o formato/delimitador ("${CSV_DELIMITER}") está incorreto.`);
+                        }
+                    } catch (e) {
+                        console.error("ERRO CRÍTICO: Falha ao analisar CSV.", e);
+                        throw new Error("O Gist tem um formato CSV inválido ou não contém dados válidos.");
+                    }
+
+                    processAndRenderData(rawDataArray);
+                    return; // Sucesso, sai da função
+                    
+                } catch (error) {
+                    // Não loga erros no console durante o backoff para evitar poluição
+                    // console.error(`Tentativa ${i + 1} falhou para carregar dados de ${year}: ${error.message}`); 
+                    if (i === retries - 1) {
+                        // Última tentativa falhou
+                        throw error;
+                    }
+                    // Espera antes de tentar novamente
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
                 }
-
-                console.log(`DEBUG: Total de ${rawDataArray.length} objetos JSON lidos para ${year}.`);
-                processAndRenderData(rawDataArray);
-
-            } catch (error) {
-                console.error(`ERRO CRÍTICO: Erro ao carregar dados do Gist para ${year}. Usando dados de fallback.`, error);
-                showFeedback(`Erro ao carregar Gist para ${year}. Usando dados de exemplo.`, 'bg-red-100 text-red-800');
-                // Usa dados de fallback em caso de falha
-                processAndRenderData(fallbackScheduleData);
             }
+
+            // Se o loop de retries falhar completamente
+            console.error(`Todas as ${retries} tentativas falharam. Usando dados de fallback.`);
+            showFeedback(`Erro crítico ao carregar a URL do Gist (${url}). Todas as tentativas falharam. Usando dados de exemplo (Fallback).`, 'bg-red-100 text-red-800');
+            loadingIndicator.classList.add('hidden');
+            filterArea.classList.remove('hidden');
+            exportArea.classList.remove('hidden');
+            processAndRenderData(fallbackScheduleData);
         }
-        
+
         /**
-         * Processa a lista de objetos JSON para a estrutura hierárquica Turma > Disciplina > Horário.
-         * Extrai o nome do professor da coluna F.
+         * Processa a lista de objetos (agora vindos do CSV) para a estrutura hierárquica 
+         * Turma > Disciplina > Professor > Horário.
          */
         function processAndRenderData(dataArray) {
             const data = {};
             
-            // Lógica para pular a linha de cabeçalho JSON (se existir)
-            let processedItems = [...dataArray];
-            if (processedItems.length > 0 && processedItems[0].A === 'mês' && processedItems[0].F === 'disciplina') {
-                processedItems.shift(); 
-            }
-
-            processedItems.forEach((item, index) => {
-                // Mapeamento de JSON: A=Mês, B=Dia do Mês, C=Dia da Semana, D=Horário, E=Turma, F=Disciplina e Professor
+            dataArray.forEach((item) => {
+                // Mapeamento: A=Mês, B=Dia do Mês, C=Dia da Semana, D=Horário, E=Turma, F=Disciplina + Professor (UNIDOS)
                 const turmaName = item.E?.toString().trim();
-                const fullDisciplineString = item.F?.toString().trim();
+                const combinedDisciplineProfessor = item.F?.toString().trim(); 
                 const month = item.A?.toString().trim();
                 const dayOfMonth = item.B;
                 const dayOfWeek = item.C?.toString().trim();
                 const time = item.D?.toString().trim();
 
-                // --- NOVA LÓGICA DE EXTRAÇÃO ---
-                let disciplineName = fullDisciplineString;
-                let professorName = "Não Informado";
-                
-                // Tenta separar a Disciplina do Professor usando " - " como delimitador comum
-                const parts = fullDisciplineString.split(' - ').map(p => p.trim()).filter(p => p.length > 0);
-                
-                if (parts.length >= 2) {
-                    // Assume que a disciplina é o primeiro elemento e o professor é o último
-                    disciplineName = parts[0]; 
-                    professorName = parts[parts.length - 1]; // Pega o último pedaço como Professor
-                } else {
-                    // Se não houver o delimitador, usa o nome completo como disciplina e sinaliza a ausência do professor
-                    disciplineName = fullDisciplineString;
-                    professorName = "Não Informado (Formato Inválido)";
-                }
+                // LÓGICA DE SEPARAÇÃO DA COLUNA F (Disciplina - Professor)
+                let disciplineName = 'Disciplina Não Informada';
+                let professorName = 'Professor(a) Desconhecido(a)';
 
+                if (combinedDisciplineProfessor) {
+                    const hyphenIndex = combinedDisciplineProfessor.indexOf('-');
+                    
+                    if (hyphenIndex !== -1) {
+                        disciplineName = combinedDisciplineProfessor.substring(0, hyphenIndex).trim();
+                        professorName = combinedDisciplineProfessor.substring(hyphenIndex + 1).trim();
+                    } else {
+                        disciplineName = combinedDisciplineProfessor;
+                    }
+                }
+                
                 // Verifica se os campos essenciais existem
-                if (!turmaName || !disciplineName || !month || !dayOfWeek || !time || isNaN(parseInt(dayOfMonth, 10))) {
-                    console.warn(`DEBUG WARNING: Objeto JSON incompleto ou inválido na Posição ${index + 1}. Item (F: ${fullDisciplineString}):`, item);
+                const parsedDayOfMonth = parseInt(dayOfMonth, 10);
+                if (!turmaName || !disciplineName || !month || !dayOfWeek || !time || isNaN(parsedDayOfMonth)) {
                     return; 
                 }
                 
                 const turmaId = generateId(turmaName);
-                const disciplinaId = generateId(disciplineName); // ID baseado no nome da disciplina extraído
+                const disciplinaId = generateId(disciplineName);
+                const professorId = generateId(professorName); // ID para o professor
 
-                // 1. Inicializa a Turma se não existir
+                // 1. Inicializa a Turma
                 if (!data[turmaId]) {
-                    data[turmaId] = {
-                        name: turmaName,
-                        disciplines: {}
-                    };
+                    data[turmaId] = { name: turmaName, disciplines: {} };
                 }
 
-                // 2. Inicializa a Disciplina se não existir
+                // 2. Inicializa a Disciplina
                 if (!data[turmaId].disciplines[disciplinaId]) {
                     data[turmaId].disciplines[disciplinaId] = {
-                        name: disciplineName, // Usa o nome puro da disciplina para o filtro
-                        schedule: []
+                        name: disciplineName,
+                        professors: {} // NOVA CAMADA: Agrupa por Professor
+                    };
+                }
+                
+                // 3. Inicializa o Professor
+                const discipline = data[turmaId].disciplines[disciplinaId];
+                if (!discipline.professors[professorId]) {
+                    discipline.professors[professorId] = {
+                        name: professorName,
+                        schedule: [] // O Horário está agora aqui
                     };
                 }
 
-                // 3. Adiciona o horário
-                data[turmaId].disciplines[disciplinaId].schedule.push({
+                // 4. Adiciona o horário (SEM O CAMPO 'professor' redundante)
+                discipline.professors[professorId].schedule.push({
                     month: month,
-                    dayOfMonth: parseInt(dayOfMonth, 10),
+                    dayOfMonth: parsedDayOfMonth,
                     dayOfWeek: dayOfWeek,
-                    time: time,
-                    professor: professorName // Armazena o professor extraído
+                    time: time
                 });
             });
 
             processedData = data;
             
-            // Re-renderiza a UI
             populateTurmaSelect();
             
-            // Esconde o indicador de carregamento e mostra os filtros
             loadingIndicator.classList.add('hidden');
             filterArea.classList.remove('hidden');
             exportArea.classList.remove('hidden');
+            showFeedback('Dados processados com sucesso. Selecione uma Turma.', 'bg-green-100 text-green-800');
         }
 
 
@@ -319,13 +386,13 @@
         // =========================================================================
         
         function initApp() {
-            // Preenche o rodapé com a data atual
             dataRelatorioSpan.textContent = new Date().toLocaleDateString('pt-BR');
 
             // 1. Adiciona listeners
             yearSelect.addEventListener('change', handleYearChange);
             turmaSelect.addEventListener('change', handleTurmaChange);
             disciplinaSelect.addEventListener('change', handleDisciplinaChange);
+            // Listener de professor removido, pois a filtragem para na disciplina
             exportPdfBtn.addEventListener('click', exportReportToPdf);
             
             // 2. Preenche o seletor de ano
@@ -346,7 +413,6 @@
                 yearSelect.appendChild(option);
             });
             
-            // Define o ano padrão
             yearSelect.value = DEFAULT_YEAR;
         }
 
@@ -354,28 +420,27 @@
             const selectedYear = event.target.value;
             currentYear = selectedYear;
             
-            // Limpa as seleções dependentes e a tabela
+            // Limpa todas as seleções dependentes
             turmaSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
             disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
             renderTable([]);
             
-            // Dispara o carregamento do novo Gist
             loadDataFromGist(selectedYear);
         }
         
         function populateTurmaSelect() {
             const currentTurmaValue = turmaSelect.value;
             
-            // Limpa e desabilita o botão
+            // Limpa e desabilita os seletores dependentes
             disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
             disciplinaSelect.disabled = true;
             disciplinaSelect.classList.add('bg-gray-100');
+            // Seletor de professor foi removido
+
             exportPdfBtn.disabled = true;
             
-            // Limpa as opções atuais do select de turmas (exceto a primeira)
             turmaSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
             
-            // Preenche o dropdown de Turmas
             for (const key in processedData) {
                 const option = document.createElement('option');
                 option.value = key;
@@ -383,7 +448,6 @@
                 turmaSelect.appendChild(option);
             }
             
-            // Habilita o select de turmas se houver dados
             if (Object.keys(processedData).length > 0) {
                 turmaSelect.disabled = false;
                 turmaSelect.classList.remove('bg-gray-100');
@@ -393,13 +457,15 @@
                 renderTable([]);
             }
             
-            // Tenta restaurar a seleção (se os dados para o novo ano tiverem a mesma turma)
             if (currentTurmaValue && processedData[currentTurmaValue]) {
                 turmaSelect.value = currentTurmaValue;
                 handleTurmaChange({ target: { value: currentTurmaValue } });
             }
         }
 
+        /**
+         * Lida com a mudança da Turma, populando as Disciplinas.
+         */
         function handleTurmaChange(event) {
             const selectedTurma = event.target.value;
             
@@ -416,7 +482,7 @@
                 for (const key in disciplines) {
                     const option = document.createElement('option');
                     option.value = key;
-                    option.textContent = disciplines[key].name; // Usa o nome puro da disciplina
+                    option.textContent = disciplines[key].name;
                     disciplinaSelect.appendChild(option);
                 }
                 
@@ -425,27 +491,62 @@
             }
         }
 
+        /**
+         * Lida com a mudança da Disciplina, agregando e exibindo os horários de todos os professores.
+         */
         function handleDisciplinaChange(event) {
             const selectedTurma = turmaSelect.value;
             const selectedDiscipline = event.target.value;
             
             currentSchedule = [];
             exportPdfBtn.disabled = true;
+            renderTable([]);
 
             if (selectedTurma && selectedDiscipline) {
-                const schedule = processedData[selectedTurma].disciplines[selectedDiscipline].schedule;
-                currentSchedule = schedule;
-                renderTable(schedule);
-                exportPdfBtn.disabled = schedule.length === 0;
-            } else {
-                renderTable([]);
+                const disciplineData = processedData[selectedTurma].disciplines[selectedDiscipline];
+                
+                // 1. Itera sobre todos os professores desta disciplina
+                for (const professorId in disciplineData.professors) {
+                    const professor = disciplineData.professors[professorId];
+                    
+                    // 2. Para cada professor, anexa o nome dele a cada item de horário
+                    const schedulesWithProfessor = professor.schedule.map(item => ({
+                        ...item,
+                        professorName: professor.name // Adiciona o nome do professor ao objeto de horário
+                    }));
+                    
+                    // 3. Adiciona os horários processados ao agendamento principal
+                    currentSchedule.push(...schedulesWithProfessor);
+                }
+                
+                // Exibe a tabela com o horário agregado
+                renderTable(currentSchedule);
+                exportPdfBtn.disabled = currentSchedule.length === 0;
             }
         }
+        
+        // A função handleProfessorChange foi removida, pois a filtragem termina na disciplina.
 
         function renderTable(schedule) {
             tableBody.innerHTML = '';
             
+            // O nome do professor é extraído de cada item do 'schedule'
+
             if (schedule && schedule.length > 0) {
+                schedule.sort((a, b) => {
+                    // Lógica de ordenação: por Mês e Dia do Mês
+                    const monthOrder = {
+                        "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, 
+                        "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, 
+                        "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12
+                    };
+                    const monthA = monthOrder[a.month] || 0;
+                    const monthB = monthOrder[b.month] || 0;
+
+                    if (monthA !== monthB) return monthA - monthB;
+                    return a.dayOfMonth - b.dayOfMonth;
+                });
+
                 schedule.forEach((item, index) => {
                     const row = tableBody.insertRow();
                     row.classList.add('hover:bg-gray-50', index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
@@ -454,7 +555,8 @@
                     row.insertCell().textContent = item.dayOfMonth;
                     row.insertCell().textContent = item.dayOfWeek;
                     row.insertCell().textContent = item.time;
-                    row.insertCell().textContent = item.professor; // Usa o Professor extraído
+                    // Usa o nome do professor armazenado no próprio item (adicionado em handleDisciplinaChange)
+                    row.insertCell().textContent = item.professorName; 
                     
                     Array.from(row.cells).forEach(cell => {
                         cell.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-900');
@@ -467,9 +569,8 @@
                 cell.colSpan = 5; 
                 cell.classList.add('px-6', 'py-4', 'text-center', 'text-sm', 'text-gray-500', 'italic');
                 
-                cell.textContent = turmaSelect.value 
-                    ? 'Nenhum horário encontrado para a disciplina selecionada.' 
-                    : 'Selecione a turma e a disciplina.';
+                // Mensagem atualizada para o novo fluxo
+                cell.textContent = 'Selecione a turma e a disciplina para ver os horários.';
                 
                 totalDiasSpan.textContent = 0;
             }
@@ -480,8 +581,9 @@
          */
         async function exportReportToPdf() {
             
+            // Nova verificação
             if (!disciplinaSelect.value) {
-                showFeedback('Selecione uma Turma e uma Disciplina antes de exportar.', 'bg-red-100 text-red-800');
+                showFeedback('Selecione uma Turma e Disciplina antes de exportar.', 'bg-red-100 text-red-800');
                 return;
             }
 
@@ -500,8 +602,8 @@
             const selectedDisciplinaText = disciplinaSelect.options[disciplinaSelect.selectedIndex].text;
             const totalDiasText = totalDiasSpan.textContent;
             
-            // Tenta obter o nome do professor principal (do primeiro registro, pois a disciplina é única)
-            const professorPrincipal = currentSchedule.length > 0 ? currentSchedule[0].professor : 'N/A';
+            // Lista todos os professores envolvidos
+            const professorNames = Array.from(new Set(currentSchedule.map(item => item.professorName))).join(' / ');
 
 
             const addCenteredText = (text, size, style = 'normal') => {
@@ -523,28 +625,29 @@
             y += 10;
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            doc.text(`Relatório de Horários de Aula - Ano ${selectedYearText}`, margin, y);
+            doc.text(`Relatório de Horários de Aula (Disciplina Agregada) - Ano ${selectedYearText}`, margin, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
             doc.text(`Turma: ${selectedTurmaText}`, margin, y);
             y += 5;
             doc.text(`Disciplina: ${selectedDisciplinaText}`, margin, y);
             y += 5;
-            doc.text(`Professor: ${professorPrincipal}`, margin, y); // Inclui o professor no cabeçalho do relatório
+            // Lista os professores envolvidos no cabeçalho
+            doc.text(`Professores Envolvidos: ${professorNames}`, margin, y); 
             y += 5;
-            doc.text(`Total de Dias de Aula: ${totalDiasText}`, margin, y);
+            doc.text(`Total de Dias de Aula (para a Disciplina): ${totalDiasText}`, margin, y);
             y += 10;
             
-            // Cabeçalho da tabela do PDF (sem a coluna de disciplina, pois é a mesma para todas as linhas)
+            // Cabeçalho da tabela do PDF
             const headers = [["Mês", "Dia do Mês", "Dia da Semana", "Horário da Aula", "Professor"]]; 
             
-            // Dados da tabela do PDF
+            // Dados da tabela do PDF: usa item.professorName
             const data = currentSchedule.map(item => [
                 item.month, 
                 item.dayOfMonth.toString(), 
                 item.dayOfWeek, 
                 item.time,
-                item.professor // Usa o Professor extraído
+                item.professorName // Usa o nome do professor da linha específica
             ]);
 
             doc.autoTable({
@@ -565,7 +668,7 @@
                 }
             });
 
-            const fileName = `Relatorio_${selectedYearText}_${selectedTurmaText.replace(/\s/g, '_')}_${selectedDisciplinaText.replace(/\s/g, '_')}.pdf`;
+            const fileName = `Relatorio_${selectedYearText}_${selectedTurmaText.replace(/\s/g, '_')}_${selectedDisciplinaText.replace(/\s/g, '_')}_Agregado.pdf`;
             doc.save(fileName);
 
             exportPdfBtn.disabled = false;
@@ -583,7 +686,7 @@
             
             setTimeout(() => {
                 feedbackMessage.classList.add('hidden');
-            }, 3000);
+            }, 5000); 
         }
 
         // Inicializa a aplicação ao carregar a página
