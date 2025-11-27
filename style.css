@@ -136,7 +136,7 @@
             '2030': 'https://placeholder.com/2030_gist_url_csv'  
         };
         
-        const DEFAULT_YEAR = '2026';
+        const DEFAULT_YEAR = '2025';
 
         // Estrutura de Fallback (para testes se o Gist falhar)
         const fallbackScheduleData = [
