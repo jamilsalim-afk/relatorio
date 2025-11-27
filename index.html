@@ -128,7 +128,6 @@
         const GIST_URLS = {
             '2025': 'https://gist.githubusercontent.com/jamilsalim-afk/5267c51cbe267bf1be19f89b481d4991/raw/98ecf9c281a99b846e8d03900026af13a71ffd0e/2025.csv', 
             // URL configurada como RAW (crua) do Gist
-            // NOVO LINK PARA 2026:
             '2026': 'https://gist.githubusercontent.com/jamilsalim-afk/9190f1ffef7618a7ccd8d2b82adb6b9e/raw/8c9680d8a4a623e634998f8a539f7e5ad9b3129a/gistfile1.csv',
             '2027': 'https://placeholder.com/2027_gist_url_csv', 
             '2028': 'https://placeholder.com/2028_gist_url_csv', 
@@ -136,7 +135,7 @@
             '2030': 'https://placeholder.com/2030_gist_url_csv'  
         };
         
-        const DEFAULT_YEAR = '2025';
+        const DEFAULT_YEAR = '2026';
 
         // Estrutura de Fallback (para testes se o Gist falhar)
         const fallbackScheduleData = [
@@ -479,12 +478,29 @@
             if (selectedTurma && processedData[selectedTurma]) {
                 const disciplines = processedData[selectedTurma].disciplines;
                 
-                for (const key in disciplines) {
+                // --- INÍCIO DA LÓGICA DE ORDENAÇÃO ALFABÉTICA ---
+
+                // 1. Obtém as chaves (IDs) das disciplinas
+                const disciplineKeys = Object.keys(disciplines);
+                
+                // 2. Ordena as chaves com base no nome da disciplina (case-insensitive)
+                disciplineKeys.sort((keyA, keyB) => {
+                    const nameA = disciplines[keyA].name.toUpperCase();
+                    const nameB = disciplines[keyB].name.toUpperCase();
+                    if (nameA < nameB) return -1;
+                    if (nameA > nameB) return 1;
+                    return 0;
+                });
+                
+                // 3. Itera sobre as chaves ordenadas para criar as opções
+                for (const key of disciplineKeys) {
                     const option = document.createElement('option');
                     option.value = key;
                     option.textContent = disciplines[key].name;
                     disciplinaSelect.appendChild(option);
                 }
+                
+                // --- FIM DA LÓGICA DE ORDENAÇÃO ALFABÉTICA ---
                 
                 disciplinaSelect.disabled = false;
                 disciplinaSelect.classList.remove('bg-gray-100');
