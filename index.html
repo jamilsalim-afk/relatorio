@@ -574,12 +574,12 @@
             // Atualiza os seletores de ambas as abas
             populateTurmaSelect();
             populateTurmaProfessorSelect();
+            populateProfessoresGrade();
             
             loadingIndicator.classList.add('hidden');
             filterAreaDisciplina.classList.remove('hidden');
             showFeedback('Dados processados com sucesso. Selecione uma Turma.', 'bg-green-100 text-green-800');
         }
-            populateProfessoresGrade();
 
         // =========================================================================
         // 4. FUNÇÕES DE LÓGICA (UI) E ABAS
