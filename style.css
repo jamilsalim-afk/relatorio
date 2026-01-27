@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -575,6 +574,7 @@
             // Atualiza os seletores de ambas as abas
             populateTurmaSelect();
             populateTurmaProfessorSelect();
+            populateProfessoresGrade();                                                                                            
             
             loadingIndicator.classList.add('hidden');
             filterAreaDisciplina.classList.remove('hidden');
