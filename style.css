@@ -1323,10 +1323,13 @@ function getNumeroSemana(data) {
 // FORÇAR ATRIBUIÇÃO DO BOTÃO AO CARREGAR A PÁGINA
 // FORÇAR A FUNÇÃO PARA O ESCOPO GLOBAL
 window.gerarGradeSemanal = function() {
+    console.log("Iniciando geração da grade...");
+    
     const elProf = document.getElementById('selectProfSemanal');
     const elSemana = document.getElementById('inputSemana');
     const elResult = document.getElementById('gradeSemanalResult');
 
+    if (!elProf || !elSemana || !elResult) return;
     if (!elProf.value || !elSemana.value) {
         alert("Por favor, selecione o professor e a semana.");
         return;
@@ -1335,10 +1338,24 @@ window.gerarGradeSemanal = function() {
     const [ano, sem] = elSemana.value.split('-W').map(Number);
     const database = typeof processedData !== 'undefined' ? processedData : null;
     
-    // Função para pegar as datas (conforme explicado antes)
-    const mapaDatas = getDatesOfWeek(ano, sem);
+    // --- FUNÇÃO AUXILIAR EMBUTIDA (PARA EVITAR O ERRO DE DEFINIÇÃO) ---
+    const calcularDatasDaSemana = (y, w) => {
+        let d = new Date(y, 0, 1);
+        let dayNum = d.getDay() || 7;
+        let diff = (w - 1) * 7 + (1 - dayNum);
+        let monday = new Date(y, 0, 1 + diff);
+        let m = {};
+        ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"].forEach((nome, i) => {
+            let dt = new Date(monday);
+            dt.setDate(monday.getDate() + i);
+            m[nome] = { dia: dt.getDate(), mes: dt.getMonth() };
+        });
+        return m;
+    };
+
+    const mapaDatas = calcularDatasDaSemana(ano, sem);
     
-    // Horários atualizados conforme sua solicitação
+    // Horários com Intervalos conforme solicitado
     const listaHorarios = [
         {h: "07:30 - 08:20", t: "aula"}, {h: "08:20 - 09:10", t: "aula"},
         {h: "09:10 a 09:30 - INTERVALO", t: "pausa"},
@@ -1353,14 +1370,15 @@ window.gerarGradeSemanal = function() {
         {h: "20:50 - 21:40", t: "aula"}, {h: "21:40 - 22:30", t: "aula"}
     ];
 
-    // Gerando a tabela com largura fixa para não encolher
-    let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 bg-white shadow-xl mb-10" style="width: 100%; min-width: 900px; table-layout: fixed;">
+    const mesesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
+
+    let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 bg-white shadow-xl mx-auto" style="width: 100%; min-width: 800px; table-layout: fixed;">
         <thead>
             <tr class="bg-green-700 text-white">
-                <th class="border border-gray-300 p-3 w-40 text-sm">HORÁRIO</th>
+                <th class="border border-gray-300 p-2 w-32 text-[10px]">HORÁRIO</th>
                 ${Object.keys(mapaDatas).map(d => `
-                    <th class="border border-gray-300 p-2 text-sm uppercase">
-                        ${d}<br><span class="text-[10px] font-normal">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span>
+                    <th class="border border-gray-300 p-1 text-[10px] uppercase">
+                        ${d}<br><span class="text-[9px] font-normal">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span>
                     </th>`).join('')}
             </tr>
         </thead><tbody>`;
@@ -1368,58 +1386,52 @@ window.gerarGradeSemanal = function() {
     listaHorarios.forEach(slot => {
         if (slot.t === "pausa") {
             html += `<tr class="bg-gray-100 text-gray-500 font-bold italic">
-                <td class="border border-gray-300 p-2 text-[10px] text-center">${slot.h}</td>
-                <td colspan="6" class="border border-gray-300 p-2 text-center tracking-[0.5em] text-[10px]">PAUSA</td>
+                <td class="border border-gray-300 p-1 text-[9px] text-center">${slot.h}</td>
+                <td colspan="6" class="border border-gray-300 p-1 text-center tracking-[0.3em] text-[9px]">PAUSA PROGRAMADA</td>
             </tr>`;
         } else {
-            html += `<tr style="height: 80px;">
-                <td class="border border-gray-300 p-2 font-bold bg-gray-50 text-center text-xs">${slot.h}</td>`;
+            html += `<tr style="height: 65px;">
+                <td class="border border-gray-300 p-1 font-bold bg-gray-50 text-center text-[9px]">${slot.h}</td>`;
                 
             Object.keys(mapaDatas).forEach(dia => {
                 const infoDia = mapaDatas[dia];
-                let conteudo = buscarAula(elProf.value, infoDia.dia, infoDia.mes, slot.h.substring(0,5), database);
-                html += `<td class="border border-gray-300 p-2 align-middle text-center">${conteudo}</td>`;
+                let aulasHtml = "";
+                let jaAdd = new Set();
+                
+                if(database) {
+                    for (let t in database) {
+                        for (let d in database[t].disciplines) {
+                            let disc = database[t].disciplines[d];
+                            disc.professors.forEach(p => {
+                                if (p.name.replace(/\(.*\)/g, '').trim() === elProf.value) {
+                                    p.schedule.forEach(a => {
+                                        let mIdx = mesesNomes.indexOf(a.month.toLowerCase().trim());
+                                        if (mIdx === 12) mIdx = 2;
+                                        if (a.dayOfMonth === infoDia.dia && mIdx === infoDia.mes && a.time.startsWith(slot.h.substring(0,5))) {
+                                            let chave = `${disc.name}-${t}`;
+                                            if (!jaAdd.has(chave)) {
+                                                jaAdd.add(chave);
+                                                aulasHtml += `<div class="bg-green-50 border border-green-200 p-1 rounded mb-1">
+                                                    <div class="font-bold text-green-900 text-[9px] leading-tight">${disc.name}</div>
+                                                    <div class="text-[8px] text-green-700 italic">${database[t].name}</div>
+                                                </div>`;
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+                html += `<td class="border border-gray-300 p-1 align-middle text-center">${aulasHtml}</td>`;
             });
             html += `</tr>`;
         }
     });
 
     elResult.innerHTML = html + "</tbody></table>";
+    console.log("Grade gerada com sucesso!");
 };
-
-// Função auxiliar para organizar a busca e evitar repetição
-function buscarAula(profNome, dia, mes, hora, db) {
-    let htmlRetorno = "";
-    let jaAdd = new Set();
-    const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
-
-    for (let t in db) {
-        for (let d in db[t].disciplines) {
-            let disc = db[t].disciplines[d];
-            disc.professors.forEach(p => {
-                if (p.name.includes(profNome)) {
-                    p.schedule.forEach(a => {
-                        let mIdx = meses.indexOf(a.month.toLowerCase().trim());
-                        if (mIdx === 12) mIdx = 2;
-                        
-                        if (a.dayOfMonth === dia && mIdx === mes && a.time.startsWith(hora)) {
-                            let chave = `${disc.name}-${t}`;
-                            if (!jaAdd.has(chave)) {
-                                jaAdd.add(chave);
-                                htmlRetorno += `
-                                    <div class="bg-green-50 border border-green-200 p-2 rounded shadow-sm text-center">
-                                        <div class="font-bold text-green-900 text-[10px] uppercase leading-tight">${disc.name}</div>
-                                        <div class="text-[9px] text-green-700 mt-1 italic">${db[t].name}</div>
-                                    </div>`;
-                            }
-                        }
-                    });
-                }
-            });
-        }
-    }
-    return htmlRetorno;
-}
 window.exportarGradeSemanalPDF = function() {
     const { jsPDF } = window.jspdf;
     // Alterado para 'p' (portrait/retrato)
