@@ -59,7 +59,7 @@
             <button id="btn-professores" data-tab="tab-professores" class="tab-btn px-6 py-3 text-base text-gray-600 hover:text-ifro-primary transition duration-150 ease-in-out focus:outline-none">
                 Consulta por Turma
             </button>
-            <button data-tab="tab-semanal" class="tab-btn px-6 py-3 text-sm font-medium text-gray-600 hover:text-ifro-primary hover:border-ifro-primary transition-all duration-200">
+            <button data-tab="tab-semanal" class="tab-btn px-6 py-3 text-base text-gray-600 hover:text-ifro-primary transition duration-150 ease-in-out focus:outline-none">
     Grade Semanal
 </button>
         </nav>
