@@ -218,37 +218,38 @@
             </div>
               <!-- ABA 3: RELATÓRIO PROFESSOR SAMANAL (Implementado como Tabela Pivô) -->
 <div id="tab-semanal" class="tab-pane hidden animate-fadeIn">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-            <span class="w-2 h-6 bg-ifro-primary rounded-full mr-3"></span>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 w-full">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center">
+            <span class="w-2 h-6 bg-green-600 rounded-full mr-3"></span>
             Grade Semanal por Professor
         </h3>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-gray-50 p-6 rounded-xl border border-gray-100">
             <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Professor</label>
-                <select id="selectProfSemanal" class="w-full p-2.5 bg-white border border-gray-300 rounded-lg outline-none text-sm"></select>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Professor</label>
+                <select id="selectProfSemanal" class="w-full p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-green-500 shadow-sm"></select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Escolha a Semana</label>
-                <input type="week" id="inputSemana" class="w-full p-2.5 bg-white border border-gray-300 rounded-lg outline-none text-sm">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Escolha a Semana</label>
+                <input type="week" id="inputSemana" class="w-full p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-green-500 shadow-sm">
             </div>
-            <div class="flex flex-col md:flex-row gap-2 items-end">
-   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 mb-8">
-    <button onclick="gerarGradeSemanal()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center text-lg">
-        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-        Gerar Grade Semanal
-    </button>
-    
-    <button onclick="exportarGradeSemanalPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center text-lg">
-        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-        Exportar Relatório em PDF
-    </button>
-</div>
+        </div>
 
-<div id="gradeSemanalResult" class="w-full flex justify-center overflow-x-auto mt-6">
-            <div class="text-center py-10 text-gray-400 italic text-sm">
-                Selecione o professor e a semana desejada.
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+            <button onclick="gerarGradeSemanal()" class="flex items-center justify-center p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 text-base">
+                <i class="fas fa-calendar-alt mr-3"></i> Gerar Grade Semanal
+            </button>
+            <button onclick="exportarGradeSemanalPDF()" class="flex items-center justify-center p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 text-base">
+                <i class="fas fa-file-pdf mr-3"></i> Exportar Relatório em PDF
+            </button>
+        </div>
+
+        <div class="w-full overflow-x-auto bg-gray-50 rounded-xl p-2 border border-gray-100 min-h-[400px]">
+            <div id="gradeSemanalResult" class="w-full flex justify-center">
+                <div class="text-center py-20 text-gray-400 italic">
+                    <i class="fas fa-info-circle mb-2 text-2xl"></i><br>
+                    Selecione o professor e a semana para visualizar a grade.
+                </div>
             </div>
         </div>
     </div>
@@ -1326,98 +1327,58 @@ window.gerarGradeSemanal = function() {
     const elSemana = document.getElementById('inputSemana');
     const elResult = document.getElementById('gradeSemanalResult');
 
-    if (!elProf || !elSemana || !elResult) return;
-
-    const profAlvo = elProf.value;
-    const semanaInput = elSemana.value; 
-    if (!profAlvo || !semanaInput) { alert("Selecione o professor e a semana."); return; }
-
-    const [anoAlvo, numSemanaAlvo] = semanaInput.split('-W').map(Number);
-    const database = (typeof processedData !== 'undefined') ? processedData : null;
-    
-    function getDatesOfWeek(year, week) {
-        let d = new Date(year, 0, 1);
-        let dayNum = d.getDay() || 7;
-        let diff = (week - 1) * 7 + (1 - dayNum);
-        let monday = new Date(year, 0, 1 + diff);
-        let map = {};
-        ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"].forEach((nome, i) => {
-            let date = new Date(monday);
-            date.setDate(monday.getDate() + i);
-            map[nome] = { dia: date.getDate(), mes: date.getMonth() };
-        });
-        return map;
+    if (!elProf.value || !elSemana.value) {
+        alert("Por favor, selecione o professor e a semana.");
+        return;
     }
 
-    const mapaDatas = getDatesOfWeek(anoAlvo, numSemanaAlvo);
+    const [ano, sem] = elSemana.value.split('-W').map(Number);
+    const database = typeof processedData !== 'undefined' ? processedData : null;
     
-    // Lista de Horários Atualizada com Intervalos
+    // Função para pegar as datas (conforme explicado antes)
+    const mapaDatas = getDatesOfWeek(ano, sem);
+    
+    // Horários atualizados conforme sua solicitação
     const listaHorarios = [
-        {h: "07:30 - 08:20", tipo: "aula"}, {h: "08:20 - 09:10", tipo: "aula"},
-        {h: "09:10 a 09:30 - INTERVALO", tipo: "pausa"},
-        {h: "09:30 - 10:20", tipo: "aula"}, {h: "10:20 - 11:10", tipo: "aula"}, {h: "11:10 - 12:00", tipo: "aula"},
-        {h: "12:00 a 13:50 - ALMOÇO", tipo: "pausa"},
-        {h: "13:50 - 14:40", tipo: "aula"}, {h: "14:40 - 15:30", tipo: "aula"},
-        {h: "15:30 a 15:50 - INTERVALO", tipo: "pausa"},
-        {h: "15:50 - 16:40", tipo: "aula"}, {h: "16:40 - 17:30", tipo: "aula"}, {h: "17:30 - 18:20", tipo: "aula"},
-        {h: "18:20 a 19:00 - JANTAR", tipo: "pausa"},
-        {h: "19:00 - 19:50", tipo: "aula"}, {h: "19:50 - 20:40", tipo: "aula"},
-        {h: "20:40 a 20:50 - INTERVALO", tipo: "pausa"},
-        {h: "20:50 - 21:40", tipo: "aula"}, {h: "21:40 - 22:30", tipo: "aula"}
+        {h: "07:30 - 08:20", t: "aula"}, {h: "08:20 - 09:10", t: "aula"},
+        {h: "09:10 a 09:30 - INTERVALO", t: "pausa"},
+        {h: "09:30 - 10:20", t: "aula"}, {h: "10:20 - 11:10", t: "aula"}, {h: "11:10 - 12:00", t: "aula"},
+        {h: "12:00 a 13:50 - ALMOÇO", t: "pausa"},
+        {h: "13:50 - 14:40", t: "aula"}, {h: "14:40 - 15:30", t: "aula"},
+        {h: "15:30 a 15:50 - INTERVALO", t: "pausa"},
+        {h: "15:50 - 16:40", t: "aula"}, {h: "16:40 - 17:30", t: "aula"}, {h: "17:30 - 18:20", t: "aula"},
+        {h: "18:20 a 19:00 - JANTAR", t: "pausa"},
+        {h: "19:00 - 19:50", t: "aula"}, {h: "19:50 - 20:40", t: "aula"},
+        {h: "20:40 a 20:50 - INTERVALO", t: "pausa"},
+        {h: "20:50 - 21:40", t: "aula"}, {h: "21:40 - 22:30", t: "aula"}
     ];
 
-    const mesesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
-
-    // Tabela com largura fixa e centralizada
-    let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 text-[10px] bg-white text-center shadow-lg mx-auto" style="width: 1000px; table-layout: fixed;">
+    // Gerando a tabela com largura fixa para não encolher
+    let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 bg-white shadow-xl mb-10" style="width: 100%; min-width: 900px; table-layout: fixed;">
         <thead>
-            <tr class="bg-green-700 text-white font-bold">
-                <th class="border border-gray-300 p-2" style="width: 120px;">HORÁRIO</th>
-                ${Object.keys(mapaDatas).map(d => `<th class="border border-gray-300 p-1" style="width: 146px;">${d.toUpperCase()}<br><span class="font-normal text-[9px]">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span></th>`).join('')}
+            <tr class="bg-green-700 text-white">
+                <th class="border border-gray-300 p-3 w-40 text-sm">HORÁRIO</th>
+                ${Object.keys(mapaDatas).map(d => `
+                    <th class="border border-gray-300 p-2 text-sm uppercase">
+                        ${d}<br><span class="text-[10px] font-normal">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span>
+                    </th>`).join('')}
             </tr>
         </thead><tbody>`;
 
-    listaHorarios.forEach(item => {
-        if (item.tipo === "pausa") {
-            html += `<tr class="bg-gray-200 font-bold text-gray-600">
-                <td class="border border-gray-300 p-1 text-[9px]">${item.h}</td>
-                <td colspan="6" class="border border-gray-300 p-1 tracking-widest uppercase text-[9px]">Pausa Programada</td>
+    listaHorarios.forEach(slot => {
+        if (slot.t === "pausa") {
+            html += `<tr class="bg-gray-100 text-gray-500 font-bold italic">
+                <td class="border border-gray-300 p-2 text-[10px] text-center">${slot.h}</td>
+                <td colspan="6" class="border border-gray-300 p-2 text-center tracking-[0.5em] text-[10px]">PAUSA</td>
             </tr>`;
         } else {
-            html += `<tr><td class="border border-gray-300 p-2 font-bold bg-gray-50 text-[9px] h-16">${item.h}</td>`;
-            Object.keys(mapaDatas).forEach(diaNome => {
-                const dataAlvo = mapaDatas[diaNome];
-                let conteudoCell = "";
-                let disciplinasSet = new Set();
-
-                for (const tId in database) {
-                    for (const dId in database[tId].disciplines) {
-                        const disc = database[tId].disciplines[dId];
-                        for (const pId in disc.professors) {
-                            const prof = disc.professors[pId];
-                            if (prof.name.replace(/\(.*\)/g, '').trim() === profAlvo) {
-                                prof.schedule.forEach(aula => {
-                                    const horaCSV = aula.time.trim().substring(0, 5);
-                                    const horaGrade = item.h.substring(0, 5);
-                                    let mIdx = mesesNomes.indexOf(aula.month.toLowerCase().trim());
-                                    if (mIdx === 12) mIdx = 2;
-
-                                    if (horaCSV === horaGrade && aula.dayOfMonth === dataAlvo.dia && mIdx === dataAlvo.mes) {
-                                        const chave = `${disc.name}-${database[tId].name}`;
-                                        if (!disciplinasSet.has(chave)) {
-                                            disciplinasSet.add(chave);
-                                            conteudoCell += `<div class="bg-green-50 border border-green-200 p-1 rounded shadow-sm mb-1 text-center">
-                                                <div class="font-bold text-gray-800 leading-tight">${disc.name}</div>
-                                                <div class="text-[8px] text-gray-500 uppercase">${database[tId].name}</div>
-                                            </div>`;
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    }
-                }
-                html += `<td class="border border-gray-300 p-1 h-16 align-middle bg-white">${conteudoCell}</td>`;
+            html += `<tr style="height: 80px;">
+                <td class="border border-gray-300 p-2 font-bold bg-gray-50 text-center text-xs">${slot.h}</td>`;
+                
+            Object.keys(mapaDatas).forEach(dia => {
+                const infoDia = mapaDatas[dia];
+                let conteudo = buscarAula(elProf.value, infoDia.dia, infoDia.mes, slot.h.substring(0,5), database);
+                html += `<td class="border border-gray-300 p-2 align-middle text-center">${conteudo}</td>`;
             });
             html += `</tr>`;
         }
@@ -1425,63 +1386,118 @@ window.gerarGradeSemanal = function() {
 
     elResult.innerHTML = html + "</tbody></table>";
 };
+
+// Função auxiliar para organizar a busca e evitar repetição
+function buscarAula(profNome, dia, mes, hora, db) {
+    let htmlRetorno = "";
+    let jaAdd = new Set();
+    const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
+
+    for (let t in db) {
+        for (let d in db[t].disciplines) {
+            let disc = db[t].disciplines[d];
+            disc.professors.forEach(p => {
+                if (p.name.includes(profNome)) {
+                    p.schedule.forEach(a => {
+                        let mIdx = meses.indexOf(a.month.toLowerCase().trim());
+                        if (mIdx === 12) mIdx = 2;
+                        
+                        if (a.dayOfMonth === dia && mIdx === mes && a.time.startsWith(hora)) {
+                            let chave = `${disc.name}-${t}`;
+                            if (!jaAdd.has(chave)) {
+                                jaAdd.add(chave);
+                                htmlRetorno += `
+                                    <div class="bg-green-50 border border-green-200 p-2 rounded shadow-sm text-center">
+                                        <div class="font-bold text-green-900 text-[10px] uppercase leading-tight">${disc.name}</div>
+                                        <div class="text-[9px] text-green-700 mt-1 italic">${db[t].name}</div>
+                                    </div>`;
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+    return htmlRetorno;
+}
 window.exportarGradeSemanalPDF = function() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4');
+    // Alterado para 'p' (portrait/retrato)
+    const doc = new jsPDF('p', 'mm', 'a4'); 
+    
     const prof = document.getElementById('selectProfSemanal').value;
     const semanaRaw = document.getElementById('inputSemana').value;
     const tabela = document.getElementById('tabelaGradeExport');
 
-    if (!tabela) { alert("Gere a grade antes de exportar."); return; }
+    if (!tabela) { 
+        alert("Por favor, gere a grade na tela antes de exportar."); 
+        return; 
+    }
 
     const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Helper para centralizar texto
     const center = (txt, y, sz, style = 'normal') => {
-        doc.setFontSize(sz); doc.setFont('helvetica', style);
-        doc.text(txt, (pageWidth - doc.getTextWidth(txt)) / 2, y);
+        doc.setFontSize(sz); 
+        doc.setFont('helvetica', style);
+        const textWidth = doc.getTextWidth(txt);
+        doc.text(txt, (pageWidth - textWidth) / 2, y);
     };
 
-    // Cabeçalho Oficial
-    center("INSTITUTO FEDERAL DE RONDÔNIA", 15, 14, 'bold');
-    center("CAMPUS CACOAL", 21, 12, 'italic');
-    center("DEPARTAMENTO DE APOIO AO ENSINO", 32, 10);
-    center("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", 38, 10);
+    // --- CABEÇALHO COMPACTO ---
+    center("INSTITUTO FEDERAL DE RONDÔNIA", 12, 11, 'bold');
+    center("CAMPUS CACOAL", 17, 10, 'italic');
+    center("DEPARTAMENTO DE APOIO AO ENSINO", 25, 9);
+    center("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", 30, 9);
 
-    // Info do Professor e Semana
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.text(`Relatório de Grade Semanal - Professor: ${prof}`, 14, 52);
+    // --- INFO DO RELATÓRIO ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(`Grade Semanal - Professor: ${prof}`, 14, 42);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Período: Semana ${semanaRaw.split('-W')[1]} de ${semanaRaw.split('-W')[0]}`, 14, 58);
+    doc.text(`Semana: ${semanaRaw}`, 14, 47);
 
+    // --- GERAÇÃO DA TABELA COMPACTADA ---
     doc.autoTable({
         html: '#tabelaGradeExport',
-        startY: 65,
+        startY: 52,
         theme: 'grid',
+        margin: { left: 10, right: 10, bottom: 10 }, // Margens reduzidas
         styles: {
-            fontSize: 6,
-            cellPadding: 1.5,
+            fontSize: 6,           // Fonte menor para caber em Retrato
+            cellPadding: 0.8,      // Padding interno reduzido
             valign: 'middle',
-            halign: 'center', // CENTRALIZAÇÃO DENTRO DAS CÉLULAS
-            minCellHeight: 12, // ALTURA TRAVADA
-            lineColor: [150, 150, 150]
+            halign: 'center',
+            overflow: 'linebreak',
+            lineWidth: 0.1
         },
         headStyles: {
             fillColor: [21, 128, 61],
             textColor: 255,
-            fontSize: 7,
+            fontSize: 6.5,
             fontStyle: 'bold'
         },
         columnStyles: {
-            0: { cellWidth: 25, fontStyle: 'bold', fillColor: [245, 245, 245] }
+            0: { cellWidth: 22, fontStyle: 'bold', fillColor: [245, 245, 245] }, // Coluna Horário
+            1: { cellWidth: 'auto' },
+            2: { cellWidth: 'auto' },
+            3: { cellWidth: 'auto' },
+            4: { cellWidth: 'auto' },
+            5: { cellWidth: 'auto' },
+            6: { cellWidth: 'auto' }
         },
-        // Remove cores de fundo para impressão limpa, exceto header
+        // Força a centralização de todo o texto dentro das células
         didParseCell: function(data) {
             if (data.cell.raw && data.cell.raw.innerText) {
                 data.cell.text = data.cell.raw.innerText.trim();
             }
-        }
+        },
+        // Ajuste para garantir que caiba em 1 página
+        rowPageBreak: 'avoid'
     });
 
-    doc.save(`Grade_${prof}_${semanaRaw}.pdf`);
+    const fileName = `Grade_Retrato_${prof.replace(/\s+/g, '_')}.pdf`;
+    doc.save(fileName);
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
