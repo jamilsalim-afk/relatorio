@@ -1436,23 +1436,10 @@ window.gerarGradeSemanal = function() {
     }
 
     // Título do Documento
-            const addCenteredText = (text, size, style = 'normal') => {
-                doc.setFont('helvetica', style);
-                doc.setFontSize(size);
-                const textWidth = doc.getStringUnitWidth(text) * size / doc.internal.scaleFactor;
-                const x = (pageWidth - textWidth) / 2;
-                doc.text(text, x, y);
-                y += size * 0.4;
-            };
-
-            y += 5;
             addCenteredText('INSTITUTO FEDERAL DE RONDÔNIA', 14, 'bold');
             addCenteredText('CAMPUS CACOAL', 12, 'italic');
-            y += 5;
             addCenteredText('DEPARTAMENTO DE APOIO AO ENSINO', 10);
             addCenteredText('COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS', 10);
-            
-    y += 10;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text(`Grade Semanal: ${prof}`, 14, 15);
