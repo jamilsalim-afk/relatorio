@@ -186,23 +186,83 @@
         }
 
         // CARREGAMENTO DE DADOS
-        async function loadDataFromGist(year) {
-            showFeedback(`Carregando dados de ${year}...`, 'bg-blue-100 text-blue-800');
-            try {
-                // Simulação de carregamento. Substitua pelo fetch real da sua URL.
-                // const response = await fetch(GIST_URLS[year]);
-                // const csvText = await response.text();
-                // Aqui entraria sua função parseCSV que processa as linhas...
-                
-                // Para este exemplo, deixaremos o processedData vazio até você por a URL real
-                processedData = {}; 
-                populateTurmaSelect();
-                populateTurmaProfessorSelect();
-                updateProfessorsList();
-            } catch (error) {
-                showFeedback('Erro ao carregar dados.', 'bg-red-100 text-red-800');
+       // Esta função faz o trabalho pesado de transformar o CSV bruto na estrutura que o site usa
+async function loadDataFromGist(year) {
+    const url = GIST_URLS[year];
+    if (!url || url.includes("SUA_URL_AQUI")) {
+        showFeedback(`URL do Gist para ${year} não configurada.`, 'bg-red-100 text-red-800');
+        return;
+    }
+
+    showFeedback(`Sincronizando dados de ${year}...`, 'bg-yellow-100 text-yellow-800');
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Falha ao baixar arquivo');
+        const csvText = await response.text();
+        
+        // Limpa os dados antigos antes de processar os novos
+        processedData = {};
+
+        // Divide o CSV em linhas e pula o cabeçalho
+        const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        const rows = lines.slice(1); 
+
+        rows.forEach(line => {
+            // Divide as colunas (ajuste o separador se seu CSV usar ponto-e-vírgula)
+            const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+            
+            if (cols.length < 6) return; // Pula linhas inválidas
+
+            const [mes, diaMes, diaSemana, horario, disciplina, professor, turma] = cols;
+
+            // 1. Cria a Turma se não existir
+            if (!processedData[turma]) {
+                processedData[turma] = { name: turma, disciplines: {} };
             }
-        }
+
+            // 2. Cria a Disciplina dentro da Turma
+            if (!processedData[turma].disciplines[disciplina]) {
+                processedData[turma].disciplines[disciplina] = { name: disciplina, professors: {} };
+            }
+
+            // 3. Cria o Professor dentro da Disciplina
+            if (!processedData[turma].disciplines[disciplina].professors[professor]) {
+                processedData[turma].disciplines[disciplina].professors[professor] = { 
+                    name: professor, 
+                    schedule: [] 
+                };
+            }
+
+            // 4. Verifica se é Recuperação ou Exame
+            const isRec = disciplina.toUpperCase().includes('RECUPERAÇÃO') || 
+                        disciplina.toUpperCase().includes('EXAME') ||
+                        horario.toUpperCase().includes('REC');
+
+            // 5. Adiciona a aula ao cronograma do professor
+            processedData[turma].disciplines[disciplina].professors[professor].schedule.push({
+                month: mes,
+                dayOfMonth: parseInt(diaMes),
+                dayOfWeek: diaSemana,
+                time: horario,
+                isRecuperacao: isRec,
+                disciplineName: disciplina, // Guardamos aqui para a Grade Semanal
+                turmaName: turma            // Guardamos aqui para a Grade Semanal
+            });
+        });
+
+        // Atualiza a interface com os novos dados
+        populateTurmaSelect();
+        populateTurmaProfessorSelect();
+        updateProfessorsList();
+        
+        showFeedback(`Dados de ${year} carregados com sucesso!`, 'bg-green-100 text-green-800');
+
+    } catch (error) {
+        console.error(error);
+        showFeedback('Erro técnico ao processar o CSV. Verifique o console.', 'bg-red-100 text-red-800');
+    }
+}
 
         // LÓGICA DAS ABAS
         function populateTurmaSelect() {
