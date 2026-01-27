@@ -234,18 +234,19 @@
                 <input type="week" id="inputSemana" class="w-full p-2.5 bg-white border border-gray-300 rounded-lg outline-none text-sm">
             </div>
             <div class="flex flex-col md:flex-row gap-2 items-end">
-   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-    <button onclick="gerarGradeSemanal()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-md flex items-center justify-center transition-all">
-        <i class="fas fa-sync-alt mr-2"></i> Gerar Grade Semanal
+   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 mb-8">
+    <button onclick="gerarGradeSemanal()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center text-lg">
+        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+        Gerar Grade Semanal
     </button>
-    <button onclick="exportarGradeSemanalPDF()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-md flex items-center justify-center transition-all">
-        <i class="fas fa-file-pdf mr-2"></i> Exportar Relatório em PDF (Professor)
+    
+    <button onclick="exportarGradeSemanalPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center text-lg">
+        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        Exportar Relatório em PDF
     </button>
 </div>
-        </div>
 
-        <div id="gradeSemanalResult" class="overflow-x-auto rounded-lg border border-gray-200">
+<div id="gradeSemanalResult" class="w-full flex justify-center overflow-x-auto mt-6">
             <div class="text-center py-10 text-gray-400 italic text-sm">
                 Selecione o professor e a semana desejada.
             </div>
@@ -1329,24 +1330,18 @@ window.gerarGradeSemanal = function() {
 
     const profAlvo = elProf.value;
     const semanaInput = elSemana.value; 
-    if (!profAlvo || !semanaInput) {
-        alert("Selecione o professor e a semana.");
-        return;
-    }
+    if (!profAlvo || !semanaInput) { alert("Selecione o professor e a semana."); return; }
 
     const [anoAlvo, numSemanaAlvo] = semanaInput.split('-W').map(Number);
     const database = (typeof processedData !== 'undefined') ? processedData : null;
-    if (!database) return;
-
-    // 1. DESCOBRIR AS DATAS REAIS DA SEMANA
+    
     function getDatesOfWeek(year, week) {
         let d = new Date(year, 0, 1);
         let dayNum = d.getDay() || 7;
         let diff = (week - 1) * 7 + (1 - dayNum);
         let monday = new Date(year, 0, 1 + diff);
         let map = {};
-        const nomes = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
-        nomes.forEach((nome, i) => {
+        ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"].forEach((nome, i) => {
             let date = new Date(monday);
             date.setDate(monday.getDate() + i);
             map[nome] = { dia: date.getDate(), mes: date.getMonth() };
@@ -1355,145 +1350,138 @@ window.gerarGradeSemanal = function() {
     }
 
     const mapaDatas = getDatesOfWeek(anoAlvo, numSemanaAlvo);
-    const slotsHorario = ["07:30", "08:20", "09:30", "10:20", "11:10", "13:50", "14:40", "15:50", "16:40", "17:30", "19:00", "19:50", "20:50", "21:40"];
+    
+    // Lista de Horários Atualizada com Intervalos
+    const listaHorarios = [
+        {h: "07:30 - 08:20", tipo: "aula"}, {h: "08:20 - 09:10", tipo: "aula"},
+        {h: "09:10 a 09:30 - INTERVALO", tipo: "pausa"},
+        {h: "09:30 - 10:20", tipo: "aula"}, {h: "10:20 - 11:10", tipo: "aula"}, {h: "11:10 - 12:00", tipo: "aula"},
+        {h: "12:00 a 13:50 - ALMOÇO", tipo: "pausa"},
+        {h: "13:50 - 14:40", tipo: "aula"}, {h: "14:40 - 15:30", tipo: "aula"},
+        {h: "15:30 a 15:50 - INTERVALO", tipo: "pausa"},
+        {h: "15:50 - 16:40", tipo: "aula"}, {h: "16:40 - 17:30", tipo: "aula"}, {h: "17:30 - 18:20", tipo: "aula"},
+        {h: "18:20 a 19:00 - JANTAR", tipo: "pausa"},
+        {h: "19:00 - 19:50", tipo: "aula"}, {h: "19:50 - 20:40", tipo: "aula"},
+        {h: "20:40 a 20:50 - INTERVALO", tipo: "pausa"},
+        {h: "20:50 - 21:40", tipo: "aula"}, {h: "21:40 - 22:30", tipo: "aula"}
+    ];
+
     const mesesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
 
-    let html = `<table class="min-w-full border-collapse border border-gray-200 text-[10px] bg-white text-center shadow-md">
+    // Tabela com largura fixa e centralizada
+    let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 text-[10px] bg-white text-center shadow-lg mx-auto" style="width: 1000px; table-layout: fixed;">
         <thead>
             <tr class="bg-green-700 text-white font-bold">
-                <th class="border p-2 w-16">HORÁRIO</th>
-                ${Object.keys(mapaDatas).map(d => `<th class="border p-1">${d.toUpperCase()}<br><span class="font-normal text-[8px]">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span></th>`).join('')}
+                <th class="border border-gray-300 p-2" style="width: 120px;">HORÁRIO</th>
+                ${Object.keys(mapaDatas).map(d => `<th class="border border-gray-300 p-1" style="width: 146px;">${d.toUpperCase()}<br><span class="font-normal text-[9px]">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span></th>`).join('')}
             </tr>
         </thead><tbody>`;
 
-    let encontrouAlgo = false;
+    listaHorarios.forEach(item => {
+        if (item.tipo === "pausa") {
+            html += `<tr class="bg-gray-200 font-bold text-gray-600">
+                <td class="border border-gray-300 p-1 text-[9px]">${item.h}</td>
+                <td colspan="6" class="border border-gray-300 p-1 tracking-widest uppercase text-[9px]">Pausa Programada</td>
+            </tr>`;
+        } else {
+            html += `<tr><td class="border border-gray-300 p-2 font-bold bg-gray-50 text-[9px] h-16">${item.h}</td>`;
+            Object.keys(mapaDatas).forEach(diaNome => {
+                const dataAlvo = mapaDatas[diaNome];
+                let conteudoCell = "";
+                let disciplinasSet = new Set();
 
-    slotsHorario.forEach(slot => {
-        html += `<tr><td class="border p-2 font-bold bg-gray-50 text-gray-700">${slot}</td>`;
-        
-        Object.keys(mapaDatas).forEach(diaNome => {
-            const dataAlvo = mapaDatas[diaNome];
-            let conteudoCell = "";
-            let disciplinasJaAdd = new Set(); // IMPEDE DUPLICAÇÃO NA CÉLULA
+                for (const tId in database) {
+                    for (const dId in database[tId].disciplines) {
+                        const disc = database[tId].disciplines[dId];
+                        for (const pId in disc.professors) {
+                            const prof = disc.professors[pId];
+                            if (prof.name.replace(/\(.*\)/g, '').trim() === profAlvo) {
+                                prof.schedule.forEach(aula => {
+                                    const horaCSV = aula.time.trim().substring(0, 5);
+                                    const horaGrade = item.h.substring(0, 5);
+                                    let mIdx = mesesNomes.indexOf(aula.month.toLowerCase().trim());
+                                    if (mIdx === 12) mIdx = 2;
 
-            for (const tId in database) {
-                for (const dId in database[tId].disciplines) {
-                    const disc = database[tId].disciplines[dId];
-                    for (const pId in disc.professors) {
-                        const prof = disc.professors[pId];
-                        let pLimpo = prof.name.replace(/\(.*\)/g, '').trim();
-
-                        if (pLimpo === profAlvo) {
-                            prof.schedule.forEach(aula => {
-                                // NORMALIZAÇÃO DA HORA: Pega apenas os primeiros 5 caracteres (ex: "07:30")
-                                const horaReduzida = aula.time.trim().substring(0, 5);
-                                let mIdx = mesesNomes.indexOf(aula.month.toLowerCase().trim());
-                                if (mIdx === 12) mIdx = 2;
-
-                                // COMPARAÇÃO RÍGIDA DE DATA E HORA
-                                if (horaReduzida === slot && 
-                                    aula.dayOfMonth === dataAlvo.dia && 
-                                    mIdx === dataAlvo.mes) {
-                                    
-                                    // CHAVE PARA EVITAR DUPLICAR A MESMA DISCIPLINA NO MESMO QUADRADO
-                                    const chaveUnica = `${disc.name}-${database[tId].name}`;
-                                    
-                                    if (!disciplinasJaAdd.has(chaveUnica)) {
-                                        encontrouAlgo = true;
-                                        disciplinasJaAdd.add(chaveUnica);
-                                        const cor = aula.isRecuperacao ? 'bg-yellow-100 border-yellow-300' : 'bg-green-50 border-green-200';
-                                        
-                                        conteudoCell += `<div class="${cor} p-1 mb-1 rounded border text-[9px] leading-tight shadow-sm">
-                                            <div class="font-bold text-gray-800">${disc.name}</div>
-                                            <div class="text-[7px] opacity-75">${database[tId].name}</div>
-                                        </div>`;
+                                    if (horaCSV === horaGrade && aula.dayOfMonth === dataAlvo.dia && mIdx === dataAlvo.mes) {
+                                        const chave = `${disc.name}-${database[tId].name}`;
+                                        if (!disciplinasSet.has(chave)) {
+                                            disciplinasSet.add(chave);
+                                            conteudoCell += `<div class="bg-green-50 border border-green-200 p-1 rounded shadow-sm mb-1 text-center">
+                                                <div class="font-bold text-gray-800 leading-tight">${disc.name}</div>
+                                                <div class="text-[8px] text-gray-500 uppercase">${database[tId].name}</div>
+                                            </div>`;
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     }
                 }
-            }
-            html += `<td class="border p-1 w-32 h-14 bg-white align-top">${conteudoCell}</td>`;
-        });
-        html += `</tr>`;
+                html += `<td class="border border-gray-300 p-1 h-16 align-middle bg-white">${conteudoCell}</td>`;
+            });
+            html += `</tr>`;
+        }
     });
 
     elResult.innerHTML = html + "</tbody></table>";
-    if (!encontrouAlgo) elResult.innerHTML += `<p class="p-8 text-center text-gray-400 italic">Nenhuma aula encontrada.</p>`;
 };
-  window.exportarGradeSemanalPDF = function() {
+window.exportarGradeSemanalPDF = function() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // Paisagem para caber os dias
-    
+    const doc = new jsPDF('l', 'mm', 'a4');
     const prof = document.getElementById('selectProfSemanal').value;
     const semanaRaw = document.getElementById('inputSemana').value;
-    const tabela = document.querySelector('#gradeSemanalResult table');
+    const tabela = document.getElementById('tabelaGradeExport');
 
-    if (!tabela || !prof) {
-        alert("Por favor, gere a grade antes de exportar.");
-        return;
-    }
+    if (!tabela) { alert("Gere a grade antes de exportar."); return; }
 
-    // --- CONFIGURAÇÃO DE TEXTO CENTRALIZADO ---
     const pageWidth = doc.internal.pageSize.getWidth();
-    const centerText = (text, y, size, style = 'normal') => {
-        doc.setFontSize(size);
-        doc.setFont('helvetica', style);
-        const textWidth = doc.getTextWidth(text);
-        doc.text(text, (pageWidth - textWidth) / 2, y);
+    const center = (txt, y, sz, style = 'normal') => {
+        doc.setFontSize(sz); doc.setFont('helvetica', style);
+        doc.text(txt, (pageWidth - doc.getTextWidth(txt)) / 2, y);
     };
 
-    // --- CABEÇALHO OFICIAL (IGUAL À IMAGEM) ---
-    centerText("INSTITUTO FEDERAL DE RONDÔNIA", 15, 16, 'bold');
-    centerText("CAMPUS CACOAL", 22, 14, 'italic');
-    
-    centerText("DEPARTAMENTO DE APOIO AO ENSINO", 35, 11, 'normal');
-    centerText("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", 42, 11, 'normal');
+    // Cabeçalho Oficial
+    center("INSTITUTO FEDERAL DE RONDÔNIA", 15, 14, 'bold');
+    center("CAMPUS CACOAL", 21, 12, 'italic');
+    center("DEPARTAMENTO DE APOIO AO ENSINO", 32, 10);
+    center("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", 38, 10);
 
-    // --- INFORMAÇÕES DO RELATÓRIO ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.text(`Relatório de Horários de Aula (Grade Semanal) - Ano ${semanaRaw.split('-')[0]}`, 14, 55);
-    
+    // Info do Professor e Semana
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.text(`Relatório de Grade Semanal - Professor: ${prof}`, 14, 52);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.text(`Professor: ${prof}`, 14, 62);
-    doc.text(`Semana Selecionada: ${semanaRaw}`, 14, 68);
+    doc.text(`Período: Semana ${semanaRaw.split('-W')[1]} de ${semanaRaw.split('-W')[0]}`, 14, 58);
 
-    // --- GERAÇÃO DA TABELA ---
     doc.autoTable({
-        html: tabela,
-        startY: 75,
+        html: '#tabelaGradeExport',
+        startY: 65,
         theme: 'grid',
         styles: {
-            fontSize: 7,
-            cellPadding: 2,
+            fontSize: 6,
+            cellPadding: 1.5,
             valign: 'middle',
-            halign: 'center',
-            lineColor: [200, 200, 200],
-            lineWidth: 0.1
+            halign: 'center', // CENTRALIZAÇÃO DENTRO DAS CÉLULAS
+            minCellHeight: 12, // ALTURA TRAVADA
+            lineColor: [150, 150, 150]
         },
         headStyles: {
-            fillColor: [21, 128, 61], // Verde oficial IFRO
-            textColor: [255, 255, 255],
-            fontSize: 8,
+            fillColor: [21, 128, 61],
+            textColor: 255,
+            fontSize: 7,
             fontStyle: 'bold'
         },
         columnStyles: {
-            0: { fontStyle: 'bold', fillColor: [245, 245, 245], cellWidth: 22 }
+            0: { cellWidth: 25, fontStyle: 'bold', fillColor: [245, 245, 245] }
         },
+        // Remove cores de fundo para impressão limpa, exceto header
         didParseCell: function(data) {
-            // Limpa o texto vindo do HTML (disciplina + turma)
             if (data.cell.raw && data.cell.raw.innerText) {
                 data.cell.text = data.cell.raw.innerText.trim();
             }
         }
     });
 
-    // Nome do arquivo padronizado
-    const fileName = `Grade_Semanal_${prof.replace(/\s+/g, '_')}_${semanaRaw}.pdf`;
-    doc.save(fileName);
+    doc.save(`Grade_${prof}_${semanaRaw}.pdf`);
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
