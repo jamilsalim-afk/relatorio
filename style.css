@@ -1316,34 +1316,23 @@ function getNumeroSemana(data) {
 // FORÇAR ATRIBUIÇÃO DO BOTÃO AO CARREGAR A PÁGINA
 // FORÇAR A FUNÇÃO PARA O ESCOPO GLOBAL
 window.gerarGradeSemanal = function() {
-    console.log("Tentando gerar a grade...");
-    
     const elProf = document.getElementById('selectProfSemanal');
     const elSemana = document.getElementById('inputSemana');
     const elResult = document.getElementById('gradeSemanalResult');
 
-    if (!elProf || !elSemana || !elResult) {
-        alert("Erro: Elementos da Aba 3 não encontrados no HTML.");
-        return;
-    }
+    if (!elProf || !elSemana || !elResult) return;
 
     const profAlvo = elProf.value;
-    const semanaInput = elSemana.value;
-
+    const semanaInput = elSemana.value; 
     if (!profAlvo || !semanaInput) {
-        alert("Por favor, selecione um professor e uma semana.");
-        return;
-    }
-
-    // Pega os dados da variável que o seu console confirmou que existe
-    const database = (typeof processedData !== 'undefined') ? processedData : null;
-
-    if (!database) {
-        alert("Erro: A base de dados 'processedData' não foi encontrada.");
+        alert("Selecione professor e semana.");
         return;
     }
 
     const [anoAlvo, numSemanaAlvo] = semanaInput.split('-W').map(Number);
+    const database = (typeof processedData !== 'undefined') ? processedData : null;
+    if (!database) return;
+
     const diasDaSemana = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
     const slotsHorario = ["07:30", "08:20", "09:30", "10:20", "11:10", "13:50", "14:40", "15:50", "16:40", "17:30", "19:00", "19:50", "20:50", "21:40"];
     const mesesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
@@ -1351,17 +1340,20 @@ window.gerarGradeSemanal = function() {
     let html = `<table class="min-w-full border-collapse border border-gray-200 text-[10px] bg-white text-center shadow-md">
         <thead>
             <tr class="bg-green-700 text-white font-bold">
-                <th class="border p-2">HORÁRIO</th>
+                <th class="border p-2 w-20">HORÁRIO</th>
                 ${diasDaSemana.map(d => `<th class="border p-2">${d.toUpperCase()}</th>`).join('')}
             </tr>
         </thead><tbody>`;
 
-    let encontrouAula = false;
+    let encontrouAulaGeral = false;
 
     slotsHorario.forEach(slot => {
         html += `<tr><td class="border p-2 font-bold bg-gray-100 text-gray-700">${slot}</td>`;
-        diasDaSemana.forEach(dia => {
+        
+        diasDaSemana.forEach(diaLabel => {
+            let aulasUnicas = new Set(); // Para evitar duplicação na mesma célula
             let conteudoCell = "";
+            
             for (const tId in database) {
                 const turma = database[tId];
                 for (const dId in turma.disciplines) {
@@ -1372,23 +1364,41 @@ window.gerarGradeSemanal = function() {
 
                         if (nomeLimpo === profAlvo) {
                             prof.schedule.forEach(aula => {
-                                let mesIdx = mesesNomes.indexOf(aula.month.toLowerCase().trim());
-                                if (mesIdx === 12) mesIdx = 2; // marco -> março
+                                // 1. Normalização do Horário e Dia
+                                const aulaHora = aula.time.trim();
+                                const aulaDiaSemana = aula.dayOfWeek.trim();
 
-                                if (mesIdx !== -1) {
-                                    const dataAula = new Date(anoAlvo, mesIdx, aula.dayOfMonth);
-                                    const d = new Date(Date.UTC(dataAula.getFullYear(), dataAula.getMonth(), dataAula.getDate()));
-                                    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-                                    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-                                    const semanaAula = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+                                if (aulaHora.includes(slot) && aulaDiaSemana.toLowerCase() === diaLabel.toLowerCase()) {
+                                    
+                                    // 2. Cálculo da Semana (Robusto)
+                                    let mesIdx = mesesNomes.indexOf(aula.month.toLowerCase().trim());
+                                    if (mesIdx === 12) mesIdx = 2; // marco -> março
 
-                                    if (semanaAula === numSemanaAlvo && aula.dayOfWeek.trim() === dia && aula.time.includes(slot)) {
-                                        encontrouAula = true;
-                                        const cor = aula.isRecuperacao ? 'bg-yellow-100 border-yellow-300' : 'bg-green-50 border-green-200';
-                                        conteudoCell += `<div class="${cor} p-1 mb-1 rounded border text-[9px] leading-tight shadow-sm text-gray-800">
-                                            <div class="font-bold">${disc.name}</div>
-                                            <div class="text-[8px] opacity-70">${turma.name}</div>
-                                        </div>`;
+                                    if (mesIdx !== -1) {
+                                        // Usamos meio-dia (12:00) para evitar que a data "pule" de dia por fuso horário
+                                        const dt = new Date(anoAlvo, mesIdx, aula.dayOfMonth, 12, 0, 0);
+                                        
+                                        // Cálculo da Semana ISO
+                                        const d = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+                                        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+                                        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                                        const semanaAula = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+
+                                        if (semanaAula === numSemanaAlvo) {
+                                            // 3. Evitar duplicados (Chave única: Disciplina + Turma + Horário)
+                                            const chaveAula = `${disc.name}-${turma.name}-${aulaHora}`;
+                                            
+                                            if (!aulasUnicas.has(chaveAula)) {
+                                                encontrouAulaGeral = true;
+                                                aulasUnicas.add(chaveAula);
+                                                const cor = aula.isRecuperacao ? 'bg-yellow-100 border-yellow-300' : 'bg-green-50 border-green-200';
+                                                
+                                                conteudoCell += `<div class="${cor} p-1 mb-1 rounded border text-[9px] leading-tight shadow-sm text-gray-800">
+                                                    <div class="font-bold uppercase text-[8px]">${disc.name}</div>
+                                                    <div class="text-[7px] opacity-70 italic">${turma.name}</div>
+                                                </div>`;
+                                            }
+                                        }
                                     }
                                 }
                             });
@@ -1396,18 +1406,16 @@ window.gerarGradeSemanal = function() {
                     }
                 }
             }
-            html += `<td class="border p-1 w-32 h-14 bg-white">${conteudoCell}</td>`;
+            html += `<td class="border p-1 w-32 h-14 bg-white align-top">${conteudoCell}</td>`;
         });
         html += `</tr>`;
     });
 
     elResult.innerHTML = html + "</tbody></table>";
 
-    if (!encontrouAula) {
-        elResult.innerHTML += `<div class="p-8 text-center text-gray-500 italic border border-t-0 bg-gray-50">Nenhuma aula encontrada para esta seleção.</div>`;
+    if (!encontrouAulaGeral) {
+        elResult.innerHTML += `<div class="p-8 text-center text-gray-500 italic border border-t-0 bg-gray-50 text-xs">Nenhuma aula encontrada para esta seleção nesta semana específica.</div>`;
     }
-    
-    console.log("Grade processada com sucesso.");
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
