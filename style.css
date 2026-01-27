@@ -1325,7 +1325,7 @@ window.gerarGradeSemanal = function() {
     const profAlvo = elProf.value;
     const semanaInput = elSemana.value; 
     if (!profAlvo || !semanaInput) {
-        alert("Selecione professor e semana.");
+        alert("Selecione o professor e a semana.");
         return;
     }
 
@@ -1333,74 +1333,75 @@ window.gerarGradeSemanal = function() {
     const database = (typeof processedData !== 'undefined') ? processedData : null;
     if (!database) return;
 
-    const diasDaSemana = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+    // 1. DESCOBRIR AS DATAS REAIS DA SEMANA
+    function getDatesOfWeek(year, week) {
+        let d = new Date(year, 0, 1);
+        let dayNum = d.getDay() || 7;
+        let diff = (week - 1) * 7 + (1 - dayNum);
+        let monday = new Date(year, 0, 1 + diff);
+        let map = {};
+        const nomes = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+        nomes.forEach((nome, i) => {
+            let date = new Date(monday);
+            date.setDate(monday.getDate() + i);
+            map[nome] = { dia: date.getDate(), mes: date.getMonth() };
+        });
+        return map;
+    }
+
+    const mapaDatas = getDatesOfWeek(anoAlvo, numSemanaAlvo);
     const slotsHorario = ["07:30", "08:20", "09:30", "10:20", "11:10", "13:50", "14:40", "15:50", "16:40", "17:30", "19:00", "19:50", "20:50", "21:40"];
     const mesesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
 
-    let html = `<table class="min-w-full border-collapse border border-gray-200 text-[10px] bg-white text-center shadow-sm">
+    let html = `<table class="min-w-full border-collapse border border-gray-200 text-[10px] bg-white text-center shadow-md">
         <thead>
             <tr class="bg-green-700 text-white font-bold">
-                <th class="border p-2 w-20">HORÁRIO</th>
-                ${diasDaSemana.map(d => `<th class="border p-2">${d.toUpperCase()}</th>`).join('')}
+                <th class="border p-2 w-16">HORÁRIO</th>
+                ${Object.keys(mapaDatas).map(d => `<th class="border p-1">${d.toUpperCase()}<br><span class="font-normal text-[8px]">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span></th>`).join('')}
             </tr>
         </thead><tbody>`;
 
-    let encontrouAulaGeral = false;
+    let encontrouAlgo = false;
 
     slotsHorario.forEach(slot => {
-        html += `<tr><td class="border p-2 font-bold bg-gray-100 text-gray-700">${slot}</td>`;
+        html += `<tr><td class="border p-2 font-bold bg-gray-50 text-gray-700">${slot}</td>`;
         
-        diasDaSemana.forEach(diaLabel => {
-            let aulasProcessadasNestaCelula = new Set(); // Evita duplicação visual
+        Object.keys(mapaDatas).forEach(diaNome => {
+            const dataAlvo = mapaDatas[diaNome];
             let conteudoCell = "";
-            
+            let disciplinasJaAdd = new Set(); // IMPEDE DUPLICAÇÃO NA CÉLULA
+
             for (const tId in database) {
-                const turma = database[tId];
-                for (const dId in turma.disciplines) {
-                    const disc = turma.disciplines[dId];
+                for (const dId in database[tId].disciplines) {
+                    const disc = database[tId].disciplines[dId];
                     for (const pId in disc.professors) {
                         const prof = disc.professors[pId];
-                        
-                        // Normaliza nome do Professor
-                        let nomeLimpo = prof.name.replace(/\(.*\)/g, '').trim();
+                        let pLimpo = prof.name.replace(/\(.*\)/g, '').trim();
 
-                        if (nomeLimpo === profAlvo) {
+                        if (pLimpo === profAlvo) {
                             prof.schedule.forEach(aula => {
-                                // --- NORMALIZAÇÃO CRÍTICA ---
-                                const aulaHora = aula.time.trim();
-                                const aulaDiaSemana = aula.dayOfWeek.trim().toLowerCase();
-                                const slotAlvo = slot.trim();
-                                const diaAlvo = diaLabel.trim().toLowerCase();
+                                // NORMALIZAÇÃO DA HORA: Pega apenas os primeiros 5 caracteres (ex: "07:30")
+                                const horaReduzida = aula.time.trim().substring(0, 5);
+                                let mIdx = mesesNomes.indexOf(aula.month.toLowerCase().trim());
+                                if (mIdx === 12) mIdx = 2;
 
-                                // Verifica se o horário e o dia batem EXATAMENTE
-                                if (aulaHora.startsWith(slotAlvo) && aulaDiaSemana === diaAlvo) {
+                                // COMPARAÇÃO RÍGIDA DE DATA E HORA
+                                if (horaReduzida === slot && 
+                                    aula.dayOfMonth === dataAlvo.dia && 
+                                    mIdx === dataAlvo.mes) {
                                     
-                                    let mesIdx = mesesNomes.indexOf(aula.month.toLowerCase().trim());
-                                    if (mesIdx === 12) mesIdx = 2; // marco -> março
-
-                                    if (mesIdx !== -1) {
-                                        const dt = new Date(anoAlvo, mesIdx, aula.dayOfMonth, 12, 0, 0);
-                                        const d = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
-                                        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-                                        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-                                        const semanaAula = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-
-                                        if (semanaAula === numSemanaAlvo) {
-                                            // CHAVE ÚNICA para impedir que a mesma aula apareça duas vezes na mesma célula
-                                            const identificadorUnico = `${disc.name}-${turma.name}-${aulaHora}-${aula.dayOfMonth}-${mesIdx}`.replace(/\s+/g, '');
-                                            
-                                            if (!aulasProcessadasNestaCelula.has(identificadorUnico)) {
-                                                encontrouAulaGeral = true;
-                                                aulasProcessadasNestaCelula.add(identificadorUnico);
-                                                
-                                                const cor = aula.isRecuperacao ? 'bg-yellow-100 border-yellow-300' : 'bg-green-50 border-green-200';
-                                                
-                                                conteudoCell += `<div class="${cor} p-1 mb-1 rounded border text-[9px] leading-tight shadow-sm text-gray-800">
-                                                    <div class="font-bold uppercase text-[8px]">${disc.name}</div>
-                                                    <div class="text-[7px] opacity-70 italic">${turma.name}</div>
-                                                </div>`;
-                                            }
-                                        }
+                                    // CHAVE PARA EVITAR DUPLICAR A MESMA DISCIPLINA NO MESMO QUADRADO
+                                    const chaveUnica = `${disc.name}-${database[tId].name}`;
+                                    
+                                    if (!disciplinasJaAdd.has(chaveUnica)) {
+                                        encontrouAlgo = true;
+                                        disciplinasJaAdd.add(chaveUnica);
+                                        const cor = aula.isRecuperacao ? 'bg-yellow-100 border-yellow-300' : 'bg-green-50 border-green-200';
+                                        
+                                        conteudoCell += `<div class="${cor} p-1 mb-1 rounded border text-[9px] leading-tight shadow-sm">
+                                            <div class="font-bold text-gray-800">${disc.name}</div>
+                                            <div class="text-[7px] opacity-75">${database[tId].name}</div>
+                                        </div>`;
                                     }
                                 }
                             });
@@ -1414,9 +1415,7 @@ window.gerarGradeSemanal = function() {
     });
 
     elResult.innerHTML = html + "</tbody></table>";
-    if (!encontrouAulaGeral) {
-        elResult.innerHTML += `<div class="p-8 text-center text-gray-500 italic border border-t-0 bg-gray-50 text-xs">Nenhuma aula para este professor na semana selecionada.</div>`;
-    }
+    if (!encontrouAlgo) elResult.innerHTML += `<p class="p-8 text-center text-gray-400 italic">Nenhuma aula encontrada.</p>`;
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
