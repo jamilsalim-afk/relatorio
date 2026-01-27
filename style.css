@@ -1323,8 +1323,6 @@ function getNumeroSemana(data) {
 // FORÇAR ATRIBUIÇÃO DO BOTÃO AO CARREGAR A PÁGINA
 // FORÇAR A FUNÇÃO PARA O ESCOPO GLOBAL
 window.gerarGradeSemanal = function() {
-    console.log("Iniciando geração da grade...");
-    
     const elProf = document.getElementById('selectProfSemanal');
     const elSemana = document.getElementById('inputSemana');
     const elResult = document.getElementById('gradeSemanalResult');
@@ -1338,7 +1336,6 @@ window.gerarGradeSemanal = function() {
     const [ano, sem] = elSemana.value.split('-W').map(Number);
     const database = typeof processedData !== 'undefined' ? processedData : null;
     
-    // --- FUNÇÃO AUXILIAR EMBUTIDA (PARA EVITAR O ERRO DE DEFINIÇÃO) ---
     const calcularDatasDaSemana = (y, w) => {
         let d = new Date(y, 0, 1);
         let dayNum = d.getDay() || 7;
@@ -1354,8 +1351,6 @@ window.gerarGradeSemanal = function() {
     };
 
     const mapaDatas = calcularDatasDaSemana(ano, sem);
-    
-    // Horários com Intervalos conforme solicitado
     const listaHorarios = [
         {h: "07:30 - 08:20", t: "aula"}, {h: "08:20 - 09:10", t: "aula"},
         {h: "09:10 a 09:30 - INTERVALO", t: "pausa"},
@@ -1399,29 +1394,29 @@ window.gerarGradeSemanal = function() {
                 let jaAdd = new Set();
                 
                 if(database) {
-                    for (let t in database) {
-                        for (let d in database[t].disciplines) {
-                            let disc = database[t].disciplines[d];
-                            disc.professors.forEach(p => {
+                    Object.values(database).forEach(turma => {
+                        Object.values(turma.disciplines).forEach(disc => {
+                            // CORREÇÃO AQUI: Transformando objeto de professores em Array
+                            Object.values(disc.professors).forEach(p => {
                                 if (p.name.replace(/\(.*\)/g, '').trim() === elProf.value) {
                                     p.schedule.forEach(a => {
                                         let mIdx = mesesNomes.indexOf(a.month.toLowerCase().trim());
                                         if (mIdx === 12) mIdx = 2;
                                         if (a.dayOfMonth === infoDia.dia && mIdx === infoDia.mes && a.time.startsWith(slot.h.substring(0,5))) {
-                                            let chave = `${disc.name}-${t}`;
+                                            let chave = `${disc.name}-${turma.name}`;
                                             if (!jaAdd.has(chave)) {
                                                 jaAdd.add(chave);
                                                 aulasHtml += `<div class="bg-green-50 border border-green-200 p-1 rounded mb-1">
                                                     <div class="font-bold text-green-900 text-[9px] leading-tight">${disc.name}</div>
-                                                    <div class="text-[8px] text-green-700 italic">${database[t].name}</div>
+                                                    <div class="text-[8px] text-green-700 italic">${turma.name}</div>
                                                 </div>`;
                                             }
                                         }
                                     });
                                 }
                             });
-                        }
-                    }
+                        });
+                    });
                 }
                 html += `<td class="border border-gray-300 p-1 align-middle text-center">${aulasHtml}</td>`;
             });
@@ -1430,7 +1425,6 @@ window.gerarGradeSemanal = function() {
     });
 
     elResult.innerHTML = html + "</tbody></table>";
-    console.log("Grade gerada com sucesso!");
 };
 window.exportarGradeSemanalPDF = function() {
     const { jsPDF } = window.jspdf;
