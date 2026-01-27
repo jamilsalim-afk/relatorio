@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -574,13 +575,12 @@
             // Atualiza os seletores de ambas as abas
             populateTurmaSelect();
             populateTurmaProfessorSelect();
-            populateProfessoresGrade();                                                                                            
+            populateProfessoresGrade();
             
             loadingIndicator.classList.add('hidden');
             filterAreaDisciplina.classList.remove('hidden');
             showFeedback('Dados processados com sucesso. Selecione uma Turma.', 'bg-green-100 text-green-800');
         }
-            populateProfessoresGrade();
 
         // =========================================================================
         // 4. FUNÇÕES DE LÓGICA (UI) E ABAS
@@ -1252,24 +1252,39 @@ const HORARIOS_GRADE = ["07:30", "08:20", "09:30", "10:20", "11:10", "13:50", "1
 const MAPA_MESES_INDEX = { "janeiro": 0, "fevereiro": 1, "março": 2, "abril": 3, "maio": 4, "junho": 5, "julho": 6, "agosto": 7, "setembro": 8, "outubro": 9, "novembro": 10, "dezembro": 11 };
 
 // Função para listar os professores na nova aba
-        function populateProfessoresGrade() {
+       function populateProfessoresGrade() {
     const select = document.getElementById('selectProfSemanal');
     if (!select) return;
 
+    select.innerHTML = '<option value="">-- Selecione o Professor --</option>';
     const listaProfessores = new Set();
     
-    // Coleta todos os professores únicos do seu processedData
-    for (const tId in processedData) {
-        for (const dId in processedData[tId].disciplines) {
-            for (const pId in processedData[tId].disciplines[dId].professors) {
-                listaProfessores.add(processedData[tId].disciplines[dId].professors[pId].name);
+    if (typeof processedData !== 'undefined') {
+        for (const tId in processedData) {
+            for (const dId in processedData[tId].disciplines) {
+                for (const pId in processedData[tId].disciplines[dId].professors) {
+                    let nomeOriginal = processedData[tId].disciplines[dId].professors[pId].name;
+                    
+                    if (nomeOriginal) {
+                        // Limpa (REC), (Exame), etc., e remove espaços extras
+                        let nomeLimpo = nomeOriginal.replace(/\(.*\)/g, '').trim();
+                        listaProfessores.add(nomeLimpo);
+                    }
+                }
             }
         }
     }
 
-    const ordenados = Array.from(listaProfessores).sort();
-    select.innerHTML = '<option value="">-- Selecione o Professor --</option>' + 
-        ordenados.map(p => `<option value="${p}">${p}</option>`).join('');
+    if (listaProfessores.size > 0) {
+        const ordenados = Array.from(listaProfessores).sort();
+        ordenados.forEach(prof => {
+            const option = document.createElement('option');
+            option.value = prof;
+            option.textContent = prof;
+            select.appendChild(option);
+        });
+        select.disabled = false;
+    }
 }
         
 function atualizarListaProfessoresSemanal() {
@@ -1335,7 +1350,9 @@ function gerarGradeSemanal() {
                     for (const pId in disc.professors) {
                         const prof = disc.professors[pId];
                         
-                        if (prof.name === profAlvo) {
+                        let nomeProfNoBanco = prof.name.replace(/\(.*\)/g, '').trim();
+
+if (nomeProfNoBanco === profAlvo) {
                             prof.schedule.forEach(aula => {
                                 // Mapeia o nome do mês para o índice (0-11)
                                 const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
