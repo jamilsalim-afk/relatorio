@@ -58,7 +58,7 @@
             <button id="btn-professores" data-tab="tab-professores" class="tab-btn px-6 py-3 text-base text-gray-600 hover:text-ifro-primary transition duration-150 ease-in-out focus:outline-none">
                 Consulta por Turma
             </button>
-            <button data-tab="tab-semanal" class="tab-btn px-6 py-3 text-sm font-medium text-gray-500 hover:text-ifro-primary hover:border-ifro-primary transition-all duration-200">
+            <button data-tab="tab-semanal" class="tab-btn px-6 py-3 text-sm font-medium text-gray-600 hover:text-ifro-primary hover:border-ifro-primary transition-all duration-200">
     Grade Semanal
 </button>
         </nav>
@@ -579,7 +579,7 @@
             filterAreaDisciplina.classList.remove('hidden');
             showFeedback('Dados processados com sucesso. Selecione uma Turma.', 'bg-green-100 text-green-800');
         }
-
+            populateProfessoresGrade();
 
         // =========================================================================
         // 4. FUNÇÕES DE LÓGICA (UI) E ABAS
@@ -1251,6 +1251,26 @@ const HORARIOS_GRADE = ["07:30", "08:20", "09:30", "10:20", "11:10", "13:50", "1
 const MAPA_MESES_INDEX = { "janeiro": 0, "fevereiro": 1, "março": 2, "abril": 3, "maio": 4, "junho": 5, "julho": 6, "agosto": 7, "setembro": 8, "outubro": 9, "novembro": 10, "dezembro": 11 };
 
 // Função para listar os professores na nova aba
+        function populateProfessoresGrade() {
+    const select = document.getElementById('selectProfSemanal');
+    if (!select) return;
+
+    const listaProfessores = new Set();
+    
+    // Coleta todos os professores únicos do seu processedData
+    for (const tId in processedData) {
+        for (const dId in processedData[tId].disciplines) {
+            for (const pId in processedData[tId].disciplines[dId].professors) {
+                listaProfessores.add(processedData[tId].disciplines[dId].professors[pId].name);
+            }
+        }
+    }
+
+    const ordenados = Array.from(listaProfessores).sort();
+    select.innerHTML = '<option value="">-- Selecione o Professor --</option>' + 
+        ordenados.map(p => `<option value="${p}">${p}</option>`).join('');
+}
+        
 function atualizarListaProfessoresSemanal() {
     const select = document.getElementById('selectProfSemanal');
     const professores = new Set();
@@ -1283,43 +1303,57 @@ function gerarGradeSemanal() {
     const semanaInput = document.getElementById('inputSemana').value;
     
     if (!profAlvo || !semanaInput) {
-        return alert("Por favor, selecione um professor e uma semana.");
+        alert("Por favor, selecione um professor e uma semana.");
+        return;
     }
 
+    // Extrai o ano e o número da semana do input (ex: "2025-W05")
     const [anoAlvo, numSemanaAlvo] = semanaInput.split('-W').map(Number);
     const diasDaSemana = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
-    
-    let tabelaHtml = `<table class="min-w-full border-collapse border border-gray-200 text-[10px] bg-white text-center">
-        <thead class="bg-ifro-primary text-white">
-            <tr>
-                <th class="border p-2 w-20">HORÁRIO</th>
+    const slotsHorario = ["07:30", "08:20", "09:30", "10:20", "11:10", "13:50", "14:40", "15:50", "16:40", "17:30", "19:00", "19:50", "20:50", "21:40"];
+
+    let html = `<table class="min-w-full border-collapse border border-gray-200 text-[10px] bg-white text-center shadow-sm">
+        <thead>
+            <tr class="bg-green-600 text-white">
+                <th class="border p-2">HORÁRIO</th>
                 ${diasDaSemana.map(d => `<th class="border p-2">${d.toUpperCase()}</th>`).join('')}
             </tr>
         </thead><tbody>`;
 
-    HORARIOS_GRADE.forEach(horarioSlot => {
-        tabelaHtml += `<tr><td class="border p-2 font-bold bg-gray-50">${horarioSlot}</td>`;
+    slotsHorario.forEach(slot => {
+        html += `<tr><td class="border p-2 font-bold bg-gray-50">${slot}</td>`;
         
-        diasDaSemana.forEach(diaDaSemana => {
-            let infoAula = "";
+        diasDaSemana.forEach(dia => {
+            let conteudo = "";
             
-            // Busca a aula dentro da sua estrutura original
-            for (let tId in processedData) {
-                for (let dId in processedData[tId].disciplines) {
-                    const disciplina = processedData[tId].disciplines[dId];
-                    for (let pId in disciplina.professors) {
-                        const profObj = disciplina.professors[pId];
+            // Varre o objeto global 'processedData' que seu sistema já preencheu
+            for (const tId in processedData) {
+                const turma = processedData[tId];
+                for (const dId in turma.disciplines) {
+                    const disc = turma.disciplines[dId];
+                    for (const pId in disc.professors) {
+                        const prof = disc.professors[pId];
                         
-                        if (profObj.name === profAlvo) {
-                            profObj.schedule.forEach(aula => {
-                                const mesIdx = MAPA_MESES_INDEX[aula.month.toLowerCase()];
+                        if (prof.name === profAlvo) {
+                            prof.schedule.forEach(aula => {
+                                // Mapeia o nome do mês para o índice (0-11)
+                                const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+                                const mesIdx = meses.indexOf(aula.month.toLowerCase());
+                                
+                                // Cria um objeto de data para verificar a semana
                                 const dataAula = new Date(anoAlvo, mesIdx, aula.dayOfMonth);
                                 
-                                if (getNumeroSemana(dataAula) === numSemanaAlvo && aula.dayOfWeek === diaDaSemana && aula.time.includes(horarioSlot)) {
+                                // Função auxiliar para pegar a semana ISO
+                                const d = new Date(Date.UTC(dataAula.getFullYear(), dataAula.getMonth(), dataAula.getDate()));
+                                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+                                const anoInicio = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                                const semanaAula = Math.ceil((((d - anoInicio) / 86400000) + 1) / 7);
+
+                                if (semanaAula === numSemanaAlvo && aula.dayOfWeek === dia && aula.time.includes(slot)) {
                                     const cor = aula.isRecuperacao ? 'bg-yellow-100 border-yellow-300' : 'bg-green-50 border-green-200';
-                                    infoAula = `<div class="${cor} p-1 rounded border shadow-sm">
-                                        <div class="font-bold">${disciplina.name}</div>
-                                        <div class="text-[8px] opacity-70">${processedData[tId].name}</div>
+                                    conteudo = `<div class="${cor} p-1 rounded border text-[9px] leading-tight">
+                                        <div class="font-bold text-gray-800">${disc.name}</div>
+                                        <div class="text-gray-500">${turma.name}</div>
                                     </div>`;
                                 }
                             });
@@ -1327,12 +1361,12 @@ function gerarGradeSemanal() {
                     }
                 }
             }
-            tabelaHtml += `<td class="border p-1 w-32 h-14">${infoAula}</td>`;
+            html += `<td class="border p-1 w-32 h-12">${conteudo}</td>`;
         });
-        tabelaHtml += `</tr>`;
+        html += `</tr>`;
     });
 
-    document.getElementById('gradeSemanalResult').innerHTML = tabelaHtml + `</tbody></table>`;
+    document.getElementById('gradeSemanalResult').innerHTML = html + `</tbody></table>`;
 }
 
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
