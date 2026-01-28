@@ -705,267 +705,164 @@
             loadDataFromGist(currentYear);
         }
         
-        // =========================================================================
-        // LÓGICA: ABA 1 (DISCIPLINA)
-        // =========================================================================
+// =========================================================================
+// LÓGICA: ABA 1 (DISCIPLINA) - COM TRAVA DE SEMESTRE
+// =========================================================================
+
+// Ordem dos meses para ordenação e cálculo de semestre
+const monthOrder = {
+    "janeiro": 1, "fevereiro": 2, "março": 3, "abril": 4, 
+    "maio": 5, "junho": 6, "julho": 7, "agosto": 8, 
+    "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12, "marco": 3
+};
+
+function populateTurmaSelect() {
+    const currentTurmaValue = turmaSelect.value;
+    
+    disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
+    disciplinaSelect.disabled = true;
+    disciplinaSelect.classList.add('bg-gray-100');
+    exportDisciplinaPdfBtn.disabled = true;
+    
+    turmaSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
+    
+    for (const key in processedData) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = processedData[key].name; 
+        turmaSelect.appendChild(option);
+    }
+    
+    if (Object.keys(processedData).length > 0) {
+        turmaSelect.disabled = false;
+        turmaSelect.classList.remove('bg-gray-100');
+    } else {
+        turmaSelect.disabled = true;
+        turmaSelect.classList.add('bg-gray-100');
+        renderTableDisciplina([]);
+    }
+    
+    if (currentTurmaValue && processedData[currentTurmaValue]) {
+        turmaSelect.value = currentTurmaValue;
+        handleTurmaChange({ target: { value: currentTurmaValue } });
+    }
+}
+
+function handleTurmaChange(event) {
+    const selectedTurma = event.target.value;
+    
+    disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
+    disciplinaSelect.disabled = true;
+    disciplinaSelect.classList.add('bg-gray-100');
+    
+    renderTableDisciplina([]);
+    exportDisciplinaPdfBtn.disabled = true;
+
+    if (selectedTurma && processedData[selectedTurma]) {
+        const disciplines = processedData[selectedTurma].disciplines;
+        const disciplineKeys = Object.keys(disciplines).sort((a, b) => 
+            disciplines[a].name.localeCompare(disciplines[b].name)
+        );
         
-        function populateTurmaSelect() {
-            const currentTurmaValue = turmaSelect.value;
-            
-            // Limpa e desabilita os seletores dependentes
-            disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
-            disciplinaSelect.disabled = true;
-            disciplinaSelect.classList.add('bg-gray-100');
-
-            exportDisciplinaPdfBtn.disabled = true;
-            
-            turmaSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
-            
-            for (const key in processedData) {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = processedData[key].name; 
-                turmaSelect.appendChild(option);
-            }
-            
-            if (Object.keys(processedData).length > 0) {
-                turmaSelect.disabled = false;
-                turmaSelect.classList.remove('bg-gray-100');
-            } else {
-                turmaSelect.disabled = true;
-                turmaSelect.classList.add('bg-gray-100');
-                renderTableDisciplina([]);
-            }
-            
-            if (currentTurmaValue && processedData[currentTurmaValue]) {
-                turmaSelect.value = currentTurmaValue;
-                handleTurmaChange({ target: { value: currentTurmaValue } });
-            }
+        for (const key of disciplineKeys) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = disciplines[key].name;
+            disciplinaSelect.appendChild(option);
         }
+        
+        disciplinaSelect.disabled = false;
+        disciplinaSelect.classList.remove('bg-gray-100');
+    }
+}
 
-        /**
-         * Lida com a mudança da Turma, populando as Disciplinas.
-         */
-        function handleTurmaChange(event) {
-            const selectedTurma = event.target.value;
+/**
+ * Lida com a mudança da Disciplina aplicando o FILTRO DE SEMESTRE
+ */
+function handleDisciplinaChange(event) {
+    const selectedTurma = turmaSelect.value;
+    const selectedDiscipline = event.target.value;
+    
+    currentScheduleDisciplina = [];
+    exportDisciplinaPdfBtn.disabled = true;
+    renderTableDisciplina([]);
+
+    if (selectedTurma && selectedDiscipline) {
+        const disciplineData = processedData[selectedTurma].disciplines[selectedDiscipline];
+        
+        // Define o semestre baseado no mês atual do sistema
+        const mesAtualIdx = new Date().getMonth(); // 0-11
+        const semestreAtivo = (mesAtualIdx <= 6) ? 1 : 2;
+
+        for (const professorId in disciplineData.professors) {
+            const professor = disciplineData.professors[professorId];
             
-            disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
-            disciplinaSelect.disabled = true;
-            disciplinaSelect.classList.add('bg-gray-100');
-            
-            renderTableDisciplina([]);
-            exportDisciplinaPdfBtn.disabled = true;
+            professor.schedule.forEach(item => {
+                const mName = item.month.toLowerCase().trim();
+                const mIdx = monthOrder[mName] - 1;
+                const semestreDaAula = (mIdx <= 6) ? 1 : 2;
 
-            if (selectedTurma && processedData[selectedTurma]) {
-                const disciplines = processedData[selectedTurma].disciplines;
-                
-                const disciplineKeys = Object.keys(disciplines);
-                disciplineKeys.sort((keyA, keyB) => {
-                    const nameA = disciplines[keyA].name.toUpperCase();
-                    const nameB = disciplines[keyB].name.toUpperCase();
-                    if (nameA < nameB) return -1;
-                    if (nameA > nameB) return 1;
-                    return 0;
-                });
-                
-                for (const key of disciplineKeys) {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = disciplines[key].name;
-                    disciplinaSelect.appendChild(option);
-                }
-                
-                disciplinaSelect.disabled = false;
-                disciplinaSelect.classList.remove('bg-gray-100');
-            }
-        }
-
-        /**
-         * Lida com a mudança da Disciplina, agregando e exibindo os horários de todos os professores.
-         */
-        function handleDisciplinaChange(event) {
-            const selectedTurma = turmaSelect.value;
-            const selectedDiscipline = event.target.value;
-            
-            currentScheduleDisciplina = [];
-            exportDisciplinaPdfBtn.disabled = true;
-            renderTableDisciplina([]);
-
-            if (selectedTurma && selectedDiscipline) {
-                const disciplineData = processedData[selectedTurma].disciplines[selectedDiscipline];
-                
-                for (const professorId in disciplineData.professors) {
-                    const professor = disciplineData.professors[professorId];
-                    
-                    const schedulesWithProfessor = professor.schedule.map(item => ({
+                // A MÁGICA ACONTECE AQUI: Só entra se for o semestre correto
+                if (semestreDaAula === semestreAtivo) {
+                    currentScheduleDisciplina.push({
                         ...item,
                         professorName: professor.name, 
                         isRecuperacao: item.isRecuperacao 
-                    }));
-                    
-                    currentScheduleDisciplina.push(...schedulesWithProfessor);
-                }
-                
-                renderTableDisciplina(currentScheduleDisciplina);
-                exportAreaDisciplina.classList.remove('hidden');
-                exportDisciplinaPdfBtn.disabled = currentScheduleDisciplina.length === 0;
-            } else {
-                 exportAreaDisciplina.classList.add('hidden');
-            }
-        }
-        
-        /**
-         * Renderiza a tabela de horários da ABA 1 (Disciplina).
-         */
-        function renderTableDisciplina(schedule) {
-            tableBodyDisciplina.innerHTML = '';
-            
-            if (schedule && schedule.length > 0) {
-                
-                const monthOrder = {
-                    "janeiro": 1, "fevereiro": 2, "março": 3, "abril": 4, 
-                    "maio": 5, "junho": 6, "julho": 7, "agosto": 8, 
-                    "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12
-                };
-                
-                schedule.sort((a, b) => {
-                    const monthA = monthOrder[a.month.toLowerCase()] || 0;
-                    const monthB = monthOrder[b.month.toLowerCase()] || 0;
-
-                    if (monthA !== monthB) return monthA - monthB;
-                    if (a.dayOfMonth !== b.dayOfMonth) return a.dayOfMonth - b.dayOfMonth;
-                    if (a.time < b.time) return -1;
-                    if (a.time > b.time) return 1;
-                    return 0; 
-                });
-                
-                const regularClasses = schedule.filter(item => !item.isRecuperacao);
-                totalDiasDisciplinaSpan.textContent = regularClasses.length;
-
-                schedule.forEach((item, index) => {
-                    const row = tableBodyDisciplina.insertRow();
-                    
-                    if (item.isRecuperacao) {
-                        row.classList.add('bg-yellow-100', 'hover:bg-yellow-200'); 
-                    } else {
-                        row.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50', 'hover:bg-gray-50');
-                    }
-
-                    row.insertCell().textContent = item.month;
-                    row.insertCell().textContent = item.dayOfMonth;
-                    row.insertCell().textContent = item.dayOfWeek;
-                    row.insertCell().textContent = item.time;
-                    row.insertCell().textContent = item.professorName; 
-                    
-                    Array.from(row.cells).forEach(cell => {
-                        cell.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-900');
                     });
-                });
-                
-            } else {
-                const row = tableBodyDisciplina.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 5; 
-                cell.classList.add('px-6', 'py-4', 'text-center', 'text-sm', 'text-gray-500', 'italic');
-                
-                cell.textContent = 'Selecione a turma e a disciplina para ver os horários.';
-                
-                totalDiasDisciplinaSpan.textContent = 0;
-            }
-        }
-        
-        /**
-         * Gera e descarrega o relatório de horários em formato PDF da ABA 1.
-         */
-        async function exportDisciplinaReportToPdf() {
-            if (!disciplinaSelect.value) return;
-
-            exportDisciplinaPdfBtn.disabled = true;
-            exportDisciplinaPdfBtn.textContent = 'Gerando PDF...';
-            showFeedback('Gerando relatório PDF...', 'bg-yellow-100 text-yellow-800');
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const margin = 15;
-            let y = margin;
-            
-            const selectedYearText = yearSelect.options[yearSelect.selectedIndex].text;
-            const selectedTurmaText = turmaSelect.options[turmaSelect.selectedIndex].text;
-            const selectedDisciplinaText = disciplinaSelect.options[disciplinaSelect.selectedIndex].text;
-            
-            const totalDiasText = totalDiasDisciplinaSpan.textContent; 
-            const professorNames = Array.from(new Set(currentScheduleDisciplina.map(item => item.professorName))).join(' / ');
-
-
-            const addCenteredText = (text, size, style = 'normal') => {
-                doc.setFont('helvetica', style);
-                doc.setFontSize(size);
-                const textWidth = doc.getStringUnitWidth(text) * size / doc.internal.scaleFactor;
-                const x = (pageWidth - textWidth) / 2;
-                doc.text(text, x, y);
-                y += size * 0.4;
-            };
-
-            y += 5;
-            addCenteredText('INSTITUTO FEDERAL DE RONDÔNIA', 14, 'bold');
-            addCenteredText('CAMPUS CACOAL', 12, 'italic');
-            y += 5;
-            addCenteredText('DEPARTAMENTO DE APOIO AO ENSINO', 10);
-            addCenteredText('COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS', 10);
-            
-            y += 10;
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Relatório de Horários de Aula (Disciplina Agregada) - Ano ${selectedYearText}`, margin, y);
-            y += 5;
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Turma: ${selectedTurmaText}`, margin, y);
-            y += 5;
-            doc.text(`Disciplina: ${selectedDisciplinaText}`, margin, y);
-            y += 5;
-            doc.text(`Professores Envolvidos: ${professorNames}`, margin, y); 
-            y += 5;
-            doc.text(`Total de Dias de Aula (Excluindo horários REC e Exame): ${totalDiasText}`, margin, y);
-            y += 10;
-            
-            const headers = [["Mês", "Dia do Mês", "Dia da Semana", "Horário da Aula", "Professor"]]; 
-            
-            const data = currentScheduleDisciplina.map(item => [
-                item.month, 
-                item.dayOfMonth.toString(), 
-                item.dayOfWeek, 
-                item.time,
-                item.professorName 
-            ]);
-
-            doc.autoTable({
-                head: headers,
-                body: data,
-                startY: y,
-                theme: 'striped',
-                headStyles: { fillColor: [22, 163, 74], fontStyle: 'bold' },
-                styles: { fontSize: 8, cellPadding: 2 },
-                margin: { top: margin, bottom: margin, left: margin, right: margin },
-                didDrawPage: function (data) {
-                    const footerText = `${dataRelatorioSpan.textContent} / Campus Cacoal`;
-                    doc.setFontSize(8);
-                    doc.setFont('helvetica', 'normal');
-                    const textWidth = doc.getStringUnitWidth(footerText) * 8 / doc.internal.scaleFactor;
-                    const x = (pageWidth - textWidth) / 2;
-                    doc.text(footerText, x, doc.internal.pageSize.getHeight() - 10);
                 }
             });
-
-            const fileName = `Relatorio_${selectedYearText}_${selectedTurmaText.replace(/\s/g, '_')}_${selectedDisciplinaText.replace(/\s/g, '_')}_Agregado.pdf`;
-            doc.save(fileName);
-
-            exportDisciplinaPdfBtn.disabled = false;
-            exportDisciplinaPdfBtn.textContent = 'Exportar Relatório em PDF (Disciplina)';
-            showFeedback('Relatório PDF gerado com sucesso!', 'bg-green-100 text-green-800');
         }
-
         
+        renderTableDisciplina(currentScheduleDisciplina);
+        exportAreaDisciplina.classList.remove('hidden');
+        exportDisciplinaPdfBtn.disabled = currentScheduleDisciplina.length === 0;
+    } else {
+         exportAreaDisciplina.classList.add('hidden');
+    }
+}
+
+function renderTableDisciplina(schedule) {
+    tableBodyDisciplina.innerHTML = '';
+    
+    if (schedule && schedule.length > 0) {
+        // Ordenação cronológica
+        schedule.sort((a, b) => {
+            const monthA = monthOrder[a.month.toLowerCase()] || 0;
+            const monthB = monthOrder[b.month.toLowerCase()] || 0;
+            if (monthA !== monthB) return monthA - monthB;
+            if (a.dayOfMonth !== b.dayOfMonth) return a.dayOfMonth - b.dayOfMonth;
+            return a.time.localeCompare(b.time);
+        });
+        
+        const regularClasses = schedule.filter(item => !item.isRecuperacao);
+        totalDiasDisciplinaSpan.textContent = regularClasses.length;
+
+        schedule.forEach((item, index) => {
+            const row = tableBodyDisciplina.insertRow();
+            
+            if (item.isRecuperacao) {
+                row.className = 'bg-yellow-100 hover:bg-yellow-200';
+            } else {
+                row.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100';
+            }
+
+            const cells = [item.month, item.dayOfMonth, item.dayOfWeek, item.time, item.professorName];
+            cells.forEach(text => {
+                const cell = row.insertCell();
+                cell.textContent = text;
+                cell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-900';
+            });
+        });
+        
+    } else {
+        const row = tableBodyDisciplina.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 5; 
+        cell.className = 'px-6 py-4 text-center text-sm text-gray-500 italic';
+        cell.textContent = 'Nenhuma aula encontrada para o semestre atual.';
+        totalDiasDisciplinaSpan.textContent = 0;
+    }
+}
         // =========================================================================
         // LÓGICA: ABA 2 (RELATÓRIO PIVÔ)
         // =========================================================================
