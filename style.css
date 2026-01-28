@@ -1353,15 +1353,15 @@ window.gerarGradeSemanal = function() {
     const mapaDatas = calcularDatasDaSemana(ano, sem);
     const listaHorarios = [
         {h: "07:30 - 08:20", t: "aula"}, {h: "08:20 - 09:10", t: "aula"},
-        {h: "09:10 a 09:30 - INTERVALO", t: "pausa"},
+        {h: "09:10 - 09:30 - INTERVALO", t: "pausa"},
         {h: "09:30 - 10:20", t: "aula"}, {h: "10:20 - 11:10", t: "aula"}, {h: "11:10 - 12:00", t: "aula"},
-        {h: "12:00 a 13:50 - ALMOÇO", t: "pausa"},
+        {h: "12:00 - 13:50 - ALMOÇO", t: "pausa"},
         {h: "13:50 - 14:40", t: "aula"}, {h: "14:40 - 15:30", t: "aula"},
-        {h: "15:30 a 15:50 - INTERVALO", t: "pausa"},
+        {h: "15:30 - 15:50 - INTERVALO", t: "pausa"},
         {h: "15:50 - 16:40", t: "aula"}, {h: "16:40 - 17:30", t: "aula"}, {h: "17:30 - 18:20", t: "aula"},
-        {h: "18:20 a 19:00 - JANTAR", t: "pausa"},
+        {h: "18:20 - 19:00 - JANTAR", t: "pausa"},
         {h: "19:00 - 19:50", t: "aula"}, {h: "19:50 - 20:40", t: "aula"},
-        {h: "20:40 a 20:50 - INTERVALO", t: "pausa"},
+        {h: "20:40 - 20:50 - INTERVALO", t: "pausa"},
         {h: "20:50 - 21:40", t: "aula"}, {h: "21:40 - 22:30", t: "aula"}
     ];
 
