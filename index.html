@@ -1437,7 +1437,7 @@ window.exportarGradeSemanalPDF = function() {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // --- LÓGICA PARA FORMATAR A DATA DA SEMANA NO CABEÇALHO ---
+    // --- LÓGICA DE DATA ---
     const [ano, sem] = semanaRaw.split('-W').map(Number);
     let d = new Date(ano, 0, 1);
     let dayNum = d.getDay() || 7;
@@ -1466,35 +1466,32 @@ window.exportarGradeSemanalPDF = function() {
             valign: 'middle', 
             halign: 'center', 
             overflow: 'linebreak',
-            lineWidth: 0.1,
-            lineColor: [200, 200, 200]
+            lineWidth: 0.1
         },
-        headStyles: { fillColor: [21, 128, 61], textColor: 255, fontStyle: 'bold' },
-        
-        // 1. DEFINIÇÃO DE LARGURAS FIXAS
+        headStyles: { fillColor: [21, 128, 61], textColor: 255 },
         columnStyles: { 
-            0: { cellWidth: 25, fontStyle: 'bold' }, // Horário
-            1: { cellWidth: 26 }, // Seg
-            2: { cellWidth: 26 }, // Ter
-            3: { cellWidth: 26 }, // Qua
-            4: { cellWidth: 26 }, // Qui
-            5: { cellWidth: 26 }, // Sex
-            6: { cellWidth: 26 }  // Sáb
+            0: { cellWidth: 25, fontStyle: 'bold' },
+            1: { cellWidth: 26 }, 2: { cellWidth: 26 }, 3: { cellWidth: 26 },
+            4: { cellWidth: 26 }, 5: { cellWidth: 26 }, 6: { cellWidth: 26 }
         },
-
-        // 2. COR CINZA NAS LINHAS DE PAUSA
+        // CORREÇÃO DO ERRO: Verificação segura para pintar as pausas
         didParseCell: function(data) {
-            // Verifica se a linha original no HTML tem a classe ou o tipo 'pausa'
-            const rowEl = data.row.raw; 
-            if (rowEl && (rowEl.classList.contains('bg-gray-200') || rowEl.getAttribute('data-type') === 'pausa')) {
-                data.cell.styles.fillColor = [240, 240, 240]; // Cinza claro
-                data.cell.styles.fontStyle = 'italic';
-                data.cell.styles.textColor = [100, 100, 100];
+            // Se for o corpo da tabela e a célula contiver palavras-chave de pausa
+            if (data.section === 'body') {
+                const texto = data.cell.text.join(' ').toUpperCase();
+                const ehPausa = texto.includes('INTERVALO') || 
+                                texto.includes('ALMOÇO') || 
+                                texto.includes('JANTAR') || 
+                                texto.includes('PAUSA');
+
+                if (ehPausa) {
+                    data.cell.styles.fillColor = [240, 240, 240]; // Cinza Claro
+                    data.cell.styles.fontStyle = 'italic';
+                    data.cell.styles.textColor = [100, 100, 100];
+                }
             }
         },
-
         didDrawPage: function(data) {
-            // CABEÇALHO
             centerText("INSTITUTO FEDERAL DE RONDÔNIA", 12, 11, 'bold');
             centerText("CAMPUS CACOAL", 17, 10, 'italic');
             centerText("DEPARTAMENTO DE APOIO AO ENSINO", 26, 9);
@@ -1503,8 +1500,6 @@ window.exportarGradeSemanalPDF = function() {
             doc.setFontSize(10); doc.setFont('helvetica', 'bold');
             doc.text(`Relatório de Horários de Aula (Grade Semanal) - 2025`, 14, 42);
             doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-            
-            // 3. EXIBIÇÃO DA SEMANA FORMATADA
             doc.text(`Professor: ${prof}`, 14, 47);
             doc.text(`${intervaloSemana}`, 14, 51);
 
@@ -1512,16 +1507,15 @@ window.exportarGradeSemanalPDF = function() {
             doc.setDrawColor(200);
             doc.line(10, pageHeight - 25, pageWidth - 10, pageHeight - 25);
             doc.setFontSize(7);
-            centerText("Endereço: Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO", pageHeight - 20, 7);
+            centerText("Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO", pageHeight - 20, 7);
             centerText("Telefone: 069-2182-9642 | E-mail: campuscacoal@ifro.edu.br", pageHeight - 15, 7);
 
-            // PAGINAÇÃO
-            doc.setFontSize(8);
-            doc.text("Página " + doc.internal.getNumberOfPages(), pageWidth - 25, pageHeight - 10);
+            const str = "Página " + doc.internal.getNumberOfPages();
+            doc.text(str, pageWidth - 25, pageHeight - 10);
         }
     });
 
-    doc.save(`Grade_Semanal_${prof.replace(/\s+/g, '_')}.pdf`);
+    doc.save(`Grade_${prof.replace(/\s+/g, '_')}.pdf`);
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
