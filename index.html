@@ -14,7 +14,7 @@
         .config-input { border: 1px solid #ddd; padding: 6px 10px; border-radius: 6px; width: 100%; font-size: 0.875rem; background: #fff; }
         table th, table td { border: 1px solid #e5e7eb; word-wrap: break-word; }
         .grade-cell { min-height: 80px; vertical-align: top; width: 16%; font-size: 9px; }
-        .aula-card { padding: 4px; margin-bottom: 4px; border-radius: 4px; border: 1px solid #bbf7d0; background-color: #f0fdf4; line-height: 1.2; }
+        .aula-card { padding: 4px; margin-bottom: 4px; border-radius: 4px; border: 1px solid #bbf7d0; background-color: #f0fdf4; line-height: 1.2; border-left-width: 4px; border-left-color: #15803d; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -23,8 +23,8 @@
         <div class="container mx-auto px-6 py-8">
             <div class="flex flex-col md:flex-row justify-between items-center border-b border-green-600 pb-6">
                 <div class="text-center md:text-left">
-                    <h1 id="render-instituicao" class="text-3xl font-black italic uppercase">INSTITUTO FEDERAL DE RONDÔNIA</h1>
-                    <h2 id="render-unidade" class="text-xl font-bold opacity-90 uppercase">CAMPUS CACOAL</h2>
+                    <h1 id="render-inst-topo" class="text-3xl font-black italic uppercase">INSTITUTO FEDERAL DE RONDÔNIA</h1>
+                    <h2 id="render-unid-topo" class="text-xl font-bold opacity-90 uppercase">CAMPUS CACOAL</h2>
                 </div>
                 <div class="mt-4 md:mt-0 bg-white/10 p-4 rounded-lg border border-white/20 text-center">
                     <p class="text-xs uppercase font-bold opacity-80">Data do Relatório</p>
@@ -59,7 +59,7 @@
                 <div id="exportAreaDisciplina" class="hidden">
                     <div class="flex justify-between items-center mb-4 bg-green-50 p-4 rounded-lg border border-green-200">
                         <span class="font-bold">Aulas Apuradas (s/ REC): <b id="totalDiasDisciplina" class="text-green-700 text-2xl">0</b></span>
-                        <button onclick="exportarDisciplinaPDF()" class="bg-green-700 text-white px-8 py-3 rounded-xl font-black hover:bg-green-800">GERAR PDF</button>
+                        <button onclick="exportarDisciplinaPDF()" class="bg-green-700 text-white px-8 py-3 rounded-xl font-black hover:bg-green-800 transition">GERAR PDF</button>
                     </div>
                     <table id="horariosTableDisciplina" class="min-w-full bg-white border text-center text-sm">
                         <thead class="bg-gray-800 text-white">
@@ -80,7 +80,7 @@
                         <option value="1">1º SEMESTRE</option>
                         <option value="2">2º SEMESTRE</option>
                     </select>
-                    <button onclick="exportarPivoPDF()" class="bg-green-700 text-white font-bold rounded-xl hover:bg-green-800">EXPORTAR PDF</button>
+                    <button onclick="exportarPivoPDF()" class="bg-green-700 text-white font-bold rounded-xl hover:bg-green-800 transition">EXPORTAR PDF</button>
                 </div>
                 <div id="areaTabelaPivo" class="hidden overflow-x-auto">
                     <table id="tableProfessorPivot" class="min-w-full border text-[10px] text-center">
@@ -104,8 +104,8 @@
                     <select id="selectProfSemanal" class="p-3 border rounded-xl font-bold"></select>
                     <input type="week" id="inputSemana" class="p-3 border rounded-xl">
                     <div class="flex gap-2">
-                        <button onclick="gerarGradeSemanal()" class="bg-blue-600 text-white font-bold px-4 rounded-lg flex-1">VER GRADE</button>
-                        <button onclick="exportarGradeSemanalPDF()" class="bg-green-700 text-white font-bold px-4 rounded-lg flex-1">PDF</button>
+                        <button onclick="gerarGradeSemanal()" class="bg-blue-600 text-white font-bold px-4 rounded-lg flex-1 hover:bg-blue-700 transition">VER GRADE</button>
+                        <button onclick="exportarGradeSemanalPDF()" class="bg-green-700 text-white font-bold px-4 rounded-lg flex-1 hover:bg-green-800 transition">PDF</button>
                     </div>
                 </div>
                 <div id="gradeSemanalResult" class="overflow-x-auto"></div>
@@ -114,27 +114,29 @@
 
         <section id="tab-config" class="tab-pane">
             <div class="bg-white p-8 rounded-xl shadow-md border border-blue-200">
-                <h3 class="text-xl font-black text-blue-800 mb-6 uppercase border-b pb-2">Configurações</h3>
+                <h3 class="text-xl font-black text-blue-800 mb-6 uppercase border-b pb-2">Configurações Gerais</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-4">
                         <div><label class="text-[10px] font-bold text-gray-400">INSTITUIÇÃO</label><input type="text" id="cfg-inst" class="config-input"></div>
                         <div><label class="text-[10px] font-bold text-gray-400">UNIDADE</label><input type="text" id="cfg-unidade" class="config-input"></div>
                         <div><label class="text-[10px] font-bold text-gray-400">ENDEREÇO</label><input type="text" id="cfg-end" class="config-input"></div>
-                        <div><label class="text-[10px] font-bold text-gray-400">TELEFONE</label><input type="text" id="cfg-tel" class="config-input"></div>
-                        <div><label class="text-[10px] font-bold text-gray-400">E-MAIL</label><input type="text" id="cfg-email" class="config-input"></div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-[10px] font-bold text-gray-400">TELEFONE</label><input type="text" id="cfg-tel" class="config-input"></div>
+                            <div><label class="text-[10px] font-bold text-gray-400">E-MAIL</label><input type="text" id="cfg-email" class="config-input"></div>
+                        </div>
                     </div>
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-2 bg-blue-50 p-3 rounded-lg">
-                            <div class="col-span-2 font-bold text-blue-800 text-xs text-center">1º SEMESTRE</div>
+                            <div class="col-span-2 font-bold text-blue-800 text-[10px]">1º SEMESTRE (Início/Fim)</div>
                             <input type="date" id="cfg-s1-inicio" class="config-input">
                             <input type="date" id="cfg-s1-fim" class="config-input">
                         </div>
                         <div class="grid grid-cols-2 gap-2 bg-green-50 p-3 rounded-lg">
-                            <div class="col-span-2 font-bold text-green-800 text-xs text-center">2º SEMESTRE</div>
+                            <div class="col-span-2 font-bold text-green-800 text-[10px]">2º SEMESTRE (Início/Fim)</div>
                             <input type="date" id="cfg-s2-inicio" class="config-input">
                             <input type="date" id="cfg-s2-fim" class="config-input">
                         </div>
-                        <button onclick="salvarConfiguracoes()" class="w-full bg-blue-700 text-white font-black py-3 rounded-xl">SALVAR</button>
+                        <button onclick="salvarConfiguracoes()" class="w-full bg-blue-700 text-white font-black py-3 rounded-xl hover:bg-blue-800">SALVAR CONFIGURAÇÕES</button>
                     </div>
                 </div>
             </div>
@@ -144,17 +146,10 @@
     <script>
         let processedData = {};
         const GIST_MAP = { '2025': 'https://gist.githubusercontent.com/jamilsalim-afk/b8ff629ba4181ff68b988910e43fcefc/raw/799bb00af8e38569af8969c933df570f970858d7/2025.csv' };
-        
         const monthNames = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
         const monthOrder = { "janeiro":1,"fevereiro":2,"março":3,"abril":4,"maio":5,"junho":6,"julho":7,"agosto":8,"setembro":9,"outubro":10,"novembro":11,"dezembro":12 };
         const MONTH_MAP_PIVOT = { "janeiro": "Jan", "fevereiro": "Fev", "março": "Mar", "abril": "Abr", "maio": "Mai", "junho": "Jun", "julho": "Jul", "agosto": "Ago", "setembro": "Set", "outubro": "Out", "novembro": "Nov", "dezembro": "Dez" };
-
-        // Horários Padrão IFRO (Ajustado para conferência exata com Gist)
-        const temposAula = [
-            "07:30 - 08:20", "08:20 - 09:10", "09:30 - 10:20", "10:20 - 11:10", "11:10 - 12:00",
-            "13:30 - 14:20", "14:20 - 15:10", "15:30 - 16:20", "16:20 - 17:10", "17:10 - 18:00",
-            "19:00 - 19:50", "19:50 - 20:40", "20:50 - 21:40", "21:40 - 22:30"
-        ];
+        const temposAula = ["07:30 - 08:20", "08:20 - 09:10", "09:30 - 10:20", "10:20 - 11:10", "11:10 - 12:00", "13:30 - 14:20", "14:20 - 15:10", "15:30 - 16:20", "16:20 - 17:10", "17:10 - 18:00", "19:00 - 19:50", "19:50 - 20:40", "20:50 - 21:40", "21:40 - 22:30"];
 
         window.onload = () => {
             document.getElementById('dataRelatorio').textContent = new Date().toLocaleDateString('pt-BR');
@@ -164,28 +159,120 @@
             carregarDados('2025');
         };
 
-        function carregarConfiguracoes() {
-            const cfg = JSON.parse(localStorage.getItem('ifro_manager_cfg')) || {
-                inst: "INSTITUTO FEDERAL DE RONDÔNIA", unid: "CAMPUS CACOAL",
-                end: "Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO",
-                tel: "069-2182-9642", email: "campuscacoal@ifro.edu.br",
-                s1_i: "2025-02-01", s1_f: "2025-07-10", s2_i: "2025-07-25", s2_f: "2025-12-20"
-            };
-            Object.keys(cfg).forEach(k => { if(document.getElementById(`cfg-${k.replace('_','-')}`)) document.getElementById(`cfg-${k.replace('_','-')}`).value = cfg[k]; });
+        // --- MOTOR PDF PADRONIZADO ---
+        function gerarBasePDF(doc, titulo, subtitulos = [], orientacao = 'p') {
+            const cfg = JSON.parse(localStorage.getItem('ifro_manager_cfg'));
+            const pageWidth = orientacao === 'p' ? 210 : 297;
+            
+            doc.setFillColor(21, 128, 61); doc.rect(0, 0, pageWidth, 40, 'F');
+            doc.setTextColor(255); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+            doc.text(cfg.inst, pageWidth/2, 15, { align: 'center' });
+            doc.setFontSize(12); doc.text(cfg.unid, pageWidth/2, 22, { align: 'center' });
+            doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+            doc.text("DEPARTAMENTO DE APOIO AO ENSINO - DAE", pageWidth/2, 28, { align: 'center' });
+            doc.text("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", pageWidth/2, 32, { align: 'center' });
+            
+            doc.setTextColor(0); doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+            doc.text(titulo, pageWidth/2, 50, { align: 'center' });
+            
+            doc.setFontSize(9); let y = 58;
+            subtitulos.forEach(s => { doc.text(s, 15, y); y += 5; });
+            
+            const totalPagesExp = "{total_pages_count_string}";
+            doc.autoTableSetDefaults({
+                didDrawPage: (data) => {
+                    const pHeight = doc.internal.pageSize.getHeight();
+                    doc.setFontSize(7); doc.setTextColor(100);
+                    doc.text(`${cfg.end} | Tel: ${cfg.tel} | E-mail: ${cfg.email}`, pageWidth/2, pHeight - 15, { align: 'center' });
+                    doc.text(`Página ${doc.internal.getNumberOfPages()} de ${totalPagesExp}`, pageWidth/2, pHeight - 10, { align: 'center' });
+                }
+            });
+            return y + 5;
         }
 
-        function salvarConfiguracoes() {
-            const config = {
-                inst: document.getElementById('cfg-inst').value, unid: document.getElementById('cfg-unidade').value,
-                end: document.getElementById('cfg-end').value, tel: document.getElementById('cfg-tel').value,
-                email: document.getElementById('cfg-email').value, s1_i: document.getElementById('cfg-s1-inicio').value,
-                s1_f: document.getElementById('cfg-s1-fim').value, s2_i: document.getElementById('cfg-s2-inicio').value,
-                s2_f: document.getElementById('cfg-s2-fim').value
-            };
-            localStorage.setItem('ifro_manager_cfg', JSON.stringify(config));
-            alert("Salvo!"); location.reload();
+        // --- ABA 1: DISCIPLINA ---
+        function exportarDisciplinaPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            const t = document.getElementById('turmaSelect').options[document.getElementById('turmaSelect').selectedIndex].text;
+            const d = document.getElementById('disciplinaSelect').options[document.getElementById('disciplinaSelect').selectedIndex].text;
+            const total = document.getElementById('totalDiasDisciplina').textContent;
+            
+            const y = gerarBasePDF(doc, "RELATÓRIO DE DIAS LETIVOS POR DISCIPLINA", [
+                `TURMA: ${t}`,
+                `DISCIPLINA: ${d}`,
+                `TOTAL DE AULAS APURADAS: ${total}`
+            ]);
+            
+            doc.autoTable({ html: '#horariosTableDisciplina', startY: y, theme: 'grid', headStyles: { fillColor: [31, 41, 55] }, styles: { fontSize: 8, halign: 'center' } });
+            doc.save(`Disciplina_${t}.pdf`);
         }
 
+        // --- ABA 2: TURMA (PIVÔ) ---
+        function exportarPivoPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
+            const t = document.getElementById('turmaSelectPivo').options[document.getElementById('turmaSelectPivo').selectedIndex].text;
+            const s = document.getElementById('semestreFiltroPivo').value;
+            
+            const y = gerarBasePDF(doc, "RELATÓRIO DE CARGA HORÁRIA MENSAL POR TURMA", [
+                `TURMA: ${t}`,
+                `PERÍODO: ${s}º SEMESTRE`
+            ], 'l');
+            
+            doc.autoTable({ html: '#tableProfessorPivot', startY: y, theme: 'grid', headStyles: { fillColor: [31, 41, 55] }, styles: { fontSize: 7, halign: 'center' }, columnStyles: { 0: { halign: 'left', cellWidth: 50 } } });
+            doc.save(`Turma_${t}.pdf`);
+        }
+
+        // --- ABA 3: GRADE SEMANAL (CORRIGIDA) ---
+        function gerarGradeSemanal() {
+            const profBusca = document.getElementById('selectProfSemanal').value;
+            const weekStr = document.getElementById('inputSemana').value;
+            if(!profBusca || !weekStr) return alert("Selecione Professor e Semana");
+            const [year, weekNum] = weekStr.split('-W').map(Number);
+            const dataInicioSemana = getStartDateOfWeek(weekNum, year);
+            const diasNome = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+            
+            let html = `<table id="tableGradeExp" class="min-w-full border text-[10px] bg-white">
+                <thead class="bg-gray-800 text-white"><tr><th class="p-2">HORÁRIO</th>`;
+            diasNome.forEach((d, i) => {
+                const dt = new Date(dataInicioSemana); dt.setDate(dt.getDate() + i);
+                html += `<th class="p-2 w-40">${d.toUpperCase()}<br>${dt.toLocaleDateString('pt-BR')}</th>`;
+            });
+            html += `</tr></thead><tbody>`;
+            temposAula.forEach(tempoPadrao => {
+                html += `<tr><td class="bg-gray-50 font-bold p-2 text-center border w-28">${tempoPadrao}</td>`;
+                diasNome.forEach((dNome, i) => {
+                    const dtRef = new Date(dataInicioSemana); dtRef.setDate(dtRef.getDate() + i);
+                    const diaRef = dtRef.getDate(); const mesRef = monthNames[dtRef.getMonth()];
+                    let cellContent = "";
+                    for(let tId in processedData) {
+                        for(let dId in processedData[tId].disciplines) {
+                            const disc = processedData[tId].disciplines[dId];
+                            disc.schedule.forEach(s => {
+                                const hGist = s.time.split('-')[0].trim();
+                                const hPadrao = tempoPadrao.split('-')[0].trim();
+                                if(s.prof.includes(profBusca) && s.weekday.toLowerCase() === dNome.toLowerCase() && s.day === diaRef && s.month.toLowerCase() === mesRef && hGist === hPadrao) {
+                                    cellContent += `<div class="aula-card"><b>${processedData[tId].name}</b><br>${disc.name}</div>`;
+                                }
+                            });
+                        }
+                    }
+                    html += `<td class="p-1 border align-top grade-cell">${cellContent}</td>`;
+                });
+                html += `</tr>`;
+            });
+            document.getElementById('gradeSemanalResult').innerHTML = html + "</tbody></table>";
+        }
+
+        function exportarGradeSemanalPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
+            const prof = document.getElementById('selectProfSemanal').value;
+            const week = document.getElementById('inputSemana').value;
+            const y = gerarBasePDF(doc, "RELATÓRIO DE GRADE SEMANAL DE AULAS", [`PROFESSOR: ${prof}`, `SEMANA: ${week}`], 'l');
+            doc.autoTable({ html: '#tableGradeExp', startY: y, theme: 'grid', styles: { fontSize: 7, cellPadding: 1 }, headStyles: { fillColor: [31, 41, 55] }, columnStyles: { 0: { cellWidth: 25 } } });
+            doc.save(`Grade_${prof}.pdf`);
+        }
+
+        // --- LÓGICA DE DADOS ---
         async function carregarDados(ano) {
             const res = await fetch(GIST_MAP[ano]);
             const csv = await res.text();
@@ -206,98 +293,42 @@
             atualizarSeletores();
         }
 
-        function gerarGradeSemanal() {
-            const profBusca = document.getElementById('selectProfSemanal').value;
-            const weekStr = document.getElementById('inputSemana').value;
-            if(!profBusca || !weekStr) return alert("Selecione Professor e Semana");
-
-            const [year, weekNum] = weekStr.split('-W').map(Number);
-            const dataInicioSemana = getStartDateOfWeek(weekNum, year);
-            const diasNome = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
-            
-            let html = `<table id="tableGradeExp" class="min-w-full border text-[10px] bg-white">
-                <thead class="bg-gray-800 text-white"><tr><th class="p-2">HORÁRIO</th>`;
-            
-            diasNome.forEach((d, i) => {
-                const dt = new Date(dataInicioSemana); dt.setDate(dt.getDate() + i);
-                html += `<th class="p-2 w-40">${d.toUpperCase()}<br>${dt.toLocaleDateString('pt-BR')}</th>`;
-            });
-            html += `</tr></thead><tbody>`;
-
-            temposAula.forEach(tempoPadrao => {
-                html += `<tr><td class="bg-gray-50 font-bold p-2 text-center border w-28">${tempoPadrao}</td>`;
-                diasNome.forEach((dNome, i) => {
-                    const dtReferencia = new Date(dataInicioSemana); dtReferencia.setDate(dtReferencia.getDate() + i);
-                    const diaRef = dtReferencia.getDate();
-                    const mesRef = monthNames[dtReferencia.getMonth()];
-                    
-                    let cellContent = "";
-                    for(let tId in processedData) {
-                        for(let dId in processedData[tId].disciplines) {
-                            const disc = processedData[tId].disciplines[dId];
-                            disc.schedule.forEach(s => {
-                                // LÓGICA DE CONFERÊNCIA: Verificamos se o horário do Gist contém o início do nosso horário padrão
-                                const horaInicioGist = s.time.split('-')[0].trim();
-                                const horaInicioPadrao = tempoPadrao.split('-')[0].trim();
-
-                                if(s.prof.includes(profBusca) && 
-                                   s.weekday.toLowerCase() === dNome.toLowerCase() && 
-                                   s.day === diaRef && 
-                                   s.month.toLowerCase() === mesRef &&
-                                   horaInicioGist === horaInicioPadrao) {
-                                    cellContent += `<div class="aula-card"><b>${processedData[tId].name}</b><br>${disc.name}</div>`;
-                                }
-                            });
-                        }
-                    }
-                    html += `<td class="p-1 border align-top grade-cell">${cellContent}</td>`;
-                });
-                html += `</tr>`;
-            });
-            document.getElementById('gradeSemanalResult').innerHTML = html + "</tbody></table>";
+        function carregarConfiguracoes() {
+            const cfg = JSON.parse(localStorage.getItem('ifro_manager_cfg')) || {
+                inst: "INSTITUTO FEDERAL DE RONDÔNIA", unid: "CAMPUS CACOAL",
+                end: "Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO",
+                tel: "069-2182-9642", email: "campuscacoal@ifro.edu.br",
+                s1_i: "2025-02-01", s1_f: "2025-07-10", s2_i: "2025-07-25", s2_f: "2025-12-20"
+            };
+            Object.keys(cfg).forEach(k => { if(document.getElementById(`cfg-${k.replace('_','-')}`)) document.getElementById(`cfg-${k.replace('_','-')}`).value = cfg[k]; });
+            document.getElementById('render-inst-topo').textContent = cfg.inst;
+            document.getElementById('render-unid-topo').textContent = cfg.unid;
         }
 
-        // Funções Auxiliares
-        function getStartDateOfWeek(w, y) {
-            const simple = new Date(y, 0, 1 + (w - 1) * 7);
-            const dow = simple.getDay();
-            const ISOweekStart = simple;
-            if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-            else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-            return ISOweekStart;
+        function salvarConfiguracoes() {
+            const config = {
+                inst: document.getElementById('cfg-inst').value, unid: document.getElementById('cfg-unidade').value,
+                end: document.getElementById('cfg-end').value, tel: document.getElementById('cfg-tel').value,
+                email: document.getElementById('cfg-email').value, s1_i: document.getElementById('cfg-s1-inicio').value,
+                s1_f: document.getElementById('cfg-s1-fim').value, s2_i: document.getElementById('cfg-s2-inicio').value,
+                s2_f: document.getElementById('cfg-s2-fim').value
+            };
+            localStorage.setItem('ifro_manager_cfg', JSON.stringify(config));
+            alert("Configurações salvas com sucesso!"); location.reload();
         }
 
-        function popularAnos() { ['yearSelect', 'yearSelectTurma', 'yearSelectSemanal'].forEach(id => { document.getElementById(id).innerHTML = `<option value="2025">2025</option>`; }); }
-        
-        function atualizarSeletores() {
-            const t1 = document.getElementById('turmaSelect'); const t2 = document.getElementById('turmaSelectPivo');
-            [t1, t2].forEach(s => { 
-                s.innerHTML = '<option value="">-- TURMA --</option>'; 
-                Object.keys(processedData).sort().forEach(id => s.innerHTML += `<option value="${id}">${processedData[id].name}</option>`);
-                s.disabled = false;
-            });
-            const pSel = document.getElementById('selectProfSemanal'); const profs = new Set();
-            for(let t in processedData) for(let d in processedData[t].disciplines) processedData[t].disciplines[d].professors.forEach(p => profs.add(p.split(' (')[0].trim()));
-            pSel.innerHTML = '<option value="">-- PROFESSOR --</option>'; Array.from(profs).sort().forEach(p => pSel.innerHTML += `<option value="${p}">${p}</option>`);
-        }
-
-        // ABA 1 E 2 LOGIC
         function filtrarDisciplina() {
             const tId = document.getElementById('turmaSelect').value;
             const dId = document.getElementById('disciplinaSelect').value;
             const sem = document.getElementById('semestreFiltro').value;
             const tbody = document.getElementById('tableBodyDisciplina');
-            tbody.innerHTML = '';
-            if(!tId || !dId) return;
+            tbody.innerHTML = ''; if(!tId || !dId) return;
             const cfg = JSON.parse(localStorage.getItem('ifro_manager_cfg'));
             const aulas = processedData[tId].disciplines[dId].schedule.filter(a => {
                 const dt = new Date(2025, monthOrder[a.month.toLowerCase()]-1, a.day);
                 return dt >= new Date(sem==='1'?cfg.s1_i:cfg.s2_i) && dt <= new Date(sem==='1'?cfg.s1_f:cfg.s2_f);
             }).sort((a,b) => monthOrder[a.month.toLowerCase()] - monthOrder[b.month.toLowerCase()] || a.day - b.day);
-
-            aulas.forEach(a => {
-                tbody.innerHTML += `<tr><td class="p-2 border">${a.month}</td><td class="p-2 border">${a.day}</td><td class="p-2 border">${a.weekday}</td><td class="p-2 border">${a.time}</td><td class="p-2 border font-bold">${a.prof}</td></tr>`;
-            });
+            aulas.forEach(a => { tbody.innerHTML += `<tr><td class="p-2 border">${a.month}</td><td class="p-2 border">${a.day}</td><td class="p-2 border">${a.weekday}</td><td class="p-2 border">${a.time}</td><td class="p-2 border font-bold">${a.prof}</td></tr>`; });
             document.getElementById('totalDiasDisciplina').textContent = aulas.length;
             document.getElementById('exportAreaDisciplina').classList.remove('hidden');
         }
@@ -328,7 +359,26 @@
             document.getElementById('areaTabelaPivo').classList.remove('hidden');
         }
 
-        // Eventos
+        function atualizarSeletores() {
+            const t1 = document.getElementById('turmaSelect'); const t2 = document.getElementById('turmaSelectPivo');
+            [t1, t2].forEach(s => { 
+                s.innerHTML = '<option value="">-- TURMA --</option>'; 
+                Object.keys(processedData).sort().forEach(id => s.innerHTML += `<option value="${id}">${processedData[id].name}</option>`);
+                s.disabled = false;
+            });
+            const pSel = document.getElementById('selectProfSemanal'); const profs = new Set();
+            for(let t in processedData) for(let d in processedData[t].disciplines) processedData[t].disciplines[d].professors.forEach(p => profs.add(p.split(' (')[0].trim()));
+            pSel.innerHTML = '<option value="">-- PROFESSOR --</option>'; Array.from(profs).sort().forEach(p => pSel.innerHTML += `<option value="${p}">${p}</option>`);
+        }
+
+        function getStartDateOfWeek(w, y) {
+            const simple = new Date(y, 0, 1 + (w - 1) * 7); const dow = simple.getDay(); const ISO = simple;
+            if (dow <= 4) ISO.setDate(simple.getDate() - simple.getDay() + 1); else ISO.setDate(simple.getDate() + 8 - simple.getDay());
+            return ISO;
+        }
+
+        function popularAnos() { ['yearSelect', 'yearSelectTurma', 'yearSelectSemanal'].forEach(id => { document.getElementById(id).innerHTML = `<option value="2025">2025</option>`; }); }
+        
         document.getElementById('turmaSelect').onchange = (e) => {
             const dSel = document.getElementById('disciplinaSelect'); const tId = e.target.value;
             dSel.innerHTML = '<option value="">-- DISCIPLINA --</option>';
@@ -339,21 +389,7 @@
         document.getElementById('semestreFiltro').onchange = filtrarDisciplina;
         document.getElementById('turmaSelectPivo').onchange = filtrarTurmaPivo;
         document.getElementById('semestreFiltroPivo').onchange = filtrarTurmaPivo;
-
         function initTabs() { document.querySelectorAll('.tab-btn').forEach(btn => { btn.onclick = () => { document.querySelectorAll('.tab-btn, .tab-pane').forEach(el => el.classList.remove('active')); btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active'); }; }); }
-        
-        // Exportar PDF
-        window.exportarGradeSemanalPDF = function() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
-            const prof = document.getElementById('selectProfSemanal').value;
-            const week = document.getElementById('inputSemana').value;
-            const cfg = JSON.parse(localStorage.getItem('ifro_manager_cfg'));
-            doc.setFillColor(21, 128, 61); doc.rect(0, 0, 297, 35, 'F');
-            doc.setTextColor(255); doc.setFontSize(14); doc.text(cfg.inst, 148, 12, { align: 'center' });
-            doc.setFontSize(10); doc.text("GRADE SEMANAL - PROFESSOR: " + prof + " | SEMANA: " + week, 148, 25, { align: 'center' });
-            doc.autoTable({ html: '#tableGradeExp', startY: 40, theme: 'grid', styles: { fontSize: 7 }, headStyles: { fillColor: [31, 41, 55] } });
-            doc.save(`Grade_${prof}_${week}.pdf`);
-        };
     </script>
 </body>
 </html>
