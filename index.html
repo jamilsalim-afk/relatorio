@@ -1378,11 +1378,14 @@ window.gerarGradeSemanal = function() {
         </thead><tbody>`;
 
     listaHorarios.forEach(slot => {
-        if (slot.t === "pausa") {
-            html += `<tr class="bg-gray-100 text-gray-500 font-bold italic">
-                <td class="border border-gray-300 p-1 text-[9px] text-center">${slot.h}</td>
-                <td colspan="6" class="border border-gray-300 p-1 text-center tracking-[0.3em] text-[9px]">PAUSA PROGRAMADA</td>
-            </tr>`;
+       if (slot.t === "pausa") {
+    // Extrai o nome da pausa (ex: INTERVALO, ALMOÇO, JANTAR) do próprio texto do horário
+    const nomePausa = slot.h.split('- ').pop().toUpperCase(); 
+    html += `<tr class="bg-gray-100 text-gray-500 font-bold italic">
+        <td class="border border-gray-300 p-1 text-[9px] text-center">${slot.h.split(' - ')[0]}</td>
+        <td colspan="6" class="border border-gray-300 p-1 text-center tracking-[0.3em] text-[9px]">${nomePausa}</td>
+    </tr>`;
+}
         } else {
             html += `<tr style="height: 75px;">
                 <td class="border border-gray-300 p-1 font-bold bg-gray-50 text-center text-[9px]">${slot.h}</td>`;
@@ -1428,51 +1431,74 @@ window.gerarGradeSemanal = function() {
 };
 window.exportarGradeSemanalPDF = function() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4'); // Retrato
+    const doc = new jsPDF('p', 'mm', 'a4'); // Orientação Retrato
     const prof = document.getElementById('selectProfSemanal').value;
     const semanaRaw = document.getElementById('inputSemana').value;
     const tabela = document.getElementById('tabelaGradeExport');
 
-    if (!tabela) return;
+    if (!tabela) {
+        alert("Gere a grade antes de exportar.");
+        return;
+    }
 
     const pageWidth = doc.internal.pageSize.getWidth();
-    
-    // Cabeçalho (Mantenha o seu código de center aqui)
-    // ...
+    const pageHeight = doc.internal.pageSize.getHeight();
 
+    // Função para centralizar texto
+    const centerText = (text, y, size, style = 'normal') => {
+        doc.setFontSize(size);
+        doc.setFont('helvetica', style);
+        const textWidth = doc.getTextWidth(text);
+        doc.text(text, (pageWidth - textWidth) / 2, y);
+    };
+
+    // --- RENDERIZAÇÃO DO CONTEÚDO ---
     doc.autoTable({
         html: '#tabelaGradeExport',
         startY: 55,
         theme: 'grid',
+        margin: { top: 55, bottom: 30, left: 10, right: 10 },
         styles: { 
             fontSize: 6, 
             cellPadding: 1, 
             valign: 'middle', 
-            halign: 'center',
-            overflow: 'linebreak', // FORÇA A QUEBRA DE LINHA PARA NÃO SOBREPOR
-            cellWidth: 'wrap' 
+            halign: 'center', 
+            overflow: 'linebreak' 
         },
-        headStyles: { fillColor: [21, 128, 61], fontSize: 6 },
-        columnStyles: { 
-            0: { cellWidth: 22 }, // Coluna de Horário fixa
-            1: { cellWidth: 28 }, // Segunda
-            2: { cellWidth: 28 }, // Terça
-            3: { cellWidth: 28 }, // Quarta
-            4: { cellWidth: 28 }, // Quinta
-            5: { cellWidth: 28 }, // Sexta
-            6: { cellWidth: 28 }  // Sábado
-        },
-        // Garante que o PDF processe cada linha de texto separadamente
-        didParseCell: function(data) {
-            if (data.cell.raw && data.cell.raw.innerText) {
-                // Remove espaços duplos e garante texto limpo
-                data.cell.text = data.cell.raw.innerText.replace(/\s+/g, ' ').trim();
-            }
-        },
-        margin: { horizontal: 5 } // Margem pequena para caber todas as colunas
+        headStyles: { fillColor: [21, 128, 61], textColor: 255, fontStyle: 'bold' },
+        columnStyles: { 0: { cellWidth: 22, fontStyle: 'bold' } },
+        
+        // ESTE BLOCO DESENHA O CABEÇALHO E RODAPÉ EM TODAS AS PÁGINAS
+        didDrawPage: function(data) {
+            // --- CABEÇALHO ---
+            centerText("INSTITUTO FEDERAL DE RONDÔNIA", 12, 11, 'bold');
+            centerText("CAMPUS CACOAL", 17, 10, 'italic');
+            centerText("DEPARTAMENTO DE APOIO AO ENSINO", 26, 9);
+            centerText("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", 31, 9);
+
+            doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+            doc.text(`Relatório de Horários de Aula (Grade Semanal) - 2025`, 14, 42);
+            doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+            doc.text(`Professor: ${prof} | Semana: ${semanaRaw}`, 14, 47);
+
+            // --- RODAPÉ ---
+            doc.setDrawColor(200);
+            doc.line(10, pageHeight - 25, pageWidth - 10, pageHeight - 25); // Linha divisória
+
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'normal');
+            centerText("Endereço: Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO", pageHeight - 20, 7);
+            centerText("Telefone: 069-2182-9642", pageHeight - 16, 7);
+            centerText("E-mail: campuscacoal@ifro.edu.br", pageHeight - 12, 7);
+
+            // --- NUMERAÇÃO DE PÁGINA ---
+            const str = "Página " + doc.internal.getNumberOfPages();
+            doc.setFontSize(8);
+            doc.text(str, pageWidth - 25, pageHeight - 10);
+        }
     });
 
-    doc.save(`Grade_${prof}.pdf`);
+    doc.save(`Relatorio_Semanal_${prof.replace(/\s+/g, '_')}.pdf`);
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
