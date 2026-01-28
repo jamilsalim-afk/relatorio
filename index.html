@@ -13,7 +13,8 @@
         .tab-pane.active { display: block; }
         .config-input { border: 1px solid #ddd; padding: 6px 10px; border-radius: 6px; width: 100%; font-size: 0.875rem; background: #fff; }
         table th, table td { border: 1px solid #e5e7eb; word-wrap: break-word; }
-        .grade-cell { min-height: 80px; vertical-align: top; width: 16.66%; }
+        .grade-cell { min-height: 80px; vertical-align: top; width: 16%; font-size: 9px; }
+        .aula-card { padding: 4px; margin-bottom: 4px; border-radius: 4px; border: 1px solid #bbf7d0; background-color: #f0fdf4; line-height: 1.2; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -60,11 +61,11 @@
                         <span class="font-bold">Aulas Apuradas (s/ REC): <b id="totalDiasDisciplina" class="text-green-700 text-2xl">0</b></span>
                         <button onclick="exportarDisciplinaPDF()" class="bg-green-700 text-white px-8 py-3 rounded-xl font-black hover:bg-green-800">GERAR PDF</button>
                     </div>
-                    <table id="horariosTableDisciplina" class="min-w-full bg-white border text-center">
-                        <thead class="bg-gray-800 text-white text-xs">
+                    <table id="horariosTableDisciplina" class="min-w-full bg-white border text-center text-sm">
+                        <thead class="bg-gray-800 text-white">
                             <tr><th class="p-3">MÊS</th><th class="p-3">DIA</th><th class="p-3">SEMANA</th><th class="p-3">HORÁRIO</th><th class="p-3">PROFESSOR</th></tr>
                         </thead>
-                        <tbody id="tableBodyDisciplina" class="text-sm"></tbody>
+                        <tbody id="tableBodyDisciplina"></tbody>
                     </table>
                 </div>
             </div>
@@ -124,12 +125,12 @@
                     </div>
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-2 bg-blue-50 p-3 rounded-lg">
-                            <div class="col-span-2 font-bold text-blue-800 text-xs">1º SEMESTRE</div>
+                            <div class="col-span-2 font-bold text-blue-800 text-xs text-center">1º SEMESTRE</div>
                             <input type="date" id="cfg-s1-inicio" class="config-input">
                             <input type="date" id="cfg-s1-fim" class="config-input">
                         </div>
                         <div class="grid grid-cols-2 gap-2 bg-green-50 p-3 rounded-lg">
-                            <div class="col-span-2 font-bold text-green-800 text-xs">2º SEMESTRE</div>
+                            <div class="col-span-2 font-bold text-green-800 text-xs text-center">2º SEMESTRE</div>
                             <input type="date" id="cfg-s2-inicio" class="config-input">
                             <input type="date" id="cfg-s2-fim" class="config-input">
                         </div>
@@ -143,8 +144,17 @@
     <script>
         let processedData = {};
         const GIST_MAP = { '2025': 'https://gist.githubusercontent.com/jamilsalim-afk/b8ff629ba4181ff68b988910e43fcefc/raw/799bb00af8e38569af8969c933df570f970858d7/2025.csv' };
+        
         const monthNames = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+        const monthOrder = { "janeiro":1,"fevereiro":2,"março":3,"abril":4,"maio":5,"junho":6,"julho":7,"agosto":8,"setembro":9,"outubro":10,"novembro":11,"dezembro":12 };
         const MONTH_MAP_PIVOT = { "janeiro": "Jan", "fevereiro": "Fev", "março": "Mar", "abril": "Abr", "maio": "Mai", "junho": "Jun", "julho": "Jul", "agosto": "Ago", "setembro": "Set", "outubro": "Out", "novembro": "Nov", "dezembro": "Dez" };
+
+        // Horários Padrão IFRO (Ajustado para conferência exata com Gist)
+        const temposAula = [
+            "07:30 - 08:20", "08:20 - 09:10", "09:30 - 10:20", "10:20 - 11:10", "11:10 - 12:00",
+            "13:30 - 14:20", "14:20 - 15:10", "15:30 - 16:20", "16:20 - 17:10", "17:10 - 18:00",
+            "19:00 - 19:50", "19:50 - 20:40", "20:50 - 21:40", "21:40 - 22:30"
+        ];
 
         window.onload = () => {
             document.getElementById('dataRelatorio').textContent = new Date().toLocaleDateString('pt-BR');
@@ -159,8 +169,7 @@
                 inst: "INSTITUTO FEDERAL DE RONDÔNIA", unid: "CAMPUS CACOAL",
                 end: "Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO",
                 tel: "069-2182-9642", email: "campuscacoal@ifro.edu.br",
-                s1_i: "2025-02-01", s1_f: "2025-07-10", s2_i: "2025-07-25", s2_f: "2025-12-20",
-                keywords: "TADS, SUPERIOR, BACHARELADO, LICENCIATURA"
+                s1_i: "2025-02-01", s1_f: "2025-07-10", s2_i: "2025-07-25", s2_f: "2025-12-20"
             };
             Object.keys(cfg).forEach(k => { if(document.getElementById(`cfg-${k.replace('_','-')}`)) document.getElementById(`cfg-${k.replace('_','-')}`).value = cfg[k]; });
         }
@@ -171,10 +180,10 @@
                 end: document.getElementById('cfg-end').value, tel: document.getElementById('cfg-tel').value,
                 email: document.getElementById('cfg-email').value, s1_i: document.getElementById('cfg-s1-inicio').value,
                 s1_f: document.getElementById('cfg-s1-fim').value, s2_i: document.getElementById('cfg-s2-inicio').value,
-                s2_f: document.getElementById('cfg-s2-fim').value, keywords: "TADS, SUPERIOR, BACHARELADO, LICENCIATURA"
+                s2_f: document.getElementById('cfg-s2-fim').value
             };
             localStorage.setItem('ifro_manager_cfg', JSON.stringify(config));
-            alert("Configurações atualizadas!"); location.reload();
+            alert("Salvo!"); location.reload();
         }
 
         async function carregarDados(ano) {
@@ -204,7 +213,6 @@
 
             const [year, weekNum] = weekStr.split('-W').map(Number);
             const dataInicioSemana = getStartDateOfWeek(weekNum, year);
-            const tempos = ["07:30 - 08:20", "08:20 - 09:10", "09:30 - 10:20", "10:20 - 11:10", "13:30 - 14:20", "14:20 - 15:10", "15:30 - 16:20", "16:20 - 17:10", "19:00 - 19:50", "19:50 - 20:40", "20:50 - 21:40", "21:40 - 22:30"];
             const diasNome = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
             
             let html = `<table id="tableGradeExp" class="min-w-full border text-[10px] bg-white">
@@ -212,13 +220,13 @@
             
             diasNome.forEach((d, i) => {
                 const dt = new Date(dataInicioSemana); dt.setDate(dt.getDate() + i);
-                html += `<th class="p-2 grade-cell">${d.toUpperCase()}<br>${dt.toLocaleDateString('pt-BR')}</th>`;
+                html += `<th class="p-2 w-40">${d.toUpperCase()}<br>${dt.toLocaleDateString('pt-BR')}</th>`;
             });
             html += `</tr></thead><tbody>`;
 
-            tempos.forEach(t => {
-                html += `<tr><td class="bg-gray-50 font-bold p-2 text-center border w-24">${t}</td>`;
-                diasNome.forEach((d, i) => {
+            temposAula.forEach(tempoPadrao => {
+                html += `<tr><td class="bg-gray-50 font-bold p-2 text-center border w-28">${tempoPadrao}</td>`;
+                diasNome.forEach((dNome, i) => {
                     const dtReferencia = new Date(dataInicioSemana); dtReferencia.setDate(dtReferencia.getDate() + i);
                     const diaRef = dtReferencia.getDate();
                     const mesRef = monthNames[dtReferencia.getMonth()];
@@ -228,13 +236,16 @@
                         for(let dId in processedData[tId].disciplines) {
                             const disc = processedData[tId].disciplines[dId];
                             disc.schedule.forEach(s => {
-                                // CORREÇÃO: Valida se é o mesmo professor, dia da semana, dia do mês e mês
+                                // LÓGICA DE CONFERÊNCIA: Verificamos se o horário do Gist contém o início do nosso horário padrão
+                                const horaInicioGist = s.time.split('-')[0].trim();
+                                const horaInicioPadrao = tempoPadrao.split('-')[0].trim();
+
                                 if(s.prof.includes(profBusca) && 
-                                   s.weekday.toLowerCase() === d.toLowerCase() && 
+                                   s.weekday.toLowerCase() === dNome.toLowerCase() && 
                                    s.day === diaRef && 
                                    s.month.toLowerCase() === mesRef &&
-                                   t.startsWith(s.time.split(' - ')[0])) {
-                                    cellContent += `<div class="p-1 mb-1 bg-green-50 rounded border border-green-200"><b>${processedData[tId].name}</b><br>${disc.name}</div>`;
+                                   horaInicioGist === horaInicioPadrao) {
+                                    cellContent += `<div class="aula-card"><b>${processedData[tId].name}</b><br>${disc.name}</div>`;
                                 }
                             });
                         }
@@ -246,7 +257,7 @@
             document.getElementById('gradeSemanalResult').innerHTML = html + "</tbody></table>";
         }
 
-        // Helpers e PDF (Padronizados)
+        // Funções Auxiliares
         function getStartDateOfWeek(w, y) {
             const simple = new Date(y, 0, 1 + (w - 1) * 7);
             const dow = simple.getDay();
@@ -270,21 +281,76 @@
             pSel.innerHTML = '<option value="">-- PROFESSOR --</option>'; Array.from(profs).sort().forEach(p => pSel.innerHTML += `<option value="${p}">${p}</option>`);
         }
 
-        // Funções de Abas e PDF omitidas por brevidade, mas mantidas na lógica global para o sistema funcionar
+        // ABA 1 E 2 LOGIC
+        function filtrarDisciplina() {
+            const tId = document.getElementById('turmaSelect').value;
+            const dId = document.getElementById('disciplinaSelect').value;
+            const sem = document.getElementById('semestreFiltro').value;
+            const tbody = document.getElementById('tableBodyDisciplina');
+            tbody.innerHTML = '';
+            if(!tId || !dId) return;
+            const cfg = JSON.parse(localStorage.getItem('ifro_manager_cfg'));
+            const aulas = processedData[tId].disciplines[dId].schedule.filter(a => {
+                const dt = new Date(2025, monthOrder[a.month.toLowerCase()]-1, a.day);
+                return dt >= new Date(sem==='1'?cfg.s1_i:cfg.s2_i) && dt <= new Date(sem==='1'?cfg.s1_f:cfg.s2_f);
+            }).sort((a,b) => monthOrder[a.month.toLowerCase()] - monthOrder[b.month.toLowerCase()] || a.day - b.day);
+
+            aulas.forEach(a => {
+                tbody.innerHTML += `<tr><td class="p-2 border">${a.month}</td><td class="p-2 border">${a.day}</td><td class="p-2 border">${a.weekday}</td><td class="p-2 border">${a.time}</td><td class="p-2 border font-bold">${a.prof}</td></tr>`;
+            });
+            document.getElementById('totalDiasDisciplina').textContent = aulas.length;
+            document.getElementById('exportAreaDisciplina').classList.remove('hidden');
+        }
+
+        function filtrarTurmaPivo() {
+            const tId = document.getElementById('turmaSelectPivo').value;
+            const sem = document.getElementById('semestreFiltroPivo').value;
+            const tbody = document.getElementById('tableBodyProfessorPivot');
+            if(!tId) return document.getElementById('areaTabelaPivo').classList.add('hidden');
+            tbody.innerHTML = '';
+            const cfg = JSON.parse(localStorage.getItem('ifro_manager_cfg'));
+            const discs = processedData[tId].disciplines;
+            Object.keys(discs).sort().forEach(dId => {
+                let counts = {}; Object.values(MONTH_MAP_PIVOT).forEach(m => counts[m] = 0);
+                let total = 0;
+                discs[dId].schedule.forEach(a => {
+                    const dt = new Date(2025, monthOrder[a.month.toLowerCase()]-1, a.day);
+                    if(dt >= new Date(sem==='1'?cfg.s1_i:cfg.s2_i) && dt <= new Date(sem==='1'?cfg.s1_f:cfg.s2_f)) {
+                        counts[MONTH_MAP_PIVOT[a.month.toLowerCase()]]++; total++;
+                    }
+                });
+                if(total > 0) {
+                    let h = `<td class="p-2 text-left font-bold border">${discs[dId].name}</td>`;
+                    Object.values(MONTH_MAP_PIVOT).forEach(m => h += `<td class="border">${counts[m] || '-'}</td>`);
+                    tbody.innerHTML += `<tr>${h}<td class="bg-green-50 font-bold border">${total}</td></tr>`;
+                }
+            });
+            document.getElementById('areaTabelaPivo').classList.remove('hidden');
+        }
+
+        // Eventos
+        document.getElementById('turmaSelect').onchange = (e) => {
+            const dSel = document.getElementById('disciplinaSelect'); const tId = e.target.value;
+            dSel.innerHTML = '<option value="">-- DISCIPLINA --</option>';
+            if(processedData[tId]) { Object.keys(processedData[tId].disciplines).sort().forEach(id => dSel.innerHTML += `<option value="${id}">${processedData[tId].disciplines[id].name}</option>`); dSel.disabled = false; }
+            filtrarDisciplina();
+        };
+        document.getElementById('disciplinaSelect').onchange = filtrarDisciplina;
+        document.getElementById('semestreFiltro').onchange = filtrarDisciplina;
+        document.getElementById('turmaSelectPivo').onchange = filtrarTurmaPivo;
+        document.getElementById('semestreFiltroPivo').onchange = filtrarTurmaPivo;
+
         function initTabs() { document.querySelectorAll('.tab-btn').forEach(btn => { btn.onclick = () => { document.querySelectorAll('.tab-btn, .tab-pane').forEach(el => el.classList.remove('active')); btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active'); }; }); }
         
-        // Exportar PDF Grade Semanal (Corrigido para Landscape)
+        // Exportar PDF
         window.exportarGradeSemanalPDF = function() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
             const prof = document.getElementById('selectProfSemanal').value;
             const week = document.getElementById('inputSemana').value;
             const cfg = JSON.parse(localStorage.getItem('ifro_manager_cfg'));
-            
             doc.setFillColor(21, 128, 61); doc.rect(0, 0, 297, 35, 'F');
             doc.setTextColor(255); doc.setFontSize(14); doc.text(cfg.inst, 148, 12, { align: 'center' });
-            doc.setFontSize(10); doc.text("GRADE SEMANAL DE AULAS - PROFESSOR: " + prof, 148, 22, { align: 'center' });
-            doc.text("SEMANA: " + week, 148, 28, { align: 'center' });
-
+            doc.setFontSize(10); doc.text("GRADE SEMANAL - PROFESSOR: " + prof + " | SEMANA: " + week, 148, 25, { align: 'center' });
             doc.autoTable({ html: '#tableGradeExp', startY: 40, theme: 'grid', styles: { fontSize: 7 }, headStyles: { fillColor: [31, 41, 55] } });
             doc.save(`Grade_${prof}_${week}.pdf`);
         };
