@@ -1432,19 +1432,27 @@ window.exportarGradeSemanalPDF = function() {
     const semanaRaw = document.getElementById('inputSemana').value;
     const tabela = document.getElementById('tabelaGradeExport');
 
-    if (!tabela) {
-        alert("Gere a grade primeiro.");
-        return;
-    }
+    if (!tabela) return;
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
+    // --- LÓGICA PARA FORMATAR A DATA DA SEMANA NO CABEÇALHO ---
+    const [ano, sem] = semanaRaw.split('-W').map(Number);
+    let d = new Date(ano, 0, 1);
+    let dayNum = d.getDay() || 7;
+    let diff = (sem - 1) * 7 + (1 - dayNum);
+    let segunda = new Date(ano, 0, 1 + diff);
+    let sabado = new Date(segunda);
+    sabado.setDate(segunda.getDate() + 5);
+
+    const formatarData = (date) => date.toLocaleDateString('pt-BR');
+    const intervaloSemana = `Semana de ${formatarData(segunda)} a ${formatarData(sabado)}`;
+
     const centerText = (text, y, size, style = 'normal') => {
         doc.setFontSize(size);
         doc.setFont('helvetica', style);
-        const textWidth = doc.getTextWidth(text);
-        doc.text(text, (pageWidth - textWidth) / 2, y);
+        doc.text(text, (pageWidth - doc.getTextWidth(text)) / 2, y);
     };
 
     doc.autoTable({
@@ -1454,15 +1462,37 @@ window.exportarGradeSemanalPDF = function() {
         margin: { top: 55, bottom: 30, left: 10, right: 10 },
         styles: { 
             fontSize: 6, 
-            cellPadding: 1, 
+            cellPadding: 1.2, 
             valign: 'middle', 
             halign: 'center', 
-            overflow: 'linebreak' 
+            overflow: 'linebreak',
+            lineWidth: 0.1,
+            lineColor: [200, 200, 200]
         },
         headStyles: { fillColor: [21, 128, 61], textColor: 255, fontStyle: 'bold' },
+        
+        // 1. DEFINIÇÃO DE LARGURAS FIXAS
         columnStyles: { 
-            0: { cellWidth: 25, fontStyle: 'bold' } // Aumentado para 25 para caber o horário completo
+            0: { cellWidth: 25, fontStyle: 'bold' }, // Horário
+            1: { cellWidth: 26 }, // Seg
+            2: { cellWidth: 26 }, // Ter
+            3: { cellWidth: 26 }, // Qua
+            4: { cellWidth: 26 }, // Qui
+            5: { cellWidth: 26 }, // Sex
+            6: { cellWidth: 26 }  // Sáb
         },
+
+        // 2. COR CINZA NAS LINHAS DE PAUSA
+        didParseCell: function(data) {
+            // Verifica se a linha original no HTML tem a classe ou o tipo 'pausa'
+            const rowEl = data.row.raw; 
+            if (rowEl && (rowEl.classList.contains('bg-gray-200') || rowEl.getAttribute('data-type') === 'pausa')) {
+                data.cell.styles.fillColor = [240, 240, 240]; // Cinza claro
+                data.cell.styles.fontStyle = 'italic';
+                data.cell.styles.textColor = [100, 100, 100];
+            }
+        },
+
         didDrawPage: function(data) {
             // CABEÇALHO
             centerText("INSTITUTO FEDERAL DE RONDÔNIA", 12, 11, 'bold');
@@ -1473,25 +1503,25 @@ window.exportarGradeSemanalPDF = function() {
             doc.setFontSize(10); doc.setFont('helvetica', 'bold');
             doc.text(`Relatório de Horários de Aula (Grade Semanal) - 2025`, 14, 42);
             doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-            doc.text(`Professor: ${prof} | Semana: ${semanaRaw}`, 14, 47);
+            
+            // 3. EXIBIÇÃO DA SEMANA FORMATADA
+            doc.text(`Professor: ${prof}`, 14, 47);
+            doc.text(`${intervaloSemana}`, 14, 51);
 
             // RODAPÉ
             doc.setDrawColor(200);
             doc.line(10, pageHeight - 25, pageWidth - 10, pageHeight - 25);
-
             doc.setFontSize(7);
             centerText("Endereço: Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO", pageHeight - 20, 7);
-            centerText("Telefone: 069-2182-9642", pageHeight - 16, 7);
-            centerText("E-mail: campuscacoal@ifro.edu.br", pageHeight - 12, 7);
+            centerText("Telefone: 069-2182-9642 | E-mail: campuscacoal@ifro.edu.br", pageHeight - 15, 7);
 
             // PAGINAÇÃO
-            const str = "Página " + doc.internal.getNumberOfPages();
             doc.setFontSize(8);
-            doc.text(str, pageWidth - 25, pageHeight - 10);
+            doc.text("Página " + doc.internal.getNumberOfPages(), pageWidth - 25, pageHeight - 10);
         }
     });
 
-    doc.save(`Grade_Semanal_${prof}.pdf`);
+    doc.save(`Grade_Semanal_${prof.replace(/\s+/g, '_')}.pdf`);
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
