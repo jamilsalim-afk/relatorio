@@ -706,57 +706,68 @@
         }
         
 // =========================================================================
-// LÓGICA: ABA 1 (DISCIPLINA) - COM TRAVA DE SEMESTRE
+// LÓGICA: ABA 1 (DISCIPLINA) - REESCRITA E SEGURA
 // =========================================================================
 
-// Ordem dos meses para ordenação e cálculo de semestre
+// 1. MAPEAMENTO DE MESES (Global)
 const monthOrder = {
-    "janeiro": 1, "fevereiro": 2, "março": 3, "abril": 4, 
+    "janeiro": 1, "fevereiro": 2, "março": 3, "marco": 3, "abril": 4, 
     "maio": 5, "junho": 6, "julho": 7, "agosto": 8, 
-    "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12, "marco": 3
+    "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12
 };
 
+// 2. CAPTURA DE ELEMENTOS (Previne erros de 'undefined')
+const getEl = (id) => document.getElementById(id);
+
 function populateTurmaSelect() {
-    const currentTurmaValue = turmaSelect.value;
+    const tSelect = getEl('turmaSelect');
+    const dSelect = getEl('disciplinaSelect');
+    const btnPdf = getEl('exportDisciplinaPdfBtn');
+
+    if (!tSelect) return;
+
+    const currentTurmaValue = tSelect.value;
     
-    disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
-    disciplinaSelect.disabled = true;
-    disciplinaSelect.classList.add('bg-gray-100');
-    exportDisciplinaPdfBtn.disabled = true;
+    dSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
+    dSelect.disabled = true;
+    dSelect.classList.add('bg-gray-100');
+    if (btnPdf) btnPdf.disabled = true;
     
-    turmaSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
+    tSelect.innerHTML = '<option value="">-- Selecione a Turma --</option>';
     
     for (const key in processedData) {
         const option = document.createElement('option');
         option.value = key;
         option.textContent = processedData[key].name; 
-        turmaSelect.appendChild(option);
+        tSelect.appendChild(option);
     }
     
     if (Object.keys(processedData).length > 0) {
-        turmaSelect.disabled = false;
-        turmaSelect.classList.remove('bg-gray-100');
+        tSelect.disabled = false;
+        tSelect.classList.remove('bg-gray-100');
     } else {
-        turmaSelect.disabled = true;
-        turmaSelect.classList.add('bg-gray-100');
+        tSelect.disabled = true;
+        tSelect.classList.add('bg-gray-100');
         renderTableDisciplina([]);
     }
     
     if (currentTurmaValue && processedData[currentTurmaValue]) {
-        turmaSelect.value = currentTurmaValue;
+        tSelect.value = currentTurmaValue;
         handleTurmaChange({ target: { value: currentTurmaValue } });
     }
 }
 
 function handleTurmaChange(event) {
     const selectedTurma = event.target.value;
-    
-    disciplinaSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
-    disciplinaSelect.disabled = true;
-    disciplinaSelect.classList.add('bg-gray-100');
+    const dSelect = getEl('disciplinaSelect');
+    const btnPdf = getEl('exportDisciplinaPdfBtn');
+
+    dSelect.innerHTML = '<option value="">-- Selecione uma Disciplina --</option>';
+    dSelect.disabled = true;
+    dSelect.classList.add('bg-gray-100');
     
     renderTableDisciplina([]);
-    exportDisciplinaPdfBtn.disabled = true;
+    if (btnPdf) btnPdf.disabled = true;
 
     if (selectedTurma && processedData[selectedTurma]) {
         const disciplines = processedData[selectedTurma].disciplines;
@@ -768,41 +779,34 @@ function handleTurmaChange(event) {
             const option = document.createElement('option');
             option.value = key;
             option.textContent = disciplines[key].name;
-            disciplinaSelect.appendChild(option);
+            dSelect.appendChild(option);
         }
         
-        disciplinaSelect.disabled = false;
-        disciplinaSelect.classList.remove('bg-gray-100');
+        dSelect.disabled = false;
+        dSelect.classList.remove('bg-gray-100');
     }
 }
 
-/**
- * Lida com a mudança da Disciplina aplicando o FILTRO DE SEMESTRE
- */
 function handleDisciplinaChange(event) {
-    const selectedTurma = turmaSelect.value;
+    const selectedTurma = getEl('turmaSelect').value;
     const selectedDiscipline = event.target.value;
+    const btnPdf = getEl('exportDisciplinaPdfBtn');
     
     currentScheduleDisciplina = [];
-    exportDisciplinaPdfBtn.disabled = true;
     renderTableDisciplina([]);
 
     if (selectedTurma && selectedDiscipline) {
         const disciplineData = processedData[selectedTurma].disciplines[selectedDiscipline];
-        
-        // Define o semestre baseado no mês atual do sistema
-        const mesAtualIdx = new Date().getMonth(); // 0-11
+        const mesAtualIdx = new Date().getMonth(); 
         const semestreAtivo = (mesAtualIdx <= 6) ? 1 : 2;
 
         for (const professorId in disciplineData.professors) {
             const professor = disciplineData.professors[professorId];
-            
             professor.schedule.forEach(item => {
                 const mName = item.month.toLowerCase().trim();
                 const mIdx = monthOrder[mName] - 1;
                 const semestreDaAula = (mIdx <= 6) ? 1 : 2;
 
-                // A MÁGICA ACONTECE AQUI: Só entra se for o semestre correto
                 if (semestreDaAula === semestreAtivo) {
                     currentScheduleDisciplina.push({
                         ...item,
@@ -814,18 +818,19 @@ function handleDisciplinaChange(event) {
         }
         
         renderTableDisciplina(currentScheduleDisciplina);
-        exportAreaDisciplina.classList.remove('hidden');
-        exportDisciplinaPdfBtn.disabled = currentScheduleDisciplina.length === 0;
-    } else {
-         exportAreaDisciplina.classList.add('hidden');
+        getEl('exportAreaDisciplina')?.classList.remove('hidden');
+        if (btnPdf) btnPdf.disabled = currentScheduleDisciplina.length === 0;
     }
 }
 
 function renderTableDisciplina(schedule) {
-    tableBodyDisciplina.innerHTML = '';
+    const tBody = getEl('tableBodyDisciplina');
+    const totalSpan = getEl('totalDiasDisciplinaSpan');
+    if (!tBody) return;
+
+    tBody.innerHTML = '';
     
     if (schedule && schedule.length > 0) {
-        // Ordenação cronológica
         schedule.sort((a, b) => {
             const monthA = monthOrder[a.month.toLowerCase()] || 0;
             const monthB = monthOrder[b.month.toLowerCase()] || 0;
@@ -834,35 +839,49 @@ function renderTableDisciplina(schedule) {
             return a.time.localeCompare(b.time);
         });
         
-        const regularClasses = schedule.filter(item => !item.isRecuperacao);
-        totalDiasDisciplinaSpan.textContent = regularClasses.length;
+        if (totalSpan) totalSpan.textContent = schedule.filter(i => !i.isRecuperacao).length;
 
         schedule.forEach((item, index) => {
-            const row = tableBodyDisciplina.insertRow();
+            const row = tBody.insertRow();
+            row.className = item.isRecuperacao ? 'bg-yellow-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
             
-            if (item.isRecuperacao) {
-                row.className = 'bg-yellow-100 hover:bg-yellow-200';
-            } else {
-                row.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100';
-            }
-
-            const cells = [item.month, item.dayOfMonth, item.dayOfWeek, item.time, item.professorName];
-            cells.forEach(text => {
+            [item.month, item.dayOfMonth, item.dayOfWeek, item.time, item.professorName].forEach(text => {
                 const cell = row.insertCell();
                 cell.textContent = text;
-                cell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-900';
+                cell.className = 'px-6 py-4 text-sm text-gray-900 border-b';
             });
         });
-        
     } else {
-        const row = tableBodyDisciplina.insertRow();
-        const cell = row.insertCell();
-        cell.colSpan = 5; 
-        cell.className = 'px-6 py-4 text-center text-sm text-gray-500 italic';
-        cell.textContent = 'Nenhuma aula encontrada para o semestre atual.';
-        totalDiasDisciplinaSpan.textContent = 0;
+        tBody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500 italic">Nenhuma aula encontrada para o semestre atual.</td></tr>';
+        if (totalSpan) totalSpan.textContent = 0;
     }
 }
+
+// CORREÇÃO DO ERRO: Função de Exportação que estava faltando
+window.exportDisciplinaReportToPdf = async function() {
+    const tSelect = getEl('turmaSelect');
+    const dSelect = getEl('disciplinaSelect');
+    
+    if (!tSelect.value || !dSelect.value) return;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(16);
+    doc.text("Relatório de Disciplina", 105, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(`Turma: ${tSelect.options[tSelect.selectedIndex].text}`, 20, 30);
+    doc.text(`Disciplina: ${dSelect.options[dSelect.selectedIndex].text}`, 20, 35);
+
+    doc.autoTable({
+        html: '#tableDisciplina', // Certifique-se que o id da table no HTML é este
+        startY: 45,
+        theme: 'grid',
+        headStyles: { fillColor: [22, 163, 74] }
+    });
+
+    doc.save(`Relatorio_${dSelect.value}.pdf`);
+};
 // =========================================================================
 // LÓGICA: ABA 2 (RELATÓRIO PIVÔ - CARGA HORÁRIA MENSAL)
 // =========================================================================
