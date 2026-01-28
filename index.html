@@ -1515,7 +1515,19 @@ window.exportarGradeSemanalPDF = function() {
         }
     });
 
-    doc.save(`Grade_${prof.replace(/\s+/g, '_')}.pdf`);
+    const [anoArq, semArq] = semanaRaw.split('-W').map(Number);
+    let dArq = new Date(anoArq, 0, 1);
+    let dayNumArq = dArq.getDay() || 7;
+    let diffArq = (semArq - 1) * 7 + (1 - dayNumArq);
+    let segArq = new Date(anoArq, 0, 1 + diffArq);
+    let sabArq = new Date(segArq);
+    sabArq.setDate(segArq.getDate() + 5);
+
+    const formatDataArq = (date) => date.toLocaleDateString('pt-BR').replace(/\//g, '.');
+    const nomeArquivo = `Grade Semanal - ${prof} - Semana de ${formatDataArq(segArq)} a ${formatDataArq(sabArq)}.pdf`;
+
+    // Salva o documento
+    doc.save(nomeArquivo);
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
