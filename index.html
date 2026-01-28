@@ -1353,40 +1353,29 @@ window.gerarGradeSemanal = function() {
     const mapaDatas = calcularDatasDaSemana(ano, sem);
     const listaHorarios = [
         {h: "07:30 - 08:20", t: "aula"}, {h: "08:20 - 09:10", t: "aula"},
-        {h: "09:10 a 09:30", t: "Intervalo"},
+        {h: "09:10 a 09:30 - INTERVALO", t: "pausa"},
         {h: "09:30 - 10:20", t: "aula"}, {h: "10:20 - 11:10", t: "aula"}, {h: "11:10 - 12:00", t: "aula"},
-        {h: "12:00 a 13:50", t: "ALMOÇO"},
+        {h: "12:00 a 13:50 - ALMOÇO", t: "pausa"},
         {h: "13:50 - 14:40", t: "aula"}, {h: "14:40 - 15:30", t: "aula"},
-        {h: "15:30 a 15:50", t: "Intervalo"},
+        {h: "15:30 a 15:50 - INTERVALO", t: "pausa"},
         {h: "15:50 - 16:40", t: "aula"}, {h: "16:40 - 17:30", t: "aula"}, {h: "17:30 - 18:20", t: "aula"},
-        {h: "18:20 a 19:00", t: "JANTA"},
+        {h: "18:20 a 19:00 - JANTAR", t: "pausa"},
         {h: "19:00 - 19:50", t: "aula"}, {h: "19:50 - 20:40", t: "aula"},
-        {h: "20:40 a 20:50", t: "Intervalo"},
+        {h: "20:40 a 20:50 - INTERVALO", t: "pausa"},
         {h: "20:50 - 21:40", t: "aula"}, {h: "21:40 - 22:30", t: "aula"}
     ];
 
     const mesesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
 
-    // ... dentro da função gerarGradeSemanal ...
-
-let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 bg-white shadow-xl mx-auto" 
-    style="width: 100%; min-width: 1000px; table-layout: fixed; border-spacing: 0;">
-    <thead>
-        <tr class="bg-green-700 text-white">
-            <th class="border border-gray-300 p-2 text-[10px]" style="width: 100px;">HORÁRIO</th>
-            ${Object.keys(mapaDatas).map(d => `
-                <th class="border border-gray-300 p-1 text-[10px] uppercase" style="width: 150px;">
-                    ${d}<br><span class="text-[9px] font-normal">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span>
-                </th>`).join('')}
-        </tr>
-    </thead><tbody>`;
-
-// ... no loop de geração das células de aula ...
-// Adicione 'overflow-hidden' e garanta que o texto quebre linha
-html += `<td class="border border-gray-300 p-1 align-middle text-center" 
-            style="width: 150px; height: 70px; overflow: hidden; word-wrap: break-word;">
-            ${aulasHtml}
-         </td>`;
+    // TABELA COM LARGURA FIXA (table-layout: fixed)
+    let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 bg-white shadow-xl mx-auto" 
+        style="width: 100%; min-width: 1000px; table-layout: fixed;">
+        <thead>
+            <tr class="bg-green-700 text-white">
+                <th class="border border-gray-300 p-2 w-28 text-[10px]">HORÁRIO</th>
+                ${Object.keys(mapaDatas).map(d => `<th class="border border-gray-300 p-1 text-[10px] uppercase">${d}<br><span class="text-[9px] font-normal">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span></th>`).join('')}
+            </tr>
+        </thead><tbody>`;
 
     listaHorarios.forEach(slot => {
         if (slot.t === "pausa") {
@@ -1395,18 +1384,17 @@ html += `<td class="border border-gray-300 p-1 align-middle text-center"
                 <td colspan="6" class="border border-gray-300 p-1 text-center tracking-[0.3em] text-[9px]">PAUSA PROGRAMADA</td>
             </tr>`;
         } else {
-            html += `<tr style="height: 65px;">
+            html += `<tr style="height: 75px;">
                 <td class="border border-gray-300 p-1 font-bold bg-gray-50 text-center text-[9px]">${slot.h}</td>`;
                 
             Object.keys(mapaDatas).forEach(dia => {
                 const infoDia = mapaDatas[dia];
-                let aulasHtml = "";
+                let aulasHtml = ""; // DEFINIÇÃO DA VARIÁVEL DENTRO DO LOOP DO DIA
                 let jaAdd = new Set();
                 
                 if(database) {
                     Object.values(database).forEach(turma => {
                         Object.values(turma.disciplines).forEach(disc => {
-                            // CORREÇÃO AQUI: Transformando objeto de professores em Array
                             Object.values(disc.professors).forEach(p => {
                                 if (p.name.replace(/\(.*\)/g, '').trim() === elProf.value) {
                                     p.schedule.forEach(a => {
@@ -1416,9 +1404,10 @@ html += `<td class="border border-gray-300 p-1 align-middle text-center"
                                             let chave = `${disc.name}-${turma.name}`;
                                             if (!jaAdd.has(chave)) {
                                                 jaAdd.add(chave);
-                                                aulasHtml += `<div class="bg-green-50 border border-green-200 p-1 rounded mb-1">
-                                                    <div class="font-bold text-green-900 text-[9px] leading-tight">${disc.name}</div>
-                                                    <div class="text-[8px] text-green-700 italic">${turma.name}</div>
+                                                // CONTEÚDO COM QUEBRA DE LINHA FORÇADA
+                                                aulasHtml += `<div class="bg-green-50 border border-green-200 p-1 rounded mb-1 overflow-hidden" style="word-wrap: break-word;">
+                                                    <div class="font-bold text-green-900 text-[8.5px] leading-tight">${disc.name}</div>
+                                                    <div class="text-[7.5px] text-green-700 italic">${turma.name}</div>
                                                 </div>`;
                                             }
                                         }
@@ -1428,7 +1417,8 @@ html += `<td class="border border-gray-300 p-1 align-middle text-center"
                         });
                     });
                 }
-                html += `<td class="border border-gray-300 p-1 align-middle text-center">${aulasHtml}</td>`;
+                // Célula com largura travada e alinhamento vertical
+                html += `<td class="border border-gray-300 p-1 align-middle text-center overflow-hidden" style="word-wrap: break-word;">${aulasHtml}</td>`;
             });
             html += `</tr>`;
         }
