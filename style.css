@@ -863,305 +863,174 @@ function renderTableDisciplina(schedule) {
         totalDiasDisciplinaSpan.textContent = 0;
     }
 }
-        // =========================================================================
-        // LÓGICA: ABA 2 (RELATÓRIO PIVÔ)
-        // =========================================================================
+// =========================================================================
+// LÓGICA: ABA 2 (RELATÓRIO PIVÔ - CARGA HORÁRIA MENSAL)
+// =========================================================================
 
-        function populateTurmaProfessorSelect() {
-            turmaSelectProfessor.innerHTML = '<option value="">-- Selecione a Turma --</option>';
-            exportProfessorPdfBtn.disabled = true;
-            exportAreaProfessor.classList.add('hidden');
-            renderPivotTable({}); // Limpa a tabela
+function populateTurmaProfessorSelect() {
+    turmaSelectProfessor.innerHTML = '<option value="">-- Selecione a Turma --</option>';
+    exportProfessorPdfBtn.disabled = true;
+    exportAreaProfessor.classList.add('hidden');
+    renderPivotTable({}); 
 
-            for (const key in processedData) {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = processedData[key].name; 
-                turmaSelectProfessor.appendChild(option);
-            }
-            
-            if (Object.keys(processedData).length > 0) {
-                turmaSelectProfessor.disabled = false;
-                turmaSelectProfessor.classList.remove('bg-gray-100');
-            } else {
-                turmaSelectProfessor.disabled = true;
-                turmaSelectProfessor.classList.add('bg-gray-100');
-            }
-        }
+    for (const key in processedData) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = processedData[key].name; 
+        turmaSelectProfessor.appendChild(option);
+    }
+    
+    if (Object.keys(processedData).length > 0) {
+        turmaSelectProfessor.disabled = false;
+        turmaSelectProfessor.classList.remove('bg-gray-100');
+    } else {
+        turmaSelectProfessor.disabled = true;
+        turmaSelectProfessor.classList.add('bg-gray-100');
+    }
+}
+
+/**
+ * Lida com a mudança da Turma e gera os dados filtrados por SEMESTRE.
+ */
+function handleTurmaProfessorChange(event) {
+    const selectedTurmaId = event.target.value;
+    
+    exportProfessorPdfBtn.disabled = true;
+    exportAreaProfessor.classList.add('hidden');
+    renderPivotTable({});
+
+    if (!selectedTurmaId || !processedData[selectedTurmaId]) return;
+    
+    const turmaData = processedData[selectedTurmaId].disciplines;
+    const pivotData = {};
+
+    // --- DEFINIÇÃO DO SEMESTRE ATIVO ---
+    const mesAtualIdx = new Date().getMonth(); // 0-11
+    const semestreAtivo = (mesAtualIdx <= 6) ? 1 : 2;
+
+    for (const disciplineId in turmaData) {
+        const disciplineName = turmaData[disciplineId].name;
         
-        /**
-         * Lida com a mudança da Turma na ABA PIVÔ e gera os dados do relatório.
-         */
-        function handleTurmaProfessorChange(event) {
-            const selectedTurmaId = event.target.value;
-            
-            exportProfessorPdfBtn.disabled = true;
-            exportAreaProfessor.classList.add('hidden');
-            renderPivotTable({});
-
-            if (!selectedTurmaId || !processedData[selectedTurmaId]) {
-                return;
-            }
-            
-            const turmaData = processedData[selectedTurmaId].disciplines;
-            const pivotData = {};
-
-            // 1. Inicializa a estrutura do pivô e agrega todos os horários da turma
-            for (const disciplineId in turmaData) {
-                const disciplineName = turmaData[disciplineId].name;
-                
-                // Inicializa a linha do pivô para esta disciplina
-                const initialRow = { total: 0, "Sábado": 0 }; // Adiciona o contador de Sábado
-                Object.keys(MONTH_MAP_PIVOT).forEach(monthKey => {
-                    initialRow[MONTH_MAP_PIVOT[monthKey]] = 0;
-                });
-                pivotData[disciplineName] = initialRow;
-
-                // 2. Itera sobre todos os professores da disciplina para somar os horários
-                for (const professorId in turmaData[disciplineId].professors) {
-                    const schedule = turmaData[disciplineId].professors[professorId].schedule;
-                    
-                    schedule.forEach(item => {
-                        // ** IGNORA REC/EXAME NA CONTAGEM **
-                        if (item.isRecuperacao) {
-                            return; 
-                        }
-
-                        // Lógica de contagem mensal
-                        const monthKey = item.month.toLowerCase();
-                        const monthColumn = MONTH_MAP_PIVOT[monthKey];
-                        
-                        if (monthColumn) {
-                            pivotData[disciplineName][monthColumn] += 1;
-                        }
-
-                        // Lógica de contagem SÁBADO (não é exclusivo do mês, mas sim agregado)
-                        if (item.dayOfWeek.toLowerCase().includes('sábado')) {
-                            pivotData[disciplineName]["Sábado"] += 1;
-                        }
-                        
-                        // Total (soma todas as aulas regulares)
-                        pivotData[disciplineName].total += 1;
-                    });
-                }
-            }
-
-            renderPivotTable(pivotData, processedData[selectedTurmaId].name);
-            exportAreaProfessor.classList.remove('hidden');
-            exportProfessorPdfBtn.disabled = Object.keys(pivotData).length === 0;
-        }
-
-
-        /**
-         * Renderiza a tabela de horários PIVÔ (Turma x Mês) da ABA 2.
-         * MODIFICADO: Redução de padding (px-6 py-4 -> px-3 py-2) e fonte (text-sm -> text-xs)
-         */
-        function renderPivotTable(pivotData) {
-            tableBodyProfessorPivot.innerHTML = '';
-            
-            const disciplineNames = Object.keys(pivotData).sort(); 
-            const monthColumns = Object.values(MONTH_MAP_PIVOT);
-            // Define a ordem das colunas no relatório
-            const allRegularColumns = [...monthColumns, "Sábado"]; 
-
-            if (disciplineNames.length > 0) {
-                
-                disciplineNames.forEach((disciplineName, index) => {
-                    const rowData = pivotData[disciplineName];
-                    const row = tableBodyProfessorPivot.insertRow();
-                    row.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50', 'hover:bg-gray-50');
-
-                    // Coluna Disciplina
-                    const discCell = row.insertCell();
-                    discCell.textContent = disciplineName;
-                    // CLASSE MODIFICADA PARA COMPACTAÇÃO E TEXTO MENOR
-                    discCell.classList.add('px-3', 'py-2', 'font-medium', 'text-xs', 'text-gray-900', 'whitespace-nowrap');
-
-                    // Colunas de Mês e Sábado
-                    allRegularColumns.forEach(column => {
-                        const cell = row.insertCell();
-                        cell.textContent = rowData[column] || 0;
-                        // CLASSE MODIFICADA PARA COMPACTAÇÃO E TEXTO MENOR
-                        cell.classList.add('px-3', 'py-2', 'text-center', 'text-xs', 'text-gray-700', 'whitespace-nowrap');
-                        
-                        // Destaca a coluna SÁBADO
-                        if (column === "Sábado") {
-                            cell.classList.add('bg-gray-100', 'font-medium');
-                        }
-                    });
-                    
-                    // Coluna Total
-                    const totalCell = row.insertCell();
-                    totalCell.textContent = rowData.total;
-                    // CLASSE MODIFICADA PARA COMPACTAÇÃO E TEXTO MENOR
-                    totalCell.classList.add('px-3', 'py-2', 'text-center', 'text-xs', 'font-extrabold', 'text-ifro-primary', 'whitespace-nowrap', 'bg-green-50');
-                });
-                
-            } else {
-                const row = tableBodyProfessorPivot.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 15; // 1 (Disc) + 12 (Meses) + 1 (Sábado) + 1 (Total) = 15
-                // CLASSE MODIFICADA PARA COMPACTAÇÃO E TEXTO MENOR
-                cell.classList.add('px-3', 'py-2', 'text-center', 'text-xs', 'text-gray-500', 'italic');
-                
-                cell.textContent = 'Selecione a turma para visualizar a carga horária por disciplina e mês.';
-            }
-        }
-        
-        /**
-         * Gera e descarrega o relatório PIVÔ em formato PDF da ABA 2.
-         */
-        async function exportProfessorPivotReportToPdf() {
-            if (!turmaSelectProfessor.value) return;
-
-            exportProfessorPdfBtn.disabled = true;
-            exportProfessorPdfBtn.textContent = 'Gerando PDF...';
-            showFeedback('Gerando relatório PDF...', 'bg-yellow-100 text-yellow-800');
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4'); // Paisagem para caber mais colunas
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const margin = 15;
-            let y = margin;
-            
-            const selectedYearText = yearSelectProfessor.options[yearSelectProfessor.selectedIndex].text;
-            const selectedTurmaText = turmaSelectProfessor.options[turmaSelectProfessor.selectedIndex].text;
-            
-            // Re-gera os dados para ter o objeto pivotData (garante que está atualizado)
-            handleTurmaProfessorChange({ target: { value: turmaSelectProfessor.value } });
-            const pivotData = {};
-            const turmaData = processedData[turmaSelectProfessor.value].disciplines;
-            
-            // Lógica de preenchimento para o PDF
-            for (const disciplineId in turmaData) {
-                const disciplineName = turmaData[disciplineId].name;
-                const initialRow = { total: 0, "Sábado": 0 };
-                Object.keys(MONTH_MAP_PIVOT).forEach(monthKey => {
-                    initialRow[MONTH_MAP_PIVOT[monthKey]] = 0;
-                });
-                pivotData[disciplineName] = initialRow;
-
-                for (const professorId in turmaData[disciplineId].professors) {
-                    const schedule = turmaData[disciplineId].professors[professorId].schedule;
-                    
-                    schedule.forEach(item => {
-                        if (item.isRecuperacao) { return; }
-                        const monthColumn = MONTH_MAP_PIVOT[item.month.toLowerCase()];
-                        
-                        if (monthColumn) {
-                            pivotData[disciplineName][monthColumn] += 1;
-                        }
-                        
-                        if (item.dayOfWeek.toLowerCase().includes('sábado')) {
-                            pivotData[disciplineName]["Sábado"] += 1;
-                        }
-                        
-                        pivotData[disciplineName].total += 1;
-                    });
-                }
-            }
-
-
-            const addCenteredText = (text, size, style = 'normal') => {
-                doc.setFont('helvetica', style);
-                doc.setFontSize(size);
-                const textWidth = doc.getStringUnitWidth(text) * size / doc.internal.scaleFactor;
-                const x = (pageWidth - textWidth) / 2;
-                doc.text(text, x, y);
-                y += size * 0.4;
-            };
-
-            y += 5;
-            addCenteredText('INSTITUTO FEDERAL DE RONDÔNIA', 14, 'bold');
-            addCenteredText('CAMPUS CACOAL', 12, 'italic');
-            y += 5;
-            addCenteredText('DEPARTAMENTO DE APOIO AO ENSINO', 10);
-            addCenteredText('COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS', 10);
-            
-            y += 10;
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Relatório Pivô: Disciplinas por Mês - Turma ${selectedTurmaText} - Ano ${selectedYearText}`, margin, y);
-            y += 10;
-            
-            // Cabeçalho da tabela do PDF
-            const monthColumns = Object.values(MONTH_MAP_PIVOT);
-            // Inclui "Sábado" no cabeçalho
-            const headers = [["Disciplina", ...monthColumns, "SÁBADO", "Total"]]; 
-            
-            // Dados da tabela do PDF
-            const disciplineNames = Object.keys(pivotData).sort(); 
-            const data = disciplineNames.map(disciplineName => {
-                const rowData = pivotData[disciplineName];
-                const row = [disciplineName];
-                
-                // Meses
-                monthColumns.forEach(month => row.push(rowData[month].toString()));
-                
-                // Sábado
-                row.push(rowData["Sábado"].toString()); 
-                
-                // Total
-                row.push(rowData.total.toString());
-                
-                return row;
-            });
-            
-            // Coluna Total deve ser verde no PDF (é a última coluna, índice 14 - 1 = 13)
-            const columnStyles = {
-                13: { fillColor: [22, 163, 74], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' }
-            };
-
-            // Ajustando fonte e padding no PDF para compactar a tabela, usando fontSize 7
-            doc.autoTable({
-                head: headers,
-                body: data,
-                startY: y,
-                theme: 'striped',
-                headStyles: { fillColor: [22, 163, 74], fontStyle: 'bold', halign: 'center' },
-                styles: { fontSize: 7, cellPadding: 1.5, halign: 'center' }, // Font size 7 e padding 1.5
-                columnStyles: columnStyles,
-                margin: { top: margin, bottom: margin, left: margin, right: margin },
-                didDrawPage: function (data) {
-                    const footerText = `${dataRelatorioSpan.textContent} / Campus Cacoal`;
-                    doc.setFontSize(8);
-                    doc.setFont('helvetica', 'normal');
-                    const textWidth = doc.getStringUnitWidth(footerText) * 8 / doc.internal.scaleFactor;
-                    const x = (pageWidth - textWidth) / 2;
-                    doc.text(footerText, x, doc.internal.pageSize.getHeight() - 10);
-                }
-            });
-
-            const fileName = `Relatorio_Pivo_${selectedYearText}_${selectedTurmaText.replace(/\s/g, '_')}.pdf`;
-            doc.save(fileName);
-
-            exportProfessorPdfBtn.disabled = false;
-            exportProfessorPdfBtn.textContent = 'Exportar Relatório em PDF (Turma)';
-            showFeedback('Relatório PDF gerado com sucesso!', 'bg-green-100 text-green-800');
-        }
-
-        /**
-         * Exibe uma mensagem de feedback temporária no UI.
-         */
-        function showFeedback(message, className) {
-            feedbackMessage.classList.remove('hidden', 'bg-yellow-100', 'text-yellow-800', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-            feedbackMessage.classList.add(...className.split(' ')); 
-            feedbackMessage.textContent = message;
-            
-            setTimeout(() => {
-                feedbackMessage.classList.add('hidden');
-            }, 5000); 
-        }
-
-        // Inicializa a aplicação ao carregar a página
-        document.addEventListener('DOMContentLoaded', () => {
-             // Carrega o plugin autoTable (necessário para o PDF)
-            const autoTableScript = document.createElement('script');
-            autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
-            document.head.appendChild(autoTableScript);
-
-            autoTableScript.onload = initApp;
+        // Inicializa a linha (todos os meses começam com 0)
+        const initialRow = { total: 0, "Sábado": 0 };
+        Object.keys(MONTH_MAP_PIVOT).forEach(monthKey => {
+            initialRow[MONTH_MAP_PIVOT[monthKey]] = 0;
         });
+        pivotData[disciplineName] = initialRow;
+
+        for (const professorId in turmaData[disciplineId].professors) {
+            const schedule = turmaData[disciplineId].professors[professorId].schedule;
+            
+            schedule.forEach(item => {
+                // 1. Ignora REC/EXAME
+                if (item.isRecuperacao) return; 
+
+                // 2. Lógica de Trava de Semestre
+                const monthKey = item.month.toLowerCase().trim();
+                const mIdx = monthOrder[monthKey] - 1; // monthOrder definido globalmente
+                const semestreDaAula = (mIdx <= 6) ? 1 : 2;
+
+                // SÓ CONTA SE FOR O SEMESTRE ATIVO
+                if (semestreDaAula === semestreAtivo) {
+                    const monthColumn = MONTH_MAP_PIVOT[monthKey];
+                    
+                    if (monthColumn) {
+                        pivotData[disciplineName][monthColumn] += 1;
+                    }
+
+                    if (item.dayOfWeek.toLowerCase().includes('sábado')) {
+                        pivotData[disciplineName]["Sábado"] += 1;
+                    }
+                    
+                    pivotData[disciplineName].total += 1;
+                }
+            });
+        }
+        // Se a disciplina não teve nenhuma aula no semestre, removemos do relatório
+        if (pivotData[disciplineName].total === 0) {
+            delete pivotData[disciplineName];
+        }
+    }
+
+    renderPivotTable(pivotData);
+    exportAreaProfessor.classList.remove('hidden');
+    exportProfessorPdfBtn.disabled = Object.keys(pivotData).length === 0;
+}
+
+function renderPivotTable(pivotData) {
+    tableBodyProfessorPivot.innerHTML = '';
+    
+    const disciplineNames = Object.keys(pivotData).sort(); 
+    const monthColumns = Object.values(MONTH_MAP_PIVOT);
+    const allRegularColumns = [...monthColumns, "Sábado"]; 
+
+    if (disciplineNames.length > 0) {
+        disciplineNames.forEach((disciplineName, index) => {
+            const rowData = pivotData[disciplineName];
+            const row = tableBodyProfessorPivot.insertRow();
+            row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+
+            // Coluna Disciplina
+            const discCell = row.insertCell();
+            discCell.textContent = disciplineName;
+            discCell.className = 'px-3 py-2 font-medium text-xs text-gray-900 border-b';
+
+            // Meses e Sábado
+            allRegularColumns.forEach(column => {
+                const cell = row.insertCell();
+                const valor = rowData[column] || 0;
+                cell.textContent = valor;
+                cell.className = `px-3 py-2 text-center text-xs border-b ${valor === 0 ? 'text-gray-300' : 'text-gray-700'}`;
+                
+                if (column === "Sábado") cell.classList.add('bg-gray-50');
+            });
+            
+            // Coluna Total
+            const totalCell = row.insertCell();
+            totalCell.textContent = rowData.total;
+            totalCell.className = 'px-3 py-2 text-center text-xs font-bold text-green-700 bg-green-50 border-b';
+        });
+    } else {
+        const row = tableBodyProfessorPivot.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 15;
+        cell.className = 'px-3 py-8 text-center text-sm text-gray-500 italic';
+        cell.textContent = 'Não há aulas registradas para esta turma no semestre atual.';
+    }
+}
+
+/**
+ * Exportação PDF ajustada com nome de arquivo dinâmico
+ */
+async function exportProfessorPivotReportToPdf() {
+    if (!turmaSelectProfessor.value) return;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Paisagem
+    
+    const selectedTurmaText = turmaSelectProfessor.options[turmaSelectProfessor.selectedIndex].text;
+    const mesAtual = new Date().getMonth();
+    const semLabel = (mesAtual <= 6) ? "1_Semestre" : "2_Semestre";
+
+    // O jsPDF-AutoTable usará a tabela HTML já renderizada (e filtrada)
+    doc.autoTable({
+        html: '#tableProfessorPivot', // Certifique-se que o ID da table no HTML é este
+        startY: 40,
+        theme: 'grid',
+        headStyles: { fillColor: [22, 163, 74], fontSize: 7 },
+        styles: { fontSize: 6, cellPadding: 1 },
+        didDrawPage: function(data) {
+            doc.setFontSize(14);
+            doc.text("INSTITUTO FEDERAL DE RONDÔNIA - CAMPUS CACOAL", 148, 15, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text(`Relatório de Carga Horária Mensal - ${selectedTurmaText}`, 148, 25, { align: 'center' });
+            doc.text(`Período: ${semLabel.replace('_', ' ')}`, 148, 30, { align: 'center' });
+        }
+    });
+
+    const fileName = `Relatorio_Mensal_${selectedTurmaText.replace(/\s/g, '_')}_${semLabel}.pdf`;
+    doc.save(fileName);
+}
 // Constantes auxiliares para a Grade
 const HORARIOS_GRADE = ["07:30", "08:20", "09:30", "10:20", "11:10", "13:50", "14:40", "15:50", "16:40", "17:30", "19:00", "19:50", "20:50", "21:40"];
 const MAPA_MESES_INDEX = { "janeiro": 0, "fevereiro": 1, "março": 2, "abril": 3, "maio": 4, "junho": 5, "julho": 6, "agosto": 7, "setembro": 8, "outubro": 9, "novembro": 10, "dezembro": 11 };
