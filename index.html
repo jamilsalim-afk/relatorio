@@ -1353,30 +1353,40 @@ window.gerarGradeSemanal = function() {
     const mapaDatas = calcularDatasDaSemana(ano, sem);
     const listaHorarios = [
         {h: "07:30 - 08:20", t: "aula"}, {h: "08:20 - 09:10", t: "aula"},
-        {h: "09:10 a 09:30 - INTERVALO", t: "pausa"},
+        {h: "09:10 a 09:30", t: "Intervalo"},
         {h: "09:30 - 10:20", t: "aula"}, {h: "10:20 - 11:10", t: "aula"}, {h: "11:10 - 12:00", t: "aula"},
-        {h: "12:00 a 13:50 - ALMOÇO", t: "pausa"},
+        {h: "12:00 a 13:50", t: "ALMOÇO"},
         {h: "13:50 - 14:40", t: "aula"}, {h: "14:40 - 15:30", t: "aula"},
-        {h: "15:30 a 15:50 - INTERVALO", t: "pausa"},
+        {h: "15:30 a 15:50", t: "Intervalo"},
         {h: "15:50 - 16:40", t: "aula"}, {h: "16:40 - 17:30", t: "aula"}, {h: "17:30 - 18:20", t: "aula"},
-        {h: "18:20 a 19:00 - JANTAR", t: "pausa"},
+        {h: "18:20 a 19:00", t: "JANTA"},
         {h: "19:00 - 19:50", t: "aula"}, {h: "19:50 - 20:40", t: "aula"},
-        {h: "20:40 a 20:50 - INTERVALO", t: "pausa"},
+        {h: "20:40 a 20:50", t: "Intervalo"},
         {h: "20:50 - 21:40", t: "aula"}, {h: "21:40 - 22:30", t: "aula"}
     ];
 
     const mesesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro", "marco"];
 
-    let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 bg-white shadow-xl mx-auto" style="width: 100%; min-width: 800px; table-layout: fixed;">
-        <thead>
-            <tr class="bg-green-700 text-white">
-                <th class="border border-gray-300 p-2 w-32 text-[10px]">HORÁRIO</th>
-                ${Object.keys(mapaDatas).map(d => `
-                    <th class="border border-gray-300 p-1 text-[10px] uppercase">
-                        ${d}<br><span class="text-[9px] font-normal">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span>
-                    </th>`).join('')}
-            </tr>
-        </thead><tbody>`;
+    // ... dentro da função gerarGradeSemanal ...
+
+let html = `<table id="tabelaGradeExport" class="border-collapse border border-gray-300 bg-white shadow-xl mx-auto" 
+    style="width: 100%; min-width: 1000px; table-layout: fixed; border-spacing: 0;">
+    <thead>
+        <tr class="bg-green-700 text-white">
+            <th class="border border-gray-300 p-2 text-[10px]" style="width: 100px;">HORÁRIO</th>
+            ${Object.keys(mapaDatas).map(d => `
+                <th class="border border-gray-300 p-1 text-[10px] uppercase" style="width: 150px;">
+                    ${d}<br><span class="text-[9px] font-normal">${mapaDatas[d].dia}/${mapaDatas[d].mes+1}</span>
+                </th>`).join('')}
+        </tr>
+    </thead><tbody>`;
+
+// ... no loop de geração das células de aula ...
+// Adicione 'overflow-hidden' e garanta que o texto quebre linha
+html += `<td class="border border-gray-300 p-1 align-middle text-center" 
+            style="width: 150px; height: 70px; overflow: hidden; word-wrap: break-word;">
+            ${aulasHtml}
+         </td>`;
 
     listaHorarios.forEach(slot => {
         if (slot.t === "pausa") {
@@ -1428,82 +1438,51 @@ window.gerarGradeSemanal = function() {
 };
 window.exportarGradeSemanalPDF = function() {
     const { jsPDF } = window.jspdf;
-    // Alterado para 'p' (portrait/retrato)
-    const doc = new jsPDF('p', 'mm', 'a4'); 
-    
+    const doc = new jsPDF('p', 'mm', 'a4'); // Retrato
     const prof = document.getElementById('selectProfSemanal').value;
     const semanaRaw = document.getElementById('inputSemana').value;
     const tabela = document.getElementById('tabelaGradeExport');
 
-    if (!tabela) { 
-        alert("Por favor, gere a grade na tela antes de exportar."); 
-        return; 
-    }
+    if (!tabela) return;
 
     const pageWidth = doc.internal.pageSize.getWidth();
     
-    // Helper para centralizar texto
-    const center = (txt, y, sz, style = 'normal') => {
-        doc.setFontSize(sz); 
-        doc.setFont('helvetica', style);
-        const textWidth = doc.getTextWidth(txt);
-        doc.text(txt, (pageWidth - textWidth) / 2, y);
-    };
+    // Cabeçalho (Mantenha o seu código de center aqui)
+    // ...
 
-    // --- CABEÇALHO COMPACTO ---
-    center("INSTITUTO FEDERAL DE RONDÔNIA", 12, 11, 'bold');
-    center("CAMPUS CACOAL", 17, 10, 'italic');
-    center("DEPARTAMENTO DE APOIO AO ENSINO", 25, 9);
-    center("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", 30, 9);
-
-    // --- INFO DO RELATÓRIO ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text(`Grade Semanal - Professor: ${prof}`, 14, 42);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Semana: ${semanaRaw}`, 14, 47);
-
-    // --- GERAÇÃO DA TABELA COMPACTADA ---
     doc.autoTable({
         html: '#tabelaGradeExport',
-        startY: 52,
+        startY: 55,
         theme: 'grid',
-        margin: { left: 10, right: 10, bottom: 10 }, // Margens reduzidas
-        styles: {
-            fontSize: 6,           // Fonte menor para caber em Retrato
-            cellPadding: 0.8,      // Padding interno reduzido
-            valign: 'middle',
+        styles: { 
+            fontSize: 6, 
+            cellPadding: 1, 
+            valign: 'middle', 
             halign: 'center',
-            overflow: 'linebreak',
-            lineWidth: 0.1
+            overflow: 'linebreak', // FORÇA A QUEBRA DE LINHA PARA NÃO SOBREPOR
+            cellWidth: 'wrap' 
         },
-        headStyles: {
-            fillColor: [21, 128, 61],
-            textColor: 255,
-            fontSize: 6.5,
-            fontStyle: 'bold'
+        headStyles: { fillColor: [21, 128, 61], fontSize: 6 },
+        columnStyles: { 
+            0: { cellWidth: 22 }, // Coluna de Horário fixa
+            1: { cellWidth: 28 }, // Segunda
+            2: { cellWidth: 28 }, // Terça
+            3: { cellWidth: 28 }, // Quarta
+            4: { cellWidth: 28 }, // Quinta
+            5: { cellWidth: 28 }, // Sexta
+            6: { cellWidth: 28 }  // Sábado
         },
-        columnStyles: {
-            0: { cellWidth: 22, fontStyle: 'bold', fillColor: [245, 245, 245] }, // Coluna Horário
-            1: { cellWidth: 'auto' },
-            2: { cellWidth: 'auto' },
-            3: { cellWidth: 'auto' },
-            4: { cellWidth: 'auto' },
-            5: { cellWidth: 'auto' },
-            6: { cellWidth: 'auto' }
-        },
-        // Força a centralização de todo o texto dentro das células
+        // Garante que o PDF processe cada linha de texto separadamente
         didParseCell: function(data) {
             if (data.cell.raw && data.cell.raw.innerText) {
-                data.cell.text = data.cell.raw.innerText.trim();
+                // Remove espaços duplos e garante texto limpo
+                data.cell.text = data.cell.raw.innerText.replace(/\s+/g, ' ').trim();
             }
         },
-        // Ajuste para garantir que caiba em 1 página
-        rowPageBreak: 'avoid'
+        margin: { horizontal: 5 } // Margem pequena para caber todas as colunas
     });
 
-    const fileName = `Grade_Retrato_${prof.replace(/\s+/g, '_')}.pdf`;
-    doc.save(fileName);
+    doc.save(`Grade_${prof}.pdf`);
 };
 // IMPORTANTE: Chame esta função dentro da sua função original 'initApp' ou 'processAndRenderData'
 // Para garantir que a lista de professores carregue assim que o arquivo for aberto:
