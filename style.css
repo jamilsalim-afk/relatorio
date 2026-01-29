@@ -11,7 +11,9 @@
         .tab-btn.active { border-bottom: 4px solid #15803d; color: #15803d; font-weight: 800; }
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
-        .config-input { border: 1px solid #ddd; padding: 6px 10px; border-radius: 6px; width: 100%; font-size: 0.875rem; background: #f9fafb; }
+        .config-card { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 8px; margin-bottom: 1rem; }
+        .config-label { font-size: 0.75rem; text-transform: uppercase; color: #6b7280; font-weight: 700; margin-bottom: 4px; display: block; }
+        .config-value { font-size: 1rem; color: #1f2937; font-weight: 600; }
         table th, table td { border: 1px solid #e5e7eb; word-wrap: break-word; }
         .grade-cell { min-height: 85px; vertical-align: top; width: 16%; font-size: 9px; }
         .aula-card { padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid #bbf7d0; background-color: #f0fdf4; line-height: 1.2; border-left: 4px solid #15803d; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
@@ -39,7 +41,7 @@
             <button class="tab-btn px-8 py-5 active" data-tab="tab-disciplina">POR DISCIPLINA</button>
             <button class="tab-btn px-8 py-5" data-tab="tab-pivo">POR TURMA (PIVÔ)</button>
             <button class="tab-btn px-8 py-5" data-tab="tab-semanal">GRADE SEMANAL</button>
-            <button class="tab-btn px-8 py-5 text-gray-400" data-tab="tab-config">⚙️ INFO SISTEMA</button>
+            <button class="tab-btn px-8 py-5 text-gray-700" data-tab="tab-config">⚙️ INFO SISTEMA</button>
         </div>
     </nav>
 
@@ -112,10 +114,66 @@
         </section>
 
         <section id="tab-config" class="tab-pane">
-            <div class="bg-white p-8 rounded-xl shadow-md border">
-                <h3 class="font-black text-gray-800 mb-4 uppercase">Informações do Sistema</h3>
-                <div id="info-inst" class="config-input mb-2"></div>
-                <div id="info-unidade" class="config-input"></div>
+            <div class="bg-white p-8 rounded-xl shadow-md border max-w-4xl mx-auto">
+                <div class="flex items-center gap-3 mb-8 border-b pb-4">
+                    <div class="bg-green-100 p-3 rounded-full text-green-700">⚙️</div>
+                    <h3 class="font-black text-2xl text-gray-800 uppercase tracking-tight">Informações do Sistema</h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-black text-green-700 uppercase mb-4 border-l-4 border-green-700 pl-2">Institucional</h4>
+                        <div class="config-card">
+                            <span class="config-label">Instituição</span>
+                            <div id="info-inst" class="config-value"></div>
+                        </div>
+                        <div class="config-card">
+                            <span class="config-label">Unidade</span>
+                            <div id="info-unidade" class="config-value"></div>
+                        </div>
+                        <div class="config-card">
+                            <span class="config-label">Departamento</span>
+                            <div class="config-value">DEPARTAMENTO DE APOIO AO ENSINO (DAE)</div>
+                        </div>
+                        <div class="config-card">
+                            <span class="config-label">Coordenação</span>
+                            <div class="config-value">COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-black text-green-700 uppercase mb-4 border-l-4 border-green-700 pl-2">Localização e Contato</h4>
+                        <div class="config-card">
+                            <span class="config-label">Endereço</span>
+                            <div id="info-end" class="config-value text-sm"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="config-card">
+                                <span class="config-label">Telefone</span>
+                                <div id="info-tel" class="config-value"></div>
+                            </div>
+                            <div class="config-card">
+                                <span class="config-label">E-mail</span>
+                                <div id="info-email" class="config-value text-xs"></div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-sm font-black text-blue-700 uppercase mt-6 mb-4 border-l-4 border-blue-700 pl-2">Calendário Acadêmico 2025</h4>
+                        <div class="bg-blue-50 border border-blue-100 p-4 rounded-lg">
+                            <div class="mb-3">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase">1º Semestre (Regular)</span>
+                                <div id="cal-s1" class="font-mono text-sm font-bold text-blue-900"></div>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-blue-800 uppercase">2º Semestre (Regular)</span>
+                                <div id="cal-s2" class="font-mono text-sm font-bold text-blue-900"></div>
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-blue-200">
+                                <p class="text-[9px] text-blue-700 italic">* Cursos de Ensino Médio seguem calendário anual (Fev a Dez).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -125,6 +183,8 @@
             inst: "INSTITUTO FEDERAL DE RONDÔNIA",
             unid: "CAMPUS CACOAL",
             end: "Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO",
+            tel: "(69) 2182-9642",
+            email: "campuscacoal@ifro.edu.br",
             s1_i: "2025-02-01", s1_f: "2025-07-10",
             s2_i: "2025-07-25", s2_f: "2025-12-20",
             ano_i: "2025-02-01", ano_f: "2025-12-20"
@@ -139,13 +199,23 @@
 
         window.onload = () => {
             document.getElementById('dataRelatorio').textContent = new Date().toLocaleDateString('pt-BR');
+            // Popular Aba INFO
             document.getElementById('info-inst').textContent = CONFIG_SISTEMA.inst;
             document.getElementById('info-unidade').textContent = CONFIG_SISTEMA.unid;
+            document.getElementById('info-end').textContent = CONFIG_SISTEMA.end;
+            document.getElementById('info-tel').textContent = CONFIG_SISTEMA.tel;
+            document.getElementById('info-email').textContent = CONFIG_SISTEMA.email;
+            
+            const f = (d) => d.split('-').reverse().join('/');
+            document.getElementById('cal-s1').textContent = `Início: ${f(CONFIG_SISTEMA.s1_i)} - Término: ${f(CONFIG_SISTEMA.s1_f)}`;
+            document.getElementById('cal-s2').textContent = `Início: ${f(CONFIG_SISTEMA.s2_i)} - Término: ${f(CONFIG_SISTEMA.s2_f)}`;
+
             initTabs();
             popularAnos();
             carregarDados('2025');
         };
 
+        // --- TODAS AS LÓGICAS DE RELATÓRIO E EXPORTAÇÃO MANTIDAS IGUAIS À VERSÃO ANTERIOR ---
         function isEnsinoMedio(nomeTurma) {
             const n = nomeTurma.toUpperCase();
             return n.includes("AGROECOLOGIA") || n.includes("AGROPECUÁRIA") || n.includes("INFORMÁTICA");
@@ -154,7 +224,6 @@
         function gerarBasePDF(doc, titulo, subtitulos = [], orientacao = 'p') {
             const pageWidth = orientacao === 'p' ? 210 : 297;
             const emissao = new Date().toLocaleDateString('pt-BR') + " às " + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-            
             doc.setFillColor(21, 128, 61); doc.rect(0, 0, pageWidth, 40, 'F');
             doc.setTextColor(255); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
             doc.text(CONFIG_SISTEMA.inst, pageWidth/2, 15, { align: 'center' });
@@ -162,12 +231,10 @@
             doc.setFontSize(8); doc.setFont('helvetica', 'normal');
             doc.text("DEPARTAMENTO DE APOIO AO ENSINO - DAE", pageWidth/2, 28, { align: 'center' });
             doc.text("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", pageWidth/2, 32, { align: 'center' });
-            
             doc.setTextColor(0); doc.setFontSize(11); doc.setFont('helvetica', 'bold');
             doc.text(titulo, pageWidth/2, 50, { align: 'center' });
             doc.setFontSize(9); let y = 58;
             subtitulos.forEach(s => { doc.text(s, 15, y); y += 5; });
-
             doc.autoTableSetDefaults({
                 didDrawPage: (data) => {
                     const pHeight = doc.internal.pageSize.getHeight();
@@ -187,7 +254,6 @@
             doc.save(nomeArquivo);
         }
 
-        // --- EXPORTAÇÃO COM LARGURA FIXA E ALTURA DINÂMICA ---
         function exportarGradeSemanalPDF() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
             const prof = document.getElementById('selectProfSemanal').value;
@@ -198,32 +264,10 @@
             const dtFim = new Date(dtInicio); dtFim.setDate(dtInicio.getDate() + 5);
             const intervaloFormatado = `${dtInicio.toLocaleDateString('pt-BR')} a ${dtFim.toLocaleDateString('pt-BR')}`;
             const y = gerarBasePDF(doc, "RELATÓRIO DE GRADE SEMANAL DE AULAS", [`PROFESSOR: ${prof}`, `PERÍODO DA SEMANA: ${intervaloFormatado}`], 'l');
-
-            doc.autoTable({ 
-                html: '#tableGradeExp', 
-                startY: y, 
-                theme: 'grid', 
-                styles: { 
-                    fontSize: 7, 
-                    cellPadding: 2,
-                    overflow: 'linebreak', // Faz o texto quebrar a linha
-                    valign: 'top' // Mantém o texto no topo se a célula crescer
-                }, 
-                headStyles: { fillColor: [31, 41, 55] },
-                columnStyles: { 
-                    0: { cellWidth: 25, fontStyle: 'bold', halign: 'center' }, // Horário fixo
-                    1: { cellWidth: 41 }, // Segunda
-                    2: { cellWidth: 41 }, // Terça
-                    3: { cellWidth: 41 }, // Quarta
-                    4: { cellWidth: 41 }, // Quinta
-                    5: { cellWidth: 41 }, // Sexta
-                    6: { cellWidth: 41 }  // Sábado
-                }
-            });
+            doc.autoTable({ html: '#tableGradeExp', startY: y, theme: 'grid', styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak', valign: 'top' }, headStyles: { fillColor: [31, 41, 55] }, columnStyles: { 0: { cellWidth: 25, fontStyle: 'bold', halign: 'center' }, 1: { cellWidth: 41 }, 2: { cellWidth: 41 }, 3: { cellWidth: 41 }, 4: { cellWidth: 41 }, 5: { cellWidth: 41 }, 6: { cellWidth: 41 } } });
             finalizarPDF(doc, `Grade_Semanal_${prof}.pdf`);
         }
 
-        // --- FUNÇÕES DE FILTRO E DADOS (SEM ALTERAÇÃO) ---
         function filtrarDisciplina() {
             const tId = document.getElementById('turmaSelect').value;
             const dId = document.getElementById('disciplinaSelect').value;
@@ -247,8 +291,7 @@
             const tId = document.getElementById('turmaSelect').value;
             const dId = document.getElementById('disciplinaSelect').value;
             const tNome = processedData[tId].name;
-            const dNome = processedData[tId].disciplines[dId].name;
-            const y = gerarBasePDF(doc, "RELATÓRIO DE DIAS LETIVOS POR DISCIPLINA", [`TURMA: ${tNome}`, `DISCIPLINA: ${dNome}`]);
+            const y = gerarBasePDF(doc, "RELATÓRIO DE DIAS LETIVOS POR DISCIPLINA", [`TURMA: ${tNome}`, `DISCIPLINA: ${processedData[tId].disciplines[dId].name}`]);
             doc.autoTable({ html: '#horariosTableDisciplina', startY: y, theme: 'grid' });
             finalizarPDF(doc, `Relatorio_Disciplina_${tNome}.pdf`);
         }
