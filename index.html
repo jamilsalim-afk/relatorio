@@ -27,7 +27,7 @@
                     <h2 class="text-xl font-bold opacity-90 uppercase">CAMPUS CACOAL</h2>
                 </div>
                 <div class="mt-4 md:mt-0 bg-white/10 p-4 rounded-lg border border-white/20 text-center">
-                    <p class="text-[10px] uppercase font-bold opacity-80">Data de Emissão</p>
+                    <p class="text-[10px] uppercase font-bold opacity-80">Portal de Gestão</p>
                     <span id="dataRelatorio" class="text-lg font-mono font-bold">--/--/----</span>
                 </div>
             </div>
@@ -44,7 +44,6 @@
     </nav>
 
     <main class="container mx-auto p-4 md:p-8">
-        
         <section id="tab-disciplina" class="tab-pane active">
             <div class="bg-white p-6 rounded-xl shadow-md border">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -59,7 +58,7 @@
                 <div id="exportAreaDisciplina" class="hidden">
                     <div class="flex justify-between items-center mb-4 bg-green-50 p-4 rounded-lg border border-green-200">
                         <span class="font-bold">Aulas Apuradas: <b id="totalDiasDisciplina" class="text-green-700 text-2xl">0</b></span>
-                        <button onclick="exportarDisciplinaPDF()" class="bg-green-700 text-white px-8 py-3 rounded-xl font-black hover:bg-green-800 shadow-md">GERAR PDF PROFISSIONAL</button>
+                        <button onclick="exportarDisciplinaPDF()" class="bg-green-700 text-white px-8 py-3 rounded-xl font-black hover:bg-green-800 shadow-md transition-all active:scale-95">GERAR PDF PROFISSIONAL</button>
                     </div>
                     <table id="horariosTableDisciplina" class="min-w-full bg-white border text-center text-sm">
                         <thead class="bg-gray-800 text-white">
@@ -105,7 +104,7 @@
                     <input type="week" id="inputSemana" class="p-3 border rounded-xl">
                     <div class="flex gap-2">
                         <button onclick="gerarGradeSemanal()" class="bg-blue-600 text-white font-bold px-4 rounded-lg flex-1 hover:bg-blue-700 transition">VER GRADE</button>
-                        <button onclick="exportarGradeSemanalPDF()" class="bg-green-700 text-white font-bold px-4 rounded-lg flex-1 hover:bg-green-800 transition">PDF</button>
+                        <button onclick="exportarGradeSemanalPDF()" class="bg-green-700 text-white font-bold px-4 rounded-lg flex-1 hover:bg-green-800 transition">GERAR PDF</button>
                     </div>
                 </div>
                 <div id="gradeSemanalResult" class="overflow-x-auto"></div>
@@ -113,43 +112,22 @@
         </section>
 
         <section id="tab-config" class="tab-pane">
-            <div class="bg-white p-8 rounded-xl shadow-md border border-gray-200">
-                <h3 class="text-xl font-black text-gray-800 mb-6 uppercase border-b pb-2">Informações do Calendário Acadêmico 2025</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-4">
-                        <p class="text-sm text-gray-600 italic">Estes dados são fixos no sistema conforme calendário oficial do IFRO Campus Cacoal.</p>
-                        <div><label class="text-[10px] font-bold text-gray-400">INSTITUIÇÃO</label><div id="info-inst" class="config-input"></div></div>
-                        <div><label class="text-[10px] font-bold text-gray-400">UNIDADE</label><div id="info-unidade" class="config-input"></div></div>
-                        <div><label class="text-[10px] font-bold text-gray-400">ENDEREÇO</label><div id="info-end" class="config-input"></div></div>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                            <h4 class="font-bold text-blue-800 text-xs mb-2">1º SEMESTRE</h4>
-                            <p id="info-s1" class="text-sm"></p>
-                        </div>
-                        <div class="bg-green-50 p-4 rounded-lg">
-                            <h4 class="font-bold text-green-800 text-xs mb-2">2º SEMESTRE</h4>
-                            <p id="info-s2" class="text-sm"></p>
-                        </div>
-                    </div>
-                </div>
+            <div class="bg-white p-8 rounded-xl shadow-md border">
+                <h3 class="font-black text-gray-800 mb-4 uppercase">Informações do Sistema</h3>
+                <div id="info-inst" class="config-input mb-2"></div>
+                <div id="info-unidade" class="config-input"></div>
             </div>
         </section>
     </main>
 
     <script>
-        // --- CONSTANTES TÉCNICAS E CALENDÁRIO FIXO ---
         const CONFIG_SISTEMA = {
             inst: "INSTITUTO FEDERAL DE RONDÔNIA",
             unid: "CAMPUS CACOAL",
             end: "Rodovia BR 364, Km 228, Lote 2A - Zona Rural, CEP: 76960-970, Cacoal-RO",
-            tel: "069-2182-9642",
-            email: "campuscacoal@ifro.edu.br",
-            // DATAS OFICIAIS IFRO 2025
-            s1_i: "2025-02-01",
-            s1_f: "2025-07-10",
-            s2_i: "2025-07-25",
-            s2_f: "2025-12-20"
+            s1_i: "2025-02-01", s1_f: "2025-07-10",
+            s2_i: "2025-07-25", s2_f: "2025-12-20",
+            ano_i: "2025-02-01", ano_f: "2025-12-20"
         };
 
         let processedData = {};
@@ -161,23 +139,23 @@
 
         window.onload = () => {
             document.getElementById('dataRelatorio').textContent = new Date().toLocaleDateString('pt-BR');
-            exibirInfosFixas();
+            document.getElementById('info-inst').textContent = CONFIG_SISTEMA.inst;
+            document.getElementById('info-unidade').textContent = CONFIG_SISTEMA.unid;
             initTabs();
             popularAnos();
             carregarDados('2025');
         };
 
-        function exibirInfosFixas() {
-            document.getElementById('info-inst').textContent = CONFIG_SISTEMA.inst;
-            document.getElementById('info-unidade').textContent = CONFIG_SISTEMA.unid;
-            document.getElementById('info-end').textContent = CONFIG_SISTEMA.end;
-            document.getElementById('info-s1').textContent = `Início: 01/02/2025 - Término: 10/07/2025`;
-            document.getElementById('info-s2').textContent = `Início: 25/07/2025 - Término: 20/12/2025`;
+        function isEnsinoMedio(nomeTurma) {
+            const n = nomeTurma.toUpperCase();
+            return n.includes("AGROECOLOGIA") || n.includes("AGROPECUÁRIA") || n.includes("INFORMÁTICA");
         }
 
-        // --- MOTOR PDF PROFISSIONAL ---
+        // --- CORREÇÃO DA PAGINAÇÃO E RODAPÉ ---
         function gerarBasePDF(doc, titulo, subtitulos = [], orientacao = 'p') {
             const pageWidth = orientacao === 'p' ? 210 : 297;
+            const emissao = new Date().toLocaleDateString('pt-BR') + " às " + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            
             doc.setFillColor(21, 128, 61); doc.rect(0, 0, pageWidth, 40, 'F');
             doc.setTextColor(255); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
             doc.text(CONFIG_SISTEMA.inst, pageWidth/2, 15, { align: 'center' });
@@ -185,33 +163,88 @@
             doc.setFontSize(8); doc.setFont('helvetica', 'normal');
             doc.text("DEPARTAMENTO DE APOIO AO ENSINO - DAE", pageWidth/2, 28, { align: 'center' });
             doc.text("COORDENAÇÃO DE DESENVOLVIMENTO DE FERRAMENTAS PEDAGÓGICAS", pageWidth/2, 32, { align: 'center' });
+            
             doc.setTextColor(0); doc.setFontSize(11); doc.setFont('helvetica', 'bold');
             doc.text(titulo, pageWidth/2, 50, { align: 'center' });
             doc.setFontSize(9); let y = 58;
             subtitulos.forEach(s => { doc.text(s, 15, y); y += 5; });
-            const totalPagesExp = "{total_pages_count_string}";
+
             doc.autoTableSetDefaults({
                 didDrawPage: (data) => {
                     const pHeight = doc.internal.pageSize.getHeight();
+                    const pWidth = doc.internal.pageSize.getWidth();
                     doc.setFontSize(7); doc.setTextColor(100);
-                    doc.text(`${CONFIG_SISTEMA.end} | E-mail: ${CONFIG_SISTEMA.email}`, pageWidth/2, pHeight - 15, { align: 'center' });
-                    doc.text(`Página ${doc.internal.getNumberOfPages()} de ${totalPagesExp}`, pageWidth/2, pHeight - 10, { align: 'center' });
+                    // Centralizado: Info Institucional e Emissão
+                    doc.text(`${CONFIG_SISTEMA.end} | Emissão: ${emissao}`, pWidth/2, pHeight - 10, { align: 'center' });
+                    // Direita: Paginação real
+                    let str = "Página " + doc.internal.getNumberOfPages();
+                    if (typeof doc.putTotalPages === 'function') {
+                        str = str + " de " + "{total_pages_count_string}";
+                    }
+                    doc.text(str, pWidth - 20, pHeight - 10);
                 }
             });
             return y + 5;
         }
 
-        // --- ABA 1 E 2: PROCESSAMENTO ---
+        function finalizarPDF(doc, nomeArquivo) {
+            if (typeof doc.putTotalPages === 'function') {
+                doc.putTotalPages("{total_pages_count_string}");
+            }
+            doc.save(nomeArquivo);
+        }
+
+        // --- DISCIPLINAS ---
+        function exportarDisciplinaPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            const tId = document.getElementById('turmaSelect').value;
+            const dId = document.getElementById('disciplinaSelect').value;
+            const tNome = processedData[tId].name;
+            const dNome = processedData[tId].disciplines[dId].name;
+            const profs = Array.from(processedData[tId].disciplines[dId].professors).join(', ');
+            const total = document.getElementById('totalDiasDisciplina').textContent;
+            const y = gerarBasePDF(doc, "RELATÓRIO DE DIAS LETIVOS POR DISCIPLINA", [`TURMA: ${tNome}`, `DISCIPLINA: ${dNome}`, `PROFESSORES: ${profs}`, `TOTAL DE AULAS: ${total}`]);
+            doc.autoTable({ html: '#horariosTableDisciplina', startY: y, theme: 'grid' });
+            finalizarPDF(doc, `Relatorio_Disciplina_${tNome}.pdf`);
+        }
+
+        // --- TURMA PIVÔ ---
+        function exportarPivoPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
+            const tId = document.getElementById('turmaSelectPivo').value;
+            const tNome = processedData[tId].name;
+            const y = gerarBasePDF(doc, "RELATÓRIO DE CARGA HORÁRIA MENSAL POR TURMA", [`TURMA: ${tNome}`], 'l');
+            doc.autoTable({ html: '#tableProfessorPivot', startY: y, theme: 'grid' });
+            finalizarPDF(doc, `Relatorio_Turma_${tNome}.pdf`);
+        }
+
+        // --- GRADE SEMANAL ---
+        function exportarGradeSemanalPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
+            const prof = document.getElementById('selectProfSemanal').value;
+            const weekStr = document.getElementById('inputSemana').value;
+            if(!prof || !weekStr) return alert("Selecione Professor e Semana");
+            const [year, weekNum] = weekStr.split('-W').map(Number);
+            const dtInicio = getStartDateOfWeek(weekNum, year);
+            const dtFim = new Date(dtInicio); dtFim.setDate(dtInicio.getDate() + 5);
+            const intervaloFormatado = `${dtInicio.toLocaleDateString('pt-BR')} a ${dtFim.toLocaleDateString('pt-BR')}`;
+            const y = gerarBasePDF(doc, "RELATÓRIO DE GRADE SEMANAL DE AULAS", [`PROFESSOR: ${prof}`, `PERÍODO DA SEMANA: ${intervaloFormatado}`], 'l');
+            doc.autoTable({ html: '#tableGradeExp', startY: y, theme: 'grid', styles: { fontSize: 7, cellPadding: 1 }, headStyles: { fillColor: [31, 41, 55] }, columnStyles: { 0: { cellWidth: 25 } } });
+            finalizarPDF(doc, `Grade_Semanal_${prof}.pdf`);
+        }
+
+        // --- RESTANTE DO MOTOR (MANTIDO INTACTO) ---
         function filtrarDisciplina() {
             const tId = document.getElementById('turmaSelect').value;
             const dId = document.getElementById('disciplinaSelect').value;
             const sem = document.getElementById('semestreFiltro').value;
             const tbody = document.getElementById('tableBodyDisciplina');
             tbody.innerHTML = ''; if(!tId || !dId) return;
+            const anual = isEnsinoMedio(processedData[tId].name);
+            const inicio = new Date(anual ? CONFIG_SISTEMA.ano_i : (sem==='1'?CONFIG_SISTEMA.s1_i:CONFIG_SISTEMA.s2_i));
+            const fim = new Date(anual ? CONFIG_SISTEMA.ano_f : (sem==='1'?CONFIG_SISTEMA.s1_f:CONFIG_SISTEMA.s2_f));
             const aulas = processedData[tId].disciplines[dId].schedule.filter(a => {
                 const dt = new Date(2025, monthOrder[a.month.toLowerCase()]-1, a.day);
-                const inicio = new Date(sem==='1'?CONFIG_SISTEMA.s1_i:CONFIG_SISTEMA.s2_i);
-                const fim = new Date(sem==='1'?CONFIG_SISTEMA.s1_f:CONFIG_SISTEMA.s2_f);
                 return dt >= inicio && dt <= fim;
             }).sort((a,b) => monthOrder[a.month.toLowerCase()] - monthOrder[b.month.toLowerCase()] || a.day - b.day);
             aulas.forEach(a => { tbody.innerHTML += `<tr><td class="p-2 border">${a.month}</td><td class="p-2 border">${a.day}</td><td class="p-2 border">${a.weekday}</td><td class="p-2 border">${a.time}</td><td class="p-2 border font-bold">${a.prof}</td></tr>`; });
@@ -223,16 +256,17 @@
             const tId = document.getElementById('turmaSelectPivo').value;
             const sem = document.getElementById('semestreFiltroPivo').value;
             const tbody = document.getElementById('tableBodyProfessorPivot');
-            if(!tId) return document.getElementById('areaTabelaPivo').classList.add('hidden');
+            if(!tId) return;
             tbody.innerHTML = '';
+            const anual = isEnsinoMedio(processedData[tId].name);
             const discs = processedData[tId].disciplines;
             Object.keys(discs).sort().forEach(dId => {
                 let counts = {}; Object.values(MONTH_MAP_PIVOT).forEach(m => counts[m] = 0);
                 let total = 0;
                 discs[dId].schedule.forEach(a => {
                     const dt = new Date(2025, monthOrder[a.month.toLowerCase()]-1, a.day);
-                    const inicio = new Date(sem==='1'?CONFIG_SISTEMA.s1_i:CONFIG_SISTEMA.s2_i);
-                    const fim = new Date(sem==='1'?CONFIG_SISTEMA.s1_f:CONFIG_SISTEMA.s2_f);
+                    const inicio = new Date(anual ? CONFIG_SISTEMA.ano_i : (sem==='1'?CONFIG_SISTEMA.s1_i:CONFIG_SISTEMA.s2_i));
+                    const fim = new Date(anual ? CONFIG_SISTEMA.ano_f : (sem==='1'?CONFIG_SISTEMA.s1_f:CONFIG_SISTEMA.s2_f));
                     if(dt >= inicio && dt <= fim) { counts[MONTH_MAP_PIVOT[a.month.toLowerCase()]]++; total++; }
                 });
                 if(total > 0) {
@@ -244,7 +278,6 @@
             document.getElementById('areaTabelaPivo').classList.remove('hidden');
         }
 
-        // --- ABA 3: GRADE SEMANAL ---
         function gerarGradeSemanal() {
             const profBusca = document.getElementById('selectProfSemanal').value;
             const weekStr = document.getElementById('inputSemana').value;
@@ -284,33 +317,6 @@
             document.getElementById('gradeSemanalResult').innerHTML = html + "</tbody></table>";
         }
 
-        // --- EXPORTAÇÃO PDF ---
-        function exportarDisciplinaPDF() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            const t = document.getElementById('turmaSelect').options[document.getElementById('turmaSelect').selectedIndex].text;
-            const d = document.getElementById('disciplinaSelect').options[document.getElementById('disciplinaSelect').selectedIndex].text;
-            const y = gerarBasePDF(doc, "RELATÓRIO DE DIAS LETIVOS POR DISCIPLINA", [`TURMA: ${t}`, `DISCIPLINA: ${d}`, `TOTAL DE AULAS: ${document.getElementById('totalDiasDisciplina').textContent}`]);
-            doc.autoTable({ html: '#horariosTableDisciplina', startY: y, theme: 'grid', headStyles: { fillColor: [31, 41, 55] }, styles: { fontSize: 8, halign: 'center' } });
-            doc.save(`Relatorio_Disciplina_${t}.pdf`);
-        }
-
-        function exportarPivoPDF() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
-            const t = document.getElementById('turmaSelectPivo').options[document.getElementById('turmaSelectPivo').selectedIndex].text;
-            const y = gerarBasePDF(doc, "RELATÓRIO DE CARGA HORÁRIA MENSAL POR TURMA", [`TURMA: ${t}`, `SEMESTRE: ${document.getElementById('semestreFiltroPivo').value}º`], 'l');
-            doc.autoTable({ html: '#tableProfessorPivot', startY: y, theme: 'grid', headStyles: { fillColor: [31, 41, 55] }, styles: { fontSize: 7, halign: 'center' }, columnStyles: { 0: { halign: 'left', cellWidth: 50 } } });
-            doc.save(`Relatorio_Turma_${t}.pdf`);
-        }
-
-        function exportarGradeSemanalPDF() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
-            const prof = document.getElementById('selectProfSemanal').value;
-            const y = gerarBasePDF(doc, "RELATÓRIO DE GRADE SEMANAL DE AULAS", [`PROFESSOR: ${prof}`, `SEMANA: ${document.getElementById('inputSemana').value}`], 'l');
-            doc.autoTable({ html: '#tableGradeExp', startY: y, theme: 'grid', styles: { fontSize: 7, cellPadding: 1 }, headStyles: { fillColor: [31, 41, 55] }, columnStyles: { 0: { cellWidth: 25 } } });
-            doc.save(`Grade_${prof}.pdf`);
-        }
-
-        // --- CARREGAMENTO DE DADOS ---
         async function carregarDados(ano) {
             const res = await fetch(GIST_MAP[ano]);
             const csv = await res.text();
@@ -334,13 +340,13 @@
         function atualizarSeletores() {
             const t1 = document.getElementById('turmaSelect'); const t2 = document.getElementById('turmaSelectPivo');
             [t1, t2].forEach(s => { 
-                s.innerHTML = '<option value="">-- SELECIONE A TURMA --</option>'; 
+                s.innerHTML = '<option value="">-- TURMA --</option>'; 
                 Object.keys(processedData).sort().forEach(id => s.innerHTML += `<option value="${id}">${processedData[id].name}</option>`);
                 s.disabled = false;
             });
             const pSel = document.getElementById('selectProfSemanal'); const profs = new Set();
             for(let t in processedData) for(let d in processedData[t].disciplines) processedData[t].disciplines[d].professors.forEach(p => profs.add(p.split(' (')[0].trim()));
-            pSel.innerHTML = '<option value="">-- SELECIONE O PROFESSOR --</option>'; Array.from(profs).sort().forEach(p => pSel.innerHTML += `<option value="${p}">${p}</option>`);
+            pSel.innerHTML = '<option value="">-- PROFESSOR --</option>'; Array.from(profs).sort().forEach(p => pSel.innerHTML += `<option value="${p}">${p}</option>`);
         }
 
         function getStartDateOfWeek(w, y) {
@@ -349,8 +355,7 @@
             return ISO;
         }
 
-        function popularAnos() { ['yearSelect', 'yearSelectTurma', 'yearSelectSemanal'].forEach(id => { document.getElementById(id).innerHTML = `<option value="2025">ANO 2025</option>`; }); }
-        
+        function popularAnos() { ['yearSelect', 'yearSelectTurma', 'yearSelectSemanal'].forEach(id => { document.getElementById(id).innerHTML = `<option value="2025">2025</option>`; }); }
         document.getElementById('turmaSelect').onchange = (e) => {
             const dSel = document.getElementById('disciplinaSelect'); const tId = e.target.value;
             dSel.innerHTML = '<option value="">-- DISCIPLINA --</option>';
