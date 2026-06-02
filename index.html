@@ -1238,9 +1238,15 @@ EVENTOS:{
 };
 
 async function carregarEventos(){
+
   const url = `https://docs.google.com/spreadsheets/d/${SHEETS.EVENTOS.id}/export?format=csv&gid=${SHEETS.EVENTOS.gid}`;
+
   const res = await fetch(url);
+
   eventosGlobais = parseCSV(await res.text());
+
+  console.log("EVENTOS CARREGADOS:");
+  console.table(eventosGlobais);
 }
 
 function horaParaMinutos(h){
