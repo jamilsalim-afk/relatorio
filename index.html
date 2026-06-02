@@ -1312,6 +1312,51 @@ function trocarSemana(){
   }, 50);
 }
 
+function deveEntrarNoSnapshot(dia){
+
+  const semanaSelecionada =
+    document.getElementById('selectSemana').value;
+
+  const semanaAtual = getSemanaAtual();
+
+  // somente semana atual
+  if(semanaSelecionada !== semanaAtual){
+    return false;
+  }
+
+  const hoje = new Date();
+
+  const [d,m,a] = dia.split('/');
+
+  const dataLinha =
+    new Date(a,m-1,d);
+
+  const hojeZero =
+    new Date(
+      hoje.getFullYear(),
+      hoje.getMonth(),
+      hoje.getDate()
+    );
+
+  const sabado =
+    new Date(hojeZero);
+
+  const diaSemana =
+    hojeZero.getDay();
+
+  const diasAteSabado =
+    (6 - diaSemana + 7) % 7;
+
+  sabado.setDate(
+    hojeZero.getDate() + diasAteSabado
+  );
+
+  return (
+    dataLinha >= hojeZero &&
+    dataLinha <= sabado
+  );
+}
+  
 function gerarMapaDados(dados){
 
   const mapa = {};
@@ -1328,9 +1373,13 @@ function gerarMapaDados(dados){
 
     const dia = ultimoDia;
 
-    if(!dia){
-      continue;
-    }
+if(!dia){
+  continue;
+}
+
+if(!deveEntrarNoSnapshot(dia)){
+  continue;
+}
 
     const horario = (linha[1] || "").trim();
 
@@ -1362,7 +1411,10 @@ function gerarMapaDados(dados){
       mapa[chave] = normalizarTexto(valor);
     }
   }
-
+  
+console.log("LINHAS PLANILHA:", dados.length);
+console.log("REGISTROS MAPA:", Object.keys(mapa).length);
+  
   return mapa;
 }
 
