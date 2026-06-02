@@ -1676,27 +1676,77 @@ if(alteracoes.length){
   }));
 }
 
-function mostrarAvisoAlteracoesRobusto(lista){
+function mostrarAvisoAlteracoesRobusto(alteracoes) {
 
-  let texto = "⚠️ ALTERAÇÕES DETECTADAS:\n\n";
+    if (!Array.isArray(alteracoes) || alteracoes.length === 0) {
+        return;
+    }
 
-  lista.forEach(item=>{
+    let html = `
+        <div style="max-height:500px;overflow-y:auto;text-align:left;">
+            <p>
+                <strong>Foram encontradas ${alteracoes.length} alteração(ões) nos horários.</strong>
+            </p>
+            <hr>
+    `;
 
-    const partes = item.chave.split("|");
+    alteracoes.forEach((alt, index) => {
 
-    const dia = partes[0];
-    const horario = partes[1];
-    const turma = partes[2];
+        html += `
+            <div style="
+                margin-bottom:15px;
+                padding:10px;
+                border:1px solid #ddd;
+                border-radius:8px;
+                background:#f8f9fa;
+            ">
+                <div>
+                    <strong>${index + 1}. ${alt.turma || 'Turma não informada'}</strong>
+                </div>
 
-    texto += `📅 Dia: ${dia}\n`;
-    texto += `🏫 Turma: ${turma}\n`;
-    texto += `⏰ Horário: ${horario}\n`;
-    texto += `➡️ ${item.antes} → ${item.depois}\n\n`;
+                <div>
+                    📅 ${alt.dia || '-'}
+                </div>
 
-  });
+                <div>
+                    🕒 ${alt.horario || '-'}
+                </div>
 
-  document.getElementById("conteudoAlteracoes").innerText = texto;
-  document.getElementById("painelAlteracoes").style.display = "block";
+                <div style="
+                    margin-top:8px;
+                    padding:8px;
+                    background:#ffe5e5;
+                    border-radius:4px;
+                ">
+                    <strong>ANTES:</strong><br>
+                    ${alt.antes || '(vazio)'}
+                </div>
+
+                <div style="
+                    margin-top:6px;
+                    padding:8px;
+                    background:#e5ffe5;
+                    border-radius:4px;
+                ">
+                    <strong>DEPOIS:</strong><br>
+                    ${alt.depois || '(vazio)'}
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+
+    Swal.fire({
+        icon: 'warning',
+        title: 'Alterações Detectadas',
+        html: html,
+        width: 900,
+        confirmButtonText: 'Entendi'
+    });
+
+    console.log('ALTERAÇÕES DETECTADAS:', alteracoes);
+    console.table(alteracoes);
 }
 
   function fecharPainel(){
