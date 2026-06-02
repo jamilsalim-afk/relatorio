@@ -1434,8 +1434,12 @@ function compararMapas(mapaAntigo,mapaNovo){
 
     if(antigo !== novo){
 
+      const partes = chave.split("|");
+
       alteracoes.push({
-        chave,
+        dia: partes[0],
+        horario: partes[1],
+        turma: partes[2],
         antes: antigo || "(vazio)",
         depois: novo || "(vazio)"
       });
@@ -1588,9 +1592,7 @@ console.log("CHAVE:", `snapshot_${mod}_${sem}`);
   );
 
   // 🔥 ignora semanas passadas
-  const filtradas = alteracoes.filter(
-    a => !isSemanaPassada(a.dia)
-  );
+  const filtradas = alteracoes;
 
   if (filtradas.length > 0) {
 
