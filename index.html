@@ -1448,6 +1448,32 @@ function compararMapas(mapaAntigo,mapaNovo){
 
   });
 
+  let contador = 0;
+
+todasChaves.forEach(chave => {
+
+  const antigo = mapaAntigo[chave];
+  const novo = mapaNovo[chave];
+
+  if (antigo !== novo) {
+
+    contador++;
+
+    console.log(
+      "DIFERENÇA",
+      chave,
+      antigo,
+      novo
+    );
+  }
+
+});
+
+console.log(
+  "TOTAL DIFERENÇAS:",
+  contador
+);
+
   return alteracoes;
 }
   
@@ -1590,6 +1616,16 @@ console.log("CHAVE:", `snapshot_${mod}_${sem}`);
   }
 
   const mapaAntigo = snapshotAntigo.mapa;
+
+  console.log(
+  "EXEMPLO MAPA ANTIGO:",
+  Object.entries(mapaAntigo).slice(0,5)
+);
+
+console.log(
+  "EXEMPLO MAPA NOVO:",
+  Object.entries(mapaNovo).slice(0,5)
+);
 
   console.log(
   "MAPA ANTIGO:",
