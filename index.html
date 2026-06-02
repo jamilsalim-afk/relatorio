@@ -1273,6 +1273,51 @@ let eventosGlobais = [];
   return data < segundaAtual;
 }
 
+  function obterColunasEvento(evento, turmasVisiveis) {
+
+    const alvo = evento.alvo
+        .split(',')
+        .map(t => t.trim());
+
+    return turmasVisiveis
+        .map((turma, indice) => ({
+            turma,
+            indice
+        }))
+        .filter(item =>
+            alvo.includes(item.turma)
+        );
+}
+
+  function saoContiguas(colunas) {
+
+    if (colunas.length <= 1) return true;
+
+    for (let i = 1; i < colunas.length; i++) {
+
+        if (
+            colunas[i].indice !==
+            colunas[i - 1].indice + 1
+        ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+  function calcularRowspanEvento(
+    horaInicio,
+    horaFim,
+    horarios
+) {
+
+    const inicio = horarios.indexOf(horaInicio);
+    const fim = horarios.indexOf(horaFim);
+
+    return (fim - inicio);
+}
+  
 function limparPainelAlteracoes(){
   document.getElementById("conteudoAlteracoes").innerText = "";
   document.getElementById("painelAlteracoes").style.display = "none";
@@ -1864,43 +1909,166 @@ async function init(){
 }, 100);
 }
 
-function getEventoGeral(dia, horario){
+function getEventosDaLinha(dia, horario, turmasVisiveis){
 
-  if(!horario || !horario.includes(" - ")) return null;
+  if(!horario || !horario.includes(" - "))
+    return [];
 
   const [hIniStr, hFimStr] = horario.split(" - ");
 
   const hIniLinha = horaParaMinutos(hIniStr);
   const hFimLinha = horaParaMinutos(hFimStr);
 
-  for(let i = 1; i < eventosGlobais.length; i++){
+  const modalidadeAtual =
+    document.getElementById(
+      "selectModalidade"
+    ).value;
+
+  const eventos = [];
+
+  for(let i=1;i<eventosGlobais.length;i++){
 
     const ev = eventosGlobais[i];
 
     const modalidade = ev[0];
-    const tipo = ev[1];
-    const data = ev[3];
-    const hInicio = horaParaMinutos(ev[4]);
-    const hFim = horaParaMinutos(ev[5]);
-    const desc = ev[6];
+    const tipo       = ev[1];
+    const alvo       = ev[2];
+    const data       = ev[3];
+    const hInicio    = horaParaMinutos(ev[4]);
+    const hFim       = horaParaMinutos(ev[5]);
+    const descricao  = ev[6];
 
-    const modAtual = document.getElementById('selectModalidade').value;
+    if(
+      normalizarTexto(modalidade)
+      !==
+      normalizarTexto(modalidadeAtual)
+    ){
+      continue;
+    }
 
-    if(modalidade !== modAtual) continue;
-    if(tipo !== "GERAL") continue;
-    if(data !== dia) continue;
+    if(data !== dia){
+      continue;
+    }
 
-    // 🔥 REGRA CORRETA (INTERSEÇÃO DE INTERVALO)
     const dentro =
-      hIniLinha < hFim && hFimLinha > hInicio;
+      hIniLinha < hFim &&
+      hFimLinha > hInicio;
+
+    if(!dentro){
+      continue;
+    }
+
+    let colunas = [];
+
+    if(
+      normalizarTexto(alvo) === "TODOS"
+    ){
+
+      colunas =
+        turmasVisiveis.map(
+          (t,idx)=>({
+            turma:t,
+            indice:idx
+          })
+        );
+
+    }else{
+
+      const listaAlvos =
+        alvo
+          .split(",")
+          .map(x=>x.trim());
+
+      colunas =
+        turmasVisiveis
+          .map((turma,indice)=>({
+            turma,
+            indice
+          }))
+          .filter(item=>
+            listaAlvos.some(
+              a=>
+                normalizarTexto(a)
+                ===
+                normalizarTexto(item.turma)
+            )
+          );
+    }
+
+    eventos.push({
+
+      descricao,
+
+      tipo,
+
+      alvo,
+
+      inicio:hInicio,
+
+      fim:hFim,
+
+      colunas
+
+    });
+  }
+
+  return eventos;
+}
+
+  function calcularRowspanEventoReal(
+  dia,
+  evento,
+  linhas
+){
+
+  let total = 0;
+
+  for(let i=0;i<linhas.length;i++){
+
+    const horario = linhas[i][1];
+
+    if(
+      !horario ||
+      !horario.includes(" - ")
+    ){
+      continue;
+    }
+
+    const [ini,fim] =
+      horario.split(" - ");
+
+    const hIni =
+      horaParaMinutos(ini);
+
+    const hFim =
+      horaParaMinutos(fim);
+
+    const dentro =
+      hIni < evento.fim &&
+      hFim > evento.inicio;
 
     if(dentro){
-      return desc || "EVENTO";
+      total++;
     }
   }
 
-  return null;
+  return total;
 }
+
+  function existeEventoNaColuna(
+  eventos,
+  indiceColuna
+){
+
+  return eventos.find(ev=>
+
+    ev.colunas.some(
+      c=>c.indice===indiceColuna
+    )
+
+  );
+}
+  
   
 function getCursoInfo(t){
 t=t.toUpperCase();
@@ -2131,54 +2299,12 @@ function renderizarTabela(){
             const r = linhas[i];
             const horario = r[1];
 
-            const eventoGeral = getEventoGeral(dia, horario);
-
-if(eventoGeral){
-
-    let inicio = i;
-    let fim = i;
-
-    const inicioMin = horaParaMinutos(linhas[inicio][1].split(" - ")[0]);
-
-    // 🔥 VAI ATÉ O FINAL REAL DO EVENTO (ex: 18:20)
-    while(fim + 1 < linhas.length){
-
-        const prox = linhas[fim + 1];
-        const horarioProx = prox[1];
-
-        if(!horarioProx) break;
-
-        const proxMin = horaParaMinutos(horarioProx.split(" - ")[0]);
-
-        const proxEvento = getEventoGeral(dia, horarioProx);
-
-        // 🔥 REGRA: continua se ainda estiver dentro do evento
-        if(proxEvento === eventoGeral){
-            fim++;
-        }
-        // 🔥 mantém INTERVALO dentro do bloco
-        else if(horarioProx.toUpperCase().includes("INTERVALO")){
-            fim++;
-        }
-        else{
-            break;
-        }
-    }
-
-    const totalLinhas = (fim - inicio) + 1;
-
-    html += `
-      <tr class="evento-geral">
-        <td class="time-col">${linhas[inicio][1]}</td>
-        <td rowspan="${totalLinhas}" colspan="${turmasAtivas.length}" class="evento-bloco">
-          ${eventoGeral}
-        </td>
-      </tr>
-    `;
-
-    i = fim + 1;
-    continue;
-            }
+            const eventosLinha =
+  getEventosDaLinha(
+    dia,
+    horario,
+    turmasAtivas
+  );
 
             // 🔹 LINHA NORMAL (ORIGINAL PRESERVADA)
             const isInt = r[1] && r[1].toUpperCase().includes("INTERVALO");
@@ -2187,33 +2313,102 @@ if(eventoGeral){
             html += `<tr class="${isInt ? 'intervalo' : ''} ${linhaVazia ? 'linha-vazia' : ''}">
                         <td class="time-col">${r[1]}</td>`;
 
-            turmasAtivas.forEach(t => {
+            for(let col=0; col<turmasAtivas.length; col++){
 
-                const idx = dadosGlobais[0].indexOf(t);
-                let val = (r[idx] || "").trim();
+  const turma =
+    turmasAtivas[col];
 
-                let classesExtras = [];
-                const valNorm = normalizarTexto(val);
+  const evento =
+    existeEventoNaColuna(
+      eventosLinha,
+      col
+    );
 
-                regrasDestaque.forEach(regra => {
-                    if (regra.match(valNorm)) {
-                        classesExtras.push(regra.classe);
-                    }
-                });
+  if(evento){
 
-                if (
-                    val.includes("[+]") ||
-                    val.includes("*") ||
-                    val.includes("[R]") ||
-                    valNorm.includes("INTERVALO")
-                ) {
-                    classesExtras.push("marcacao-extra");
-                }
+    const primeiraColuna =
+      evento.colunas[0].indice;
 
-                html += `<td class="aula-cell ${getCursoInfo(t).cl} ${classesExtras.join(" ")}">
-                            ${val}
-                         </td>`;
-            });
+    if(col !== primeiraColuna){
+      continue;
+    }
+
+    const rowspan =
+      calcularRowspanEventoReal(
+        dia,
+        evento,
+        linhas
+      );
+
+    const contiguas =
+      saoContiguas(
+        evento.colunas
+      );
+
+    const colspan =
+      contiguas
+      ? evento.colunas.length
+      : 1;
+
+    html += `
+      <td
+        rowspan="${rowspan}"
+        colspan="${colspan}"
+        class="evento-bloco"
+      >
+        ${evento.descricao}
+      </td>
+    `;
+
+    continue;
+  }
+
+  const idx =
+    dadosGlobais[0]
+    .indexOf(turma);
+
+  let val =
+    (r[idx] || "")
+    .trim();
+
+  let classesExtras = [];
+
+  const valNorm =
+    normalizarTexto(val);
+
+  regrasDestaque.forEach(regra=>{
+
+    if(regra.match(valNorm)){
+      classesExtras.push(
+        regra.classe
+      );
+    }
+
+  });
+
+  if(
+    val.includes("[+]") ||
+    val.includes("*") ||
+    val.includes("[R]") ||
+    valNorm.includes("INTERVALO")
+  ){
+    classesExtras.push(
+      "marcacao-extra"
+    );
+  }
+
+  html += `
+    <td
+      class="
+        aula-cell
+        ${getCursoInfo(turma).cl}
+        ${classesExtras.join(" ")}
+      "
+    >
+      ${val}
+    </td>
+  `;
+}
 
             html += `</tr>`;
 
