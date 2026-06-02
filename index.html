@@ -1523,6 +1523,11 @@ function verificarMudancaAoAbrir({
   getModalidade
 }) {
 
+  console.log(
+  "DADOS RECEBIDOS:",
+  dados.length
+);
+  
   const sem = getSemana();
   const mod = getModalidade();
 
@@ -1586,10 +1591,34 @@ console.log("CHAVE:", `snapshot_${mod}_${sem}`);
 
   const mapaAntigo = snapshotAntigo.mapa;
 
+  console.log(
+  "MAPA ANTIGO:",
+  Object.keys(mapaAntigo).length
+);
+
+console.log(
+  "MAPA NOVO:",
+  Object.keys(mapaNovo).length
+);
+
   const alteracoes = compararMapas(
     mapaAntigo,
     mapaNovo
   );
+
+  console.log(
+  "ALTERAÇÕES ENCONTRADAS:",
+  alteracoes.length
+);
+
+if(alteracoes.length){
+
+  console.log(
+    "PRIMEIRA ALTERAÇÃO:",
+    alteracoes[0]
+  );
+
+}
 
   // 🔥 ignora semanas passadas
   const filtradas = alteracoes;
