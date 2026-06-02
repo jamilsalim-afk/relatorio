@@ -1248,7 +1248,10 @@ function horaParaMinutos(h){
   return hh * 60 + mm;
 }
   
-let dadosGlobais=[],turmasDaPlanilha=[],semanasAgrupadas={};
+let dadosGlobais = [];
+let turmasDaPlanilha = [];
+let semanasAgrupadas = {};
+let eventosGlobais = [];
 
   function isSemanaPassada(dataStr){
   const [d,m,a] = dataStr.split('/');
