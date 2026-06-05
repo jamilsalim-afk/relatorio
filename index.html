@@ -1484,10 +1484,10 @@ function compararMapas(mapaAntigo,mapaNovo){
 
   todasChaves.forEach(chave=>{
 
-    const antigo = mapaAntigo[chave];
-    const novo = mapaNovo[chave];
+    const antigo = (mapaAntigo[chave] || "").trim();
+const novo   = (mapaNovo[chave] || "").trim();
 
-    if(antigo !== novo){
+if (normalizarTexto(antigo) !== normalizarTexto(novo)) {
 
       const partes = chave.split("|");
 
@@ -1510,7 +1510,7 @@ todasChaves.forEach(chave => {
   const antigo = mapaAntigo[chave];
   const novo = mapaNovo[chave];
 
-  if (antigo !== novo) {
+  if (valorMudou(antigo, novo)) {
 
     contador++;
 
