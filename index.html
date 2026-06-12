@@ -1,1121 +1,408 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Consulta de Horários Semanais - IFRO</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-
 :root{
-  --primary:#22c55e;
-  --primary-dark:#15803d;
-  --bg:#020617;
-  --card:#0f172a;
-  --card-2:#111827;
-  --text:#f8fafc;
-  --muted:#94a3b8;
-  --border:rgba(255,255,255,0.08);
-  --shadow:0 10px 35px rgba(0,0,0,0.35);
-  --radius:24px;
+  --primary:#2e7d32;
+
+  --bg:#f4f7f6;
+  --surface:#ffffff;
+
+  --text:#000000;
+  --text-soft:#333333;
+  --border:#bbbbbb;
+  --time-bg:#f1f3f4;
+
+  --footer-bg:#2e7d32;
+  --footer-text:#ffffff;
+
+  --shadow:0 2px 10px rgba(0,0,0,.12);
+
+  /* Cursos */
+  --agroec:#e8f5e9;
+  --agropec:#e3f2fd;
+  --info:#fff8e1;
+  --geo:#f3e5f5;
+  --mat:#e0f7fa;
+  --agroneg:#efebe9;
+  --zoo:#fce4ec;
+  --agron:#f1f8e9;
+
+  /* Destaques */
+  --highlight:#fbc02d;
+  --intervalo:#e0e0e0;
+  --caed:#fff3cd;
 }
 
-/* =========================================
-   RESET
-========================================= */
+[data-theme="dark"]{
+  --bg:#0f172a;
+  --surface:#1e293b;
+
+  --text:#f8fafc;
+  --text-soft:#cbd5e1;
+
+  --border:#475569;
+  --time-bg:#334155;
+
+  --footer-bg:#14532d;
+  --footer-text:#ffffff;
+
+  --shadow:0 4px 18px rgba(0,0,0,.35);
+
+  /* Cursos (versões escuras) */
+  --agroec:#1f3b2a;
+  --agropec:#1c3245;
+  --info:#4a3f16;
+  --geo:#3b2942;
+  --mat:#173944;
+  --agroneg:#3a312e;
+  --zoo:#4a2732;
+  --agron:#2e4020;
+
+  /* Destaques */
+  --highlight:#b8860b;
+  --intervalo:#374151;
+  --caed:#665200;
+}
 
 *{
-  margin:0;
-  padding:0;
   box-sizing:border-box;
 }
 
-html{
-  scroll-behavior:smooth;
-}
-
 body{
-  font-family:'Inter',sans-serif;
-
-  background:
-    radial-gradient(circle at top left,rgba(34,197,94,0.15),transparent 30%),
-    radial-gradient(circle at bottom right,rgba(59,130,246,0.15),transparent 30%),
-    linear-gradient(135deg,#020617,#0f172a,#111827);
-
+  font-family:'Segoe UI',sans-serif;
+  background:var(--bg);
   color:var(--text);
-
-  min-height:100vh;
-
-  overflow-x:hidden;
+  margin:0;
+  transition:.3s;
 }
 
-/* =========================================
-   HEADER PRINCIPAL
-========================================= */
+/* CABEÇALHO */
 
 .ifro-header{
-
-  position:relative;
-
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(2,6,23,0.95),
-      rgba(2,6,23,0.88)
-    );
-
-  border-bottom:
-    1px solid rgba(255,255,255,0.05);
-
-  overflow:hidden;
+  position:sticky;
+  top:0;
+  z-index:1100;
+  background:var(--surface);
+  border-bottom:4px solid var(--primary);
 }
 
 .ifro-header-content{
-
-  max-width:1800px;
-
-  margin:auto;
-
-  padding:26px 22px 18px;
-
   text-align:center;
-
-  transition:0.3s ease;
+  padding:12px;
 }
 
 .ifro-linha1{
-
-  color:#cbd5e1;
-
-  letter-spacing:2px;
-
-  font-size:11px;
-
-  margin-bottom:8px;
-
-  opacity:0.9;
+  font-size:20px;
+  font-weight:bold;
+  color:var(--text);
 }
 
 .ifro-linha2{
-
-  font-size:36px;
-
-  font-weight:800;
-
-  color:white;
-
-  line-height:1.1;
+  font-size:18px;
+  font-weight:bold;
+  color:var(--text);
 }
 
 .ifro-linha3{
-
-  margin-top:8px;
-
-  color:#94a3b8;
-
-  font-size:13px;
-
-  line-height:1.4;
+  font-size:16px;
+  color:var(--text);
 }
 
 .ifro-linha4{
-
-  margin-top:18px;
-
-  display:inline-flex;
-
-  align-items:center;
-
-  gap:10px;
-
-  padding:12px 22px;
-
-  border-radius:999px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #16a34a,
-      #22c55e
-    );
-
-  color:white;
-
-  font-weight:700;
-
-  box-shadow:
-    0 12px 25px rgba(34,197,94,0.25);
-
-  font-size:14px;
+  font-size:17px;
+  font-weight:bold;
+  color:var(--text);
 }
 
-  /* =========================================
-   FOOTER
-========================================= */
-
-.ifro-footer{
-
-  width:100%;
-
-  display:flex;
-
-  justify-content:center;
-
-  align-items:center;
-
-  text-align:center;
-
-  margin-top:50px;
-
-  background:#020617;
-
-  color:#94a3b8;
-
-  padding:34px 20px;
-
-  line-height:1.7;
-
-  border-top:
-    1px solid rgba(255,255,255,0.08);
-
-  font-size:14px;
-}
-  
-/* =========================================
-   BARRA FIXA DOS CONTROLES
-========================================= */
+/* CONTROLES */
 
 .header-sticky{
-
   position:sticky;
-
-  top:0;
-
-  z-index:9999;
-
-  padding:10px 14px;
-
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(2,6,23,0.98),
-      rgba(2,6,23,0.90)
-    );
-
-  backdrop-filter:blur(18px);
-
-  border-bottom:
-    1px solid rgba(255,255,255,0.06);
+  top:110px;
+  z-index:1000;
+  background:var(--bg);
+  padding:9px;
 }
 
 .controls-card{
-
-  max-width:1800px;
-
-  margin:auto;
-
+  background:var(--surface);
+  padding:15px;
+  border-radius:12px;
   display:flex;
-
   flex-wrap:wrap;
-
+  gap:10px;
   justify-content:center;
-
-  align-items:center;
-
-  gap:12px;
-
-  padding:14px;
-
-  border-radius:22px;
-
-  background:
-    rgba(15,23,42,0.82);
-
-  backdrop-filter:blur(18px);
-
-  border:
-    1px solid rgba(255,255,255,0.06);
-
   box-shadow:var(--shadow);
 }
-
-/* =========================================
-   MOBILE - CONTROLES COMPACTOS
-========================================= */
-
-@media(max-width:768px){
-
-  .controls-card{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
-
-    gap:8px;
-
-    padding:10px;
-  }
-
-  #selectModalidade{
-
-    grid-column:1;
-    width:100%;
-    min-width:unset;
-  }
-
-  #selectSemana{
-
-    grid-column:2;
-    width:100%;
-    min-width:unset;
-  }
-
-  #searchProf{
-
-    grid-column:1;
-
-    width:100%;
-    min-width:unset;
-  }
-
-  .btn-pdf{
-
-    grid-column:2;
-
-    width:100%;
-
-    min-width:unset;
-
-    padding:0 10px;
-
-    font-size:12px;
-
-    height:44px;
-  }
-
-  select,
-  .search-box{
-
-    min-width:unset;
-
-    width:100%;
-
-    height:44px;
-
-    font-size:13px;
-  }
-}
-
-/* =========================================
-   INPUTS E BOTÕES
-========================================= */
 
 select,
 .search-box,
 .btn-pdf{
-
-  border:none;
-
-  outline:none;
-
-  font-family:'Inter',sans-serif;
-
-  transition:0.25s ease;
+  padding:12px;
+  font-size:14px;
+  border-radius:6px;
 }
 
 select,
 .search-box{
-
-  min-width:220px;
-
-  height:48px;
-
-  padding:0 16px;
-
-  border-radius:14px;
-
-  background:#111827;
-
-  color:white;
-
-  border:
-    1px solid rgba(255,255,255,0.08);
-
-  font-size:14px;
+  background:var(--surface);
+  color:var(--text);
+  border:2px solid var(--primary);
 }
 
-select:hover,
-.search-box:hover{
-
-  border-color:#22c55e;
-}
-
-select:focus,
-.search-box:focus{
-
-  border-color:#22c55e;
-
-  box-shadow:
-    0 0 0 4px rgba(34,197,94,0.15);
-}
-
-.search-box::placeholder{
-  color:#64748b;
+.search-box{
+  width:260px;
 }
 
 .btn-pdf{
-
-  height:48px;
-
-  padding:0 20px;
-
-  border-radius:14px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #dc2626,
-      #ef4444
-    );
-
-  color:white;
-
-  font-weight:700;
-
+  background:#d32f2f;
+  color:#fff;
+  border:none;
   cursor:pointer;
-
-  box-shadow:
-    0 10px 22px rgba(239,68,68,0.22);
-
-  font-size:14px;
-
-  white-space:nowrap;
+  font-weight:bold;
 }
 
 .btn-pdf:hover{
-
-  transform:translateY(-2px);
+  opacity:.92;
 }
 
-#painelAlteracoes,
-#painelVagas{
-
-  background:
-    rgba(15,23,42,0.92) !important;
-
-  color:white;
-
-  border:none !important;
-
-  border-radius:24px !important;
-
-  backdrop-filter:blur(18px);
-
-  box-shadow:var(--shadow);
-}
-
-  #painelAlteracoes pre,
-#painelVagas pre{
-
-  color:#e2e8f0;
-
-  line-height:1.7;
-}
-
-#painelAlteracoes button,
-#painelVagas button{
-
-  border:none !important;
-
-  border-radius:12px !important;
-
-  font-weight:700;
-
-  transition:0.25s ease;
-}
-
-#painelAlteracoes button:hover,
-#painelVagas button:hover{
-
-  transform:translateY(-2px);
-}
-/* =========================================
-   TABELA RESPONSIVA PREMIUM
-   DESKTOP SEM SCROLL HORIZONTAL
-   MOBILE COM SCROLL
-========================================= */
+/* CONTEÚDO */
 
 .week-container{
-
-  width:100%;
-
-  max-width:100%;
-
-  margin:18px auto;
-
-  padding:0 14px 50px;
+  padding:14px;
 }
 
-/* =========================================
-   CONTAINER DA TABELA
-========================================= */
-
 .table-responsive{
-
   width:100%;
-
-  position:relative;
-
-  overflow-x:hidden;
-
-  overflow-y:visible;
-
-  padding:14px;
-
-  border-radius:24px;
-
-  background:
-    rgba(15,23,42,0.80);
-
-  backdrop-filter:blur(20px);
-
-  border:
-    1px solid rgba(255,255,255,0.08);
-
+  overflow-x:auto;
+  background:var(--surface);
+  border-radius:8px;
   box-shadow:var(--shadow);
 }
 
-/* SCROLLBAR (só aparece no mobile/tablet) */
-
-.table-responsive::-webkit-scrollbar{
-  height:10px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb{
-
-  background:#475569;
-
-  border-radius:999px;
-}
-
-/* =========================================
-   TABELA DESKTOP
-========================================= */
-
 table{
-
+  min-width:1400px;
   width:100%;
-
-  table-layout:fixed;
-
   border-collapse:separate;
-
   border-spacing:0;
-
-  border-radius:18px;
-
-  margin-bottom:12px;
+  font-size:9px;
+  table-layout:fixed;
 }
-
-/* =========================================
-   CÉLULAS
-========================================= */
 
 th,
 td{
-
-  border:
-    1px solid rgba(255,255,255,0.05);
-
-  padding:7px 5px;
-
+  border:1px solid var(--border);
+  padding:6px;
   text-align:center;
-
   vertical-align:middle;
-
-  transition:0.2s ease;
-
-  white-space:normal;
-
-  word-break:break-word;
-
-  overflow-wrap:anywhere;
-
-  hyphens:auto;
-
-  font-size:9px;
-
-  line-height:1.25;
+  color:var(--text);
 }
 
-/* COLUNAS FLEXÍVEIS */
-
-th:not(.time-col),
-td:not(.time-col){
-
-  width:auto;
-
-  min-width:unset;
-
-  max-width:unset;
-}
-
-/* =========================================
-   CABEÇALHO
-========================================= */
-
+td,
 th{
-
-  background:#111827;
-
-  color:white;
-
-  font-size:10px;
-
-  font-weight:700;
-
-  line-height:1.3;
-
-  position:sticky;
-
-  top:0;
-
-  z-index:5;
+  word-break:break-word;
 }
 
-/* =========================================
-   COLUNA HORÁRIO FIXA
-========================================= */
+.aula-cell{
+  white-space:normal;
+}
+
+/* CORES CURSOS */
+
+.c-agroec{background:var(--agroec) !important;}
+.c-agropec{background:var(--agropec) !important;}
+.c-info{background:var(--info) !important;}
+.c-geo{background:var(--geo) !important;}
+.c-mat{background:var(--mat) !important;}
+.c-agroneg{background:var(--agroneg) !important;}
+.c-zoo{background:var(--zoo) !important;}
+.c-agron{background:var(--agron) !important;}
+
+/* DIVISOR DIA */
+
+.day-divider{
+  background:var(--primary);
+  color:#fff;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.day-divider td{
+  color:#fff;
+}
+
+/* HORÁRIO */
 
 .time-col{
-
+  font-weight:bold;
+  width:85px;
+  background:var(--time-bg);
   position:sticky;
-
   left:0;
-
-  z-index:9999;
-
-  width:88px !important;
-
-  min-width:88px !important;
-
-  max-width:88px !important;
-
-  background:#020617 !important;
-
-  color:white;
-
-  font-weight:600;
-
-  font-size:9px;
-
-  line-height:1.2;
-
-  white-space:nowrap;
-
-  overflow:hidden;
-
-  border-right:
-    2px solid rgba(255,255,255,0.08);
-
-  box-shadow:
-    6px 0 12px rgba(0,0,0,0.35);
-
-  isolation:isolate;
-}
-
-td.time-col{
-
-  position:sticky;
-
-  left:0;
-
-  z-index:9998;
-
-  background:#020617 !important;
-
-  background-clip:padding-box;
+  z-index:2;
 }
 
 th.time-col{
-
-  position:sticky;
-
-  left:0;
-
-  top:0;
-
-  z-index:10000;
-
-  background:#020617 !important;
-
-  background-clip:padding-box;
+  z-index:3;
 }
 
-/* =========================================
-   CÉLULAS AULAS
-========================================= */
-
-.aula-cell{
-
-  background:
-    rgba(255,255,255,0.02);
-
-  color:#f8fafc;
-
-  font-size:9px;
-
-  line-height:1.35;
-}
-
-.aula-cell:hover{
-
-  background:
-    rgba(34,197,94,0.12);
-}
-
-/* =========================================
-   DIVISÃO DIA
-========================================= */
-
-.day-divider td{
-
-  background:
-    linear-gradient(
-      135deg,
-      #15803d,
-      #22c55e
-    );
-
-  color:white;
-
-  font-weight:800;
-
-  font-size:15px;
-
-  letter-spacing:1px;
-
-  padding:14px;
-
-  text-align:center;
-
-  position:sticky;
-
-  left:0;
-
-  z-index:50;
-}
-
-/* =========================================
-   MOBILE - DIA FIXO NA TELA
-========================================= */
-
-@media(max-width:768px){
-
-  .day-divider td{
-
-    position:sticky;
-
-    left:0;
-
-    top:0;
-
-    z-index:9997;
-
-    width:100vw !important;
-
-    min-width:100vw !important;
-
-    max-width:100vw !important;
-
-    display:table-cell;
-
-    text-align:center;
-
-    font-size:12px;
-
-    padding:12px 8px;
-
-    box-shadow:
-      0 4px 10px rgba(0,0,0,0.25);
-  }
-
-}
-
-/* =========================================
-   INTERVALOS
-========================================= */
-
-.intervalo td,
-.marcacao-extra{
-
-  background:
-    rgba(255,255,255,0.05) !important;
-
-  color:#94a3b8;
-
-  font-weight:700;
-}
-
-/* =========================================
-   HIGHLIGHT
-========================================= */
+/* BUSCA */
 
 .highlight{
-
-  background:
-    linear-gradient(
-      135deg,
-      #facc15,
-      #f59e0b
-    ) !important;
-
-  color:white !important;
-
-  font-weight:800;
-
-  box-shadow:
-    0 0 20px rgba(250,204,21,0.25);
+  background:var(--highlight) !important;
 }
 
 .opaco{
-  opacity:0.12;
+  opacity:.1;
 }
 
-/* =========================================
-   FERIADO
-========================================= */
+/* INTERVALOS */
+
+.intervalo,
+.marcacao-extra{
+  background:var(--intervalo) !important;
+  font-weight:bold;
+}
+
+/* FERIADO */
 
 .feriado{
-
-  background:
-    linear-gradient(
-      135deg,
-      #991b1b,
-      #dc2626
-    );
-
-  color:white;
-
-  font-size:72px;
-
-  font-weight:900;
-
-  letter-spacing:8px;
-
-  height:220px;
-}
-
-/* =========================================
-   EVENTOS
-========================================= */
-
-.evento-bloco{
-
-  background:
-    linear-gradient(
-      135deg,
-      #0f766e,
-      #14b8a6
-    ) !important;
-
-  color:white;
-
-  font-weight:800;
-
-  font-size:18px;
-
-  letter-spacing:1px;
-
+  font-size:120px;
   text-align:center;
-
-  vertical-align:middle;
+  font-weight:bold;
+  color:rgba(200,0,0,.4);
+  height:200px;
 }
 
-/* ========================================= CURSOS ========================================= */ 
-  .c-agroec{ background:rgba(34,197,94,0.15) !important; } 
-  .c-agropec{ background:rgba(59,130,246,0.15) !important; } 
-  .c-info{ background:rgba(250,204,21,0.15) !important; } 
-  .c-geo{ background:rgba(168,85,247,0.15) !important; } 
-  .c-mat{ background:rgba(6,182,212,0.15) !important; } 
-  .c-agroneg{ background:rgba(120,113,108,0.18) !important; } 
-  .c-zoo{ background:rgba(244,114,182,0.15) !important; } 
-  .c-agron{ background:rgba(132,204,22,0.15) !important; } 
-  
-  /* ========================================= STATUS ========================================= */ 
-  .reserva-ensino{ color:#fde047; font-weight:800; } 
-  .pps{ color:#93c5fd; font-weight:800; } 
-  .estudos{ color:#86efac; font-weight:800; } 
-  .reuniao{ color:#fdba74; font-weight:800; } 
-  .caed{ background:rgba(250,204,21,0.16) !important; } 
-  .reposicao{ color:#4ade80; font-weight:800; }  
-  
-/* =========================================
-   TABLET
-========================================= */
+/* LINHAS VAZIAS */
 
-@media(max-width:1024px){
-
-  .table-responsive{
-
-    overflow-x:auto;
-
-    -webkit-overflow-scrolling:touch;
-
-    touch-action:pan-x pan-y;
-  }
-
-  table{
-
-    width:max-content;
-
-    min-width:100%;
-  }
-
-  th,
-  td{
-
-    width:125px;
-
-    min-width:125px;
-
-    max-width:125px;
-
-    font-size:9px;
-  }
-
-  .aula-cell{
-    font-size:8px;
-  }
-
-  th{
-    font-size:9px;
-  }
-
-  .time-col{
-
-    width:82px !important;
-
-    min-width:82px !important;
-
-    max-width:82px !important;
-
-    font-size:8px;
-  }
-
-  .feriado{
-    font-size:44px;
-  }
+tr.linha-vazia td{
+  padding:2px !important;
+  font-size:8px !important;
+  height:10px !important;
 }
 
-/* =========================================
-   CELULAR
-========================================= */
+/* DESTAQUES */
 
-@media(max-width:768px){
-
-  /* =========================
-     HEADER MOBILE AJUSTADO
-  ========================= */
-
-  .ifro-header-content{
-
-    padding:20px 14px 16px;
-  }
-
-  .ifro-linha1{
-
-    font-size:9px;
-
-    letter-spacing:1px;
-
-    line-height:1.4;
-  }
-
-  .ifro-linha2{
-
-    font-size:26px;
-
-    line-height:1.05;
-  }
-
-  .ifro-linha3{
-
-    font-size:11px;
-
-    line-height:1.45;
-
-    padding:0 6px;
-  }
-
-  .ifro-linha4{
-
-    font-size:12px;
-
-    padding:10px 18px;
-  }
-
-  /* =========================
-     CONTROLES
-  ========================= */
-
-  .table-responsive{
-
-    padding:8px;
-  }
-
-  th,
-  td{
-
-    width:110px;
-
-    min-width:110px;
-
-    max-width:110px;
-
-    padding:5px 4px;
-  }
-
-  .aula-cell{
-
-    font-size:8px;
-
-    line-height:1.3;
-  }
-
-  th{
-
-    font-size:8px;
-  }
-
-  .time-col{
-
-    width:68px !important;
-
-    min-width:68px !important;
-
-    max-width:68px !important;
-
-    font-size:7px;
-  }
-
-  /* =========================
-     CABEÇALHO DOS DIAS FIXO
-  ========================= */
-
-  .day-divider td{
-
-    position:sticky;
-
-    top:0;
-
-    left:0;
-
-    z-index:9997;
-
-    width:100vw !important;
-
-    min-width:100vw !important;
-
-    max-width:100vw !important;
-
-    font-size:11px;
-
-    padding:10px;
-
-    text-align:center;
-
-    box-shadow:
-      0 4px 10px rgba(0,0,0,0.25);
-  }
-
-  .feriado{
-
-    font-size:26px;
-
-    letter-spacing:3px;
-
-    height:120px;
-  }
-
-  /* =========================
-     FOOTER CENTRALIZADO
-  ========================= */
-
-  .ifro-footer{
-
-    justify-content:center;
-
-    align-items:center;
-
-    text-align:center;
-  }
+.reserva-ensino{
+  color:#fbc02d;
+  font-weight:bold;
 }
 
-/* =========================================
-   MÁSCARA DA COLUNA FIXA
-========================================= */
-
-td.time-col::after,
-th.time-col::after{
-
-  content:"";
-
-  position:absolute;
-
-  top:0;
-
-  right:-12px;
-
-  width:12px;
-
-  height:100%;
-
-  background:
-    linear-gradient(
-      to right,
-      rgba(2,6,23,1),
-      rgba(2,6,23,0)
-    );
-
-  pointer-events:none;
+.pps{
+  color:#0b3d91;
+  font-weight:bold;
 }
-```
 
-  
+.estudos{
+  color:#1e7e34;
+  font-weight:bold;
+}
+
+.reuniao{
+  color:#fb8c00;
+  font-weight:bold;
+}
+
+.caed{
+  background:var(--caed) !important;
+}
+
+.reposicao{
+  color:#0b3d91;
+  font-weight:bold;
+}
+
+/* PAINEL ALTERAÇÕES */
+
+#painelAlteracoes{
+  background:var(--surface) !important;
+  color:var(--text);
+  box-shadow:var(--shadow);
+}
+
+#conteudoAlteracoes{
+  color:var(--text);
+}
+
+/* BOTÕES RELATÓRIO */
+
+#botoesRelatorio button{
+  transition:.2s;
+}
+
+#botoesRelatorio button:hover{
+  transform:translateY(-1px);
+}
+
+/* RODAPÉ */
+
+.ifro-footer{
+  background:var(--footer-bg);
+  color:var(--footer-text);
+  padding:20px;
+  text-align:center;
+  margin-top:15px;
+}
+
+/* SCROLL */
+
+::-webkit-scrollbar{
+  height:10px;
+  width:10px;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#999;
+  border-radius:8px;
+}
+
+#btnTema{
+  width:48px;
+  height:48px;
+
+  border:none;
+  border-radius:50%;
+
+  background:var(--surface);
+  color:var(--text);
+
+  cursor:pointer;
+
+  font-size:22px;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  box-shadow:var(--shadow);
+
+  transition:.3s;
+}
+
+#btnTema:hover{
+  transform:rotate(15deg) scale(1.08);
+}
 </style>
 </head>
 
 <body>
 
 <div class="ifro-header">
-  <div class="ifro-header-content">
-
-    <div class="ifro-linha1">
-      INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA
-    </div>
-
-    <div class="ifro-linha2">
-      IFRO • CAMPUS CACOAL
-    </div>
-
-    <div class="ifro-linha3">
-      Departamento de Apoio ao Ensino • Sistema Inteligente de Horários Semanais
-    </div>
-
-    <div class="ifro-linha4">
-      📅 HORÁRIOS SEMANAIS 2026
-    </div>
-
-  </div>
+<div class="ifro-header-content">
+<div class="ifro-linha1">INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO</div>
+<div class="ifro-linha2">CAMPUS CACOAL</div>
+<div class="ifro-linha3">DEPARTAMENTO DE APOIO AO ENSINO</div>
+<div class="ifro-linha4">HORÁRIOS SEMANAIS - 2026</div>
+</div>
 </div>
 
 <div class="header-sticky">
@@ -1128,14 +415,19 @@ th.time-col::after{
 <select id="selectSemana" onchange="trocarSemana()"></select>
 
 <input type="text" id="searchProf" class="search-box"
-placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor(); gerarPreviewProfessor();">
+placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
 
-<button class="btn-pdf" onclick="exportarPDF()">📄PDF-Semana</button>
+<button class="btn-pdf" onclick="exportarPDF()">📄 Baixe o PDF da Semana</button>
+
+<button id="btnTema">🌙</button>
 </div>
 </div>
 
 <div class="week-container">
 
+<!-- 🔥 AVISO DE SEMANA ESPECIAL -->
+<div id="alertaSemanaEspecial"></div>  
+  
 <!-- 🔥 BOTÕES NOVOS -->
 <div id="botoesRelatorio"></div>
 
@@ -1176,88 +468,64 @@ placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor(); gerarPreview
     📋 Copiar
   </button>
 </div>
-
-<div id="painelVagas" style="
-  display:none;
-  background:white;
-  border-left:6px solid #2e7d32;
-  padding:15px;
-  margin:10px;
-  border-radius:8px;
-  max-height:300px;
-  overflow-y:auto;
-  box-shadow:0 2px 10px rgba(0,0,0,0.2);
-">
-  <div style="display:flex;justify-content:space-between;">
-    <strong>📅 Aulas Vagas</strong>
-    <button onclick="fecharPainelVagas()" style="
-      background:#d32f2f;color:white;border:none;
-      padding:5px 10px;border-radius:5px;cursor:pointer;">
-      ✖
-    </button>
-  </div>
-
-  <pre id="conteudoVagas" style="
-    white-space:pre-wrap;
-    font-size:12px;
-    margin-top:10px;
-  "></pre>
-
-  <button onclick="copiarVagas()" style="
-    margin-top:10px;
-    padding:8px;
-    background:#2e7d32;
-    color:white;
-    border:none;
-    border-radius:5px;
-    cursor:pointer;">
-    📋 Copiar
-  </button>
-</div>
-
-  <div class="table-responsive" id="tabelaHorario"></div>
-
+  
+<div class="table-responsive" id="tabelaHorario"></div>
 </div>
 
 <footer class="ifro-footer">
-  IFRO - Campus Cacoal<br>
-  BR 364, Km 228, Lote 2-A - Zona Rural<br>
-  ☎ (69) 3443-2445 | ✉ dape.cacoal@ifro.edu.br
+IFRO - Campus Cacoal<br>
+BR 364, Km 228, Lote 2-A - Zona Rural<br>
+☎ (69) 3443-2445 | ✉ dape.cacoal@ifro.edu.br
 </footer>
 
 <script>
-
 const SHEETS={
 INTEGRADO:{id:'1j33kiPqwtzZNuvkBgYDaIiXZvVMY_J0qWAtRfYGdnD8',gid:'1357770092'},
-SUPERIOR:{id:'14ALXZgFIT68ee9ajuIdG63SpGVm0HyTjwp63-J6vRyg',gid:'669887707'},
-
-// 🔥 NOVO
-EVENTOS:{
-  id:'1IDjs0oS6lQBGDrL7ja1Ge0vaBdNCNIULDH7J5p89c5s',
-  gid:'0'}
+SUPERIOR:{id:'14ALXZgFIT68ee9ajuIdG63SpGVm0HyTjwp63-J6vRyg',gid:'669887707'}
 };
 
-async function carregarEventos(){
+let dadosGlobais=[],turmasDaPlanilha=[],semanasAgrupadas={};
 
-  const url = `https://docs.google.com/spreadsheets/d/${SHEETS.EVENTOS.id}/export?format=csv&gid=${SHEETS.EVENTOS.gid}`;
+  function deveCompararDia(dataStr){
 
-  const res = await fetch(url);
+  const [d,m,a] = dataStr.split('/');
+  const data = new Date(a, m-1, d);
 
-  eventosGlobais = parseCSV(await res.text());
+  const hoje = new Date();
 
-  console.log("EVENTOS CARREGADOS:");
-  console.table(eventosGlobais);
+  // remove hora
+  hoje.setHours(0,0,0,0);
+  data.setHours(0,0,0,0);
+
+  // segunda-feira da semana atual
+  const segunda = new Date(hoje);
+  const diaSemana = segunda.getDay();
+  const ajuste = diaSemana === 0 ? -6 : 1 - diaSemana;
+  segunda.setDate(segunda.getDate() + ajuste);
+  segunda.setHours(0,0,0,0);
+
+  // sábado da semana atual
+  const sabado = new Date(segunda);
+  sabado.setDate(sabado.getDate() + 5);
+  sabado.setHours(23,59,59,999);
+
+  // só compara dias da semana atual
+  if(data < segunda) return false;
+  if(data > sabado) return false;
+
+  // só compara de hoje para frente
+  if(data < hoje) return false;
+
+  return true;
 }
 
-function horaParaMinutos(h){
-  const [hh, mm] = h.split(':').map(Number);
-  return hh * 60 + mm;
+  function semanaSelecionadaEhAtual(){
+
+  const semanaSelecionada =
+    document.getElementById('selectSemana').value;
+
+  return semanaSelecionada === getSemanaAtual();
 }
-  
-let dadosGlobais = [];
-let turmasDaPlanilha = [];
-let semanasAgrupadas = {};
-let eventosGlobais = [];
 
   function isSemanaPassada(dataStr){
   const [d,m,a] = dataStr.split('/');
@@ -1273,73 +541,9 @@ let eventosGlobais = [];
   return data < segundaAtual;
 }
 
-  function obterColunasEvento(evento, turmasVisiveis) {
-
-    const alvo = evento.alvo
-        .split(',')
-        .map(t => t.trim());
-
-    return turmasVisiveis
-        .map((turma, indice) => ({
-            turma,
-            indice
-        }))
-        .filter(item =>
-            alvo.includes(item.turma)
-        );
-}
-
-  function saoContiguas(colunas) {
-
-    if (colunas.length <= 1) return true;
-
-    for (let i = 1; i < colunas.length; i++) {
-
-        if (
-            colunas[i].indice !==
-            colunas[i - 1].indice + 1
-        ) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-  function calcularRowspanEvento(
-    horaInicio,
-    horaFim,
-    horarios
-) {
-
-    const inicio = horarios.indexOf(horaInicio);
-    const fim = horarios.indexOf(horaFim);
-
-    return (fim - inicio);
-}
-  
 function limparPainelAlteracoes(){
   document.getElementById("conteudoAlteracoes").innerText = "";
   document.getElementById("painelAlteracoes").style.display = "none";
-}
-
-function mostrarPainelVagas(texto){
-  document.getElementById("conteudoVagas").innerText = texto;
-
-  document.querySelector("#painelVagas strong").innerText = "📅 Aulas Vagas";
-
-  document.getElementById("painelVagas").style.display = "block";
-}
-
-function fecharPainelVagas(){
-  document.getElementById("painelVagas").style.display = "none";
-}
-
-function copiarVagas(){
-  const texto = document.getElementById("conteudoVagas").innerText;
-  navigator.clipboard.writeText(texto).then(()=>{
-    alert("Copiado!");
-  });
 }
   
 function trocarModalidade(){
@@ -1350,232 +554,29 @@ function trocarModalidade(){
   init();
 }
 
-function trocarSemana(){
-
-  limparPainelAlteracoes();
-
+  function trocarSemana(){
+  limparPainelAlteracoes(); // 🔥 ESSENCIAL
   renderizarTabela();
-
-  setTimeout(() => {
-
-    verificarMudancaAoAbrir({
-      dados: dadosGlobais,
-      getSemana: () => document.getElementById('selectSemana').value,
-      getModalidade: () => document.getElementById('selectModalidade').value
-    });
-
-  }, 50);
 }
 
-function deveEntrarNoSnapshot(dia){
-
-  const semanaSelecionada =
-    document.getElementById('selectSemana').value;
-
-  const semanaAtual = getSemanaAtual();
-
-  // somente semana atual
-  if(semanaSelecionada !== semanaAtual){
-    return false;
-  }
-
-  const hoje = new Date();
-
-  const [d,m,a] = dia.split('/');
-
-  const dataLinha =
-    new Date(a,m-1,d);
-
-  const hojeZero =
-    new Date(
-      hoje.getFullYear(),
-      hoje.getMonth(),
-      hoje.getDate()
-    );
-
-  const sabado =
-    new Date(hojeZero);
-
-  const diaSemana =
-    hojeZero.getDay();
-
-  const diasAteSabado =
-    (6 - diaSemana + 7) % 7;
-
-  sabado.setDate(
-    hojeZero.getDate() + diasAteSabado
-  );
-
-  return (
-    dataLinha >= hojeZero &&
-    dataLinha <= sabado
-  );
-}
-  
-function gerarMapaDados(dados){
-
-  const mapa = {};
-
-  let ultimoDia = "";
-
-  for(let i=1;i<dados.length;i++){
-
-    const linha = dados[i];
-
-    if(linha[0]){
-      ultimoDia = linha[0];
-    }
-
-    const dia = ultimoDia;
-
-if(!dia){
-  continue;
-}
-
-if(!deveEntrarNoSnapshot(dia)){
-  continue;
-}
-
-    const horario = (linha[1] || "").trim();
-
-    const horarioNorm = normalizarTexto(horario);
-
-    if(
-      !horario ||
-      horarioNorm.includes("INTERVALO") ||
-      horarioNorm.includes("[+]") ||
-      horarioNorm.includes("*") ||
-      horarioNorm.includes("[R]")
-    ){
-      continue;
-    }
-
-    for(let j=2;j<linha.length;j++){
-
-      const turma = (dados[0][j] || "").trim();
-
-      if(!turma){
-        continue;
-      }
-
-      const valor = (linha[j] || "").trim();
-
-      const chave =
-        `${normalizarTexto(dia)}|${horarioNorm}|${normalizarTexto(turma)}`;
-
-      mapa[chave] = normalizarTexto(valor);
-    }
-  }
-  
-console.log("LINHAS PLANILHA:", dados.length);
-console.log("REGISTROS MAPA:", Object.keys(mapa).length);
-  
-  return mapa;
-}
-
-function compararMapas(mapaAntigo,mapaNovo){
-
-  const alteracoes = [];
-
-  const todasChaves = new Set([
-    ...Object.keys(mapaAntigo),
-    ...Object.keys(mapaNovo)
-  ]);
-
-  todasChaves.forEach(chave=>{
-
-    const antigo = (mapaAntigo[chave] || "").trim();
-const novo   = (mapaNovo[chave] || "").trim();
-
-if (normalizarTexto(antigo) !== normalizarTexto(novo)) {
-
-      const partes = chave.split("|");
-
-      alteracoes.push({
-        dia: partes[0],
-        horario: partes[1],
-        turma: partes[2],
-        antes: antigo || "(vazio)",
-        depois: novo || "(vazio)"
-      });
-
-    }
-
-  });
-
-  let contador = 0;
-
-todasChaves.forEach(chave => {
-
-  const antigo = mapaAntigo[chave];
-  const novo = mapaNovo[chave];
-
-  if (valorMudou(antigo, novo)) {
-
-    contador++;
-
-    console.log(
-      "DIFERENÇA",
-      chave,
-      antigo,
-      novo
-    );
-  }
-
-});
-
-console.log(
-  "TOTAL DIFERENÇAS:",
-  contador
-);
-
-  return alteracoes;
-}
-  
 function salvarSnapshotAtual() {
+
+  if(!semanaSelecionadaEhAtual()){
+    return;
+  }
 
   const sem = document.getElementById('selectSemana').value;
   const mod = document.getElementById('selectModalidade').value;
 
-  const mapa = gerarMapaDados(dadosGlobais);
-
   const snapshot = {
-    criadoEm: new Date().toISOString(),
-
-    // 🔥 marca que este snapshot é baseline inicial
-    baseline: true,
-
-    mapa
+    tempo:new Date().toISOString(),
+    dados:dadosGlobais
   };
 
-  try {
-
-    localStorage.setItem(
-      `snapshot_${mod}_${sem}`,
-      JSON.stringify(snapshot)
-    );
-
-  } catch (e) {
-
-    if (e.name === "QuotaExceededError") {
-
-      console.warn("⚠️ LocalStorage cheio. Limpando snapshots antigos...");
-
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith("snapshot_")) {
-          localStorage.removeItem(key);
-        }
-      });
-
-      localStorage.setItem(
-        `snapshot_${mod}_${sem}`,
-        JSON.stringify(snapshot)
-      );
-
-    } else {
-      throw e;
-    }
-  }
+  localStorage.setItem(
+    `snapshot_${mod}_${sem}`,
+    JSON.stringify(snapshot)
+  );
 }
 
 function obterSnapshotAntigo() {
@@ -1598,210 +599,120 @@ function valorMudou(v1, v2){
   return n1 !== n2;
 }
   
-function verificarMudancaAoAbrir({
-  dados,
-  getSemana,
-  getModalidade
-}) {
+function verificarMudancaAoAbrir() {
 
-  console.log(
-  "DADOS RECEBIDOS:",
-  dados.length
-);
-  
-  const sem = getSemana();
-  const mod = getModalidade();
-
-    console.log("===== SNAPSHOT =====");
-console.log("MODALIDADE:", mod);
-console.log("SEMANA:", sem);
-console.log("CHAVE:", `snapshot_${mod}_${sem}`);
+  if(!semanaSelecionadaEhAtual()){
+    return;
+  }
+  const sem = document.getElementById('selectSemana').value;
+  const mod = document.getElementById('selectModalidade').value;
 
   const chave = `snapshot_${mod}_${sem}`;
 
   const antigoRaw = localStorage.getItem(chave);
 
-  const mapaNovo = gerarMapaDados(dados);
-
-    console.log(
-  "REGISTROS MAPA:",
-  Object.keys(mapaNovo).length
-);
-
-  // 🔥 PRIMEIRO ACESSO DA SEMANA
+  // 🔥 Se não existe snapshot → salva e sai
   if (!antigoRaw) {
-
-    console.log("📌 Primeira abertura da semana.");
-
-    const snapshotInicial = {
-      criadoEm: new Date().toISOString(),
-      baseline: true,
-      mapa: mapaNovo
-    };
-
-    localStorage.setItem(
-      chave,
-      JSON.stringify(snapshotInicial)
-    );
-
-    // 🔥 NÃO COMPARA NADA
+    salvarSnapshotAtual();
     return;
   }
 
-  const snapshotAntigo = JSON.parse(antigoRaw);
+  const antigo = JSON.parse(antigoRaw);
+  const novo = dadosGlobais;
 
-  // 🔥 segurança contra snapshots inválidos
-  if (
-    !snapshotAntigo ||
-    !snapshotAntigo.mapa ||
-    typeof snapshotAntigo.mapa !== "object"
-  ) {
+  const agrupado = {};
+  let ultimoDia = "";
 
-    console.warn("⚠️ Snapshot inválido. Recriando baseline.");
+  for (let i = 1; i < novo.length; i++) {
 
-    localStorage.removeItem(chave);
+    if (novo[i][0]) ultimoDia = novo[i][0];
+    const diaAtual = ultimoDia;
 
-    localStorage.setItem(chave, JSON.stringify({
-      criadoEm: new Date().toISOString(),
-      baseline: true,
-      mapa: mapaNovo
-    }));
+    if (!diaAtual) continue;
+    if (!deveCompararDia(diaAtual)) continue;
 
-    return;
+    const horario = (novo[i][1] || "").trim();
+    const horarioNorm = normalizarTexto(horario);
+
+    // 🔥 IGNORA INTERVALO
+    if (
+      !horario ||
+      horarioNorm.includes("INTERVALO") ||
+      horarioNorm.includes("[+]") ||
+      horarioNorm.includes("*") ||
+      horarioNorm.includes("[R]")
+    ) continue;
+
+    for (let j = 2; j < novo[i].length; j++) {
+
+      const vNovo = (novo[i][j] || "").trim();
+      const vAntigo = (antigo.dados?.[i]?.[j] || "").trim();
+
+      if (!valorMudou(vNovo, vAntigo)) continue;
+
+      const turma = (dadosGlobais[0][j] || "").trim();
+      if (!turma) continue;
+
+      const chaveItem = `${diaAtual}__${turma}__${horario}`;
+
+      if (!agrupado[chaveItem]) {
+        agrupado[chaveItem] = {
+          dia: diaAtual,
+          turma,
+          horario,
+          alteracoes: []
+        };
+      }
+
+      agrupado[chaveItem].alteracoes.push({
+        antes: vAntigo || "(vazio)",
+        depois: vNovo || "(vazio)"
+      });
+    }
   }
 
-  const mapaAntigo = snapshotAntigo.mapa;
+  const listaFinal = Object.values(agrupado);
 
-  console.log(
-  "EXEMPLO MAPA ANTIGO:",
-  Object.entries(mapaAntigo).slice(0,5)
-);
-
-console.log(
-  "EXEMPLO MAPA NOVO:",
-  Object.entries(mapaNovo).slice(0,5)
-);
-
-  console.log(
-  "MAPA ANTIGO:",
-  Object.keys(mapaAntigo).length
-);
-
-console.log(
-  "MAPA NOVO:",
-  Object.keys(mapaNovo).length
-);
-
-  const alteracoes = compararMapas(
-    mapaAntigo,
-    mapaNovo
-  );
-
-  console.log(
-  "ALTERAÇÕES ENCONTRADAS:",
-  alteracoes.length
-);
-
-if(alteracoes.length){
-
-  console.log(
-    "PRIMEIRA ALTERAÇÃO:",
-    alteracoes[0]
-  );
-
-}
-
-  // 🔥 ignora semanas passadas
-  const filtradas = alteracoes;
-
-  if (filtradas.length > 0) {
-
-    mostrarAvisoAlteracoesRobusto(filtradas);
-
+  if (listaFinal.length > 0) {
+    mostrarAvisoAlteracoes(listaFinal);
   } else {
-
     document.getElementById("painelAlteracoes").style.display = "none";
   }
 
-  // 🔥 atualiza snapshot
-  localStorage.setItem(chave, JSON.stringify({
-    criadoEm: new Date().toISOString(),
-    baseline: true,
-    mapa: mapaNovo
-  }));
+  salvarSnapshotAtual();
 }
 
-function mostrarAvisoAlteracoesRobusto(alteracoes) {
+function mostrarMensagemPainel(titulo, texto){
 
-    if (!Array.isArray(alteracoes) || alteracoes.length === 0) {
-        return;
-    }
+  const tituloPainel =
+    document.querySelector("#painelAlteracoes strong");
 
-    let html = `
-        <div style="max-height:500px;overflow-y:auto;text-align:left;">
-            <p>
-                <strong>Foram encontradas ${alteracoes.length} alteração(ões) nos horários.</strong>
-            </p>
-            <hr>
-    `;
+  tituloPainel.innerText = titulo;
 
-    alteracoes.forEach((alt, index) => {
+  document.getElementById("conteudoAlteracoes").innerText = texto;
 
-        html += `
-            <div style="
-                margin-bottom:15px;
-                padding:10px;
-                border:1px solid #ddd;
-                border-radius:8px;
-                background:#f8f9fa;
-            ">
-                <div>
-                    <strong>${index + 1}. ${alt.turma || 'Turma não informada'}</strong>
-                </div>
+  document.getElementById("painelAlteracoes").style.display = "block";
+}
+  
+function mostrarAvisoAlteracoes(lista) {
 
-                <div>
-                    📅 ${alt.dia || '-'}
-                </div>
+  let texto = "⚠️ ALTERAÇÕES DE AULAS DETECTADAS:\n\n";
 
-                <div>
-                    🕒 ${alt.horario || '-'}
-                </div>
+  lista.forEach(item => {
 
-                <div style="
-                    margin-top:8px;
-                    padding:8px;
-                    background:#ffe5e5;
-                    border-radius:4px;
-                ">
-                    <strong>ANTES:</strong><br>
-                    ${alt.antes || '(vazio)'}
-                </div>
+    texto += `📅 Dia: ${item.dia}\n`;
+    texto += `🏫 Turma: ${item.turma}\n`;
+    texto += `⏰ Horário: ${item.horario}\n`;
 
-                <div style="
-                    margin-top:6px;
-                    padding:8px;
-                    background:#e5ffe5;
-                    border-radius:4px;
-                ">
-                    <strong>DEPOIS:</strong><br>
-                    ${alt.depois || '(vazio)'}
-                </div>
-            </div>
-        `;
+    item.alteracoes.forEach(a => {
+      texto += `➡️ ${a.antes} → ${a.depois}\n`;
     });
 
-    html += '</div>';
+    texto += "\n";
+  });
 
-    Swal.fire({
-        icon: 'warning',
-        title: 'Alterações Detectadas',
-        html: html,
-        width: 900,
-        confirmButtonText: 'Entendi'
-    });
-
-    console.log('ALTERAÇÕES DETECTADAS:', alteracoes);
-    console.table(alteracoes);
+  document.getElementById("conteudoAlteracoes").innerText = texto;
+  document.getElementById("painelAlteracoes").style.display = "block";
 }
 
   function fecharPainel(){
@@ -1883,6 +794,8 @@ return r;
 
 async function init(){
 
+  document.getElementById('searchProf').value = "";
+
   const mod = document.getElementById('selectModalidade').value;
 
   // 🔥 LIMPA PAINEL ao trocar
@@ -1895,181 +808,14 @@ async function init(){
   const res = await fetch(url);
 
   dadosGlobais = parseCSV(await res.text());
-  await carregarEventos(); // 🔥 NOVO
 
   processarDados();
 
   // 🔥 GARANTE verificação após tudo carregado
   setTimeout(() => {
-  verificarMudancaAoAbrir({
-    dados: dadosGlobais,
-    getSemana: () => document.getElementById('selectSemana').value,
-    getModalidade: () => document.getElementById('selectModalidade').value
-  });
-}, 100);
+    verificarMudancaAoAbrir();
+  }, 200);
 }
-
-function getEventosDaLinha(dia, horario, turmasVisiveis){
-
-  if(!horario || !horario.includes(" - "))
-    return [];
-
-  const [hIniStr, hFimStr] = horario.split(" - ");
-
-  const hIniLinha = horaParaMinutos(hIniStr);
-  const hFimLinha = horaParaMinutos(hFimStr);
-
-  const modalidadeAtual =
-    document.getElementById(
-      "selectModalidade"
-    ).value;
-
-  const eventos = [];
-
-  for(let i=1;i<eventosGlobais.length;i++){
-
-    const ev = eventosGlobais[i];
-
-    const modalidade = ev[0];
-    const tipo       = ev[1];
-    const alvo       = ev[2];
-    const data       = ev[3];
-    const hInicio    = horaParaMinutos(ev[4]);
-    const hFim       = horaParaMinutos(ev[5]);
-    const descricao  = ev[6];
-
-    if(
-      normalizarTexto(modalidade)
-      !==
-      normalizarTexto(modalidadeAtual)
-    ){
-      continue;
-    }
-
-    if(data !== dia){
-      continue;
-    }
-
-    const dentro =
-      hIniLinha < hFim &&
-      hFimLinha > hInicio;
-
-    if(!dentro){
-      continue;
-    }
-
-    let colunas = [];
-
-    if(
-      normalizarTexto(alvo) === "TODOS"
-    ){
-
-      colunas =
-        turmasVisiveis.map(
-          (t,idx)=>({
-            turma:t,
-            indice:idx
-          })
-        );
-
-    }else{
-
-      const listaAlvos =
-        alvo
-          .split(",")
-          .map(x=>x.trim());
-
-      colunas =
-        turmasVisiveis
-          .map((turma,indice)=>({
-            turma,
-            indice
-          }))
-          .filter(item=>
-            listaAlvos.some(
-              a=>
-                normalizarTexto(a)
-                ===
-                normalizarTexto(item.turma)
-            )
-          );
-    }
-
-    eventos.push({
-
-      descricao,
-
-      tipo,
-
-      alvo,
-
-      inicio:hInicio,
-
-      fim:hFim,
-
-      colunas
-
-    });
-  }
-
-  return eventos;
-}
-
-  function calcularRowspanEventoReal(
-  dia,
-  evento,
-  linhas
-){
-
-  let total = 0;
-
-  for(let i=0;i<linhas.length;i++){
-
-    const horario = linhas[i][1];
-
-    if(
-      !horario ||
-      !horario.includes(" - ")
-    ){
-      continue;
-    }
-
-    const [ini,fim] =
-      horario.split(" - ");
-
-    const hIni =
-      horaParaMinutos(ini);
-
-    const hFim =
-      horaParaMinutos(fim);
-
-    const dentro =
-      hIni < evento.fim &&
-      hFim > evento.inicio;
-
-    if(dentro){
-      total++;
-    }
-  }
-
-  return total;
-}
-
-  function existeEventoNaColuna(
-  eventos,
-  indiceColuna
-){
-
-  return eventos.find(ev=>
-
-    ev.colunas.some(
-      c=>c.indice===indiceColuna
-    )
-
-  );
-}
-  
-  
 function getCursoInfo(t){
 t=t.toUpperCase();
 if(t.includes("AGROEC")) return {cl:"c-agroec",rgb:[232,245,233]};
@@ -2139,8 +885,6 @@ if(semanasAgrupadas[semanaAtual]){
 }
 
 renderizarTabela();
-filtrarProfessor();
-gerarPreviewProfessor();
 }
 
 function getTurmasAtivasNaSemana(dias){
@@ -2153,76 +897,59 @@ return v && v!=="-" && !r[1].toUpperCase().includes("INTERVALO");
 });
 }
 
-
-function abreviarTurma(nome){
-
-  return nome
-
-    /* =========================
-       SEMESTRES
-    ========================= */
-
-    .replaceAll("1 SEMESTRE", "1º")
-    .replaceAll("2 SEMESTRE", "2º")
-    .replaceAll("3 SEMESTRE", "3º")
-    .replaceAll("4 SEMESTRE", "4º")
-    .replaceAll("5 SEMESTRE", "5º")
-    .replaceAll("6 SEMESTRE", "6º")
-    .replaceAll("7 SEMESTRE", "7º")
-    .replaceAll("8 SEMESTRE", "8º")
-    .replaceAll("9 SEMESTRE", "9º")
-    .replaceAll("10 SEMESTRE", "10º")
-
-    /* =========================
-       INTEGRADO
-    ========================= */
-
-    .replaceAll("AGROECOLOGIA", "AGROEC.")
-    .replaceAll("AGROPECUÁRIA", "AGROP.")
-    .replaceAll("AGROPECUARIA", "AGROP.")
-    .replaceAll("INFORMÁTICA", "INFO")
-    .replaceAll("INFORMATICA", "INFO")
-
-    /* =========================
-       SUPERIOR
-    ========================= */
-
-    .replaceAll("GEOGRAFIA", "GEO.")
-    .replaceAll("MATEMÁTICA", "MAT.")
-    .replaceAll("MATEMATICA", "MAT.")
-    .replaceAll("AGRONEGÓCIO", "AGRONEG.")
-    .replaceAll("AGRONEGOCIO", "AGRONEG.")
-    .replaceAll("ZOOTECNIA", "ZOO.")
-    .replaceAll("AGRONOMIA", "AGRON.")
-
-    /* =========================
-       TURNOS
-    ========================= */
-
-    .replaceAll("MATUTINO", "MAT.")
-    .replaceAll("VESPERTINO", "VESP.")
-    .replaceAll("NOTURNO", "NOT.")
-
-    /* =========================
-       MODALIDADES
-    ========================= */
-
-    .replaceAll("INTEGRADO", "INT.")
-    .replaceAll("SUPERIOR", "SUP.")
-
-    /* =========================
-       LIMPEZA
-    ========================= */
-
-    .replace(/\s+/g, " ")
-    .trim();
-}
-    
-  
 function renderizarTabela(){
     const sem = document.getElementById('selectSemana').value;
     const dias = semanasAgrupadas[sem].dias;
     const container = document.getElementById('tabelaHorario');
+
+  // 🔥 AVISOS DE SEMANAS ESPECIAIS
+
+const modalidade =
+    document.getElementById('selectModalidade').value;
+
+let alerta = '';
+
+if (
+    modalidade === 'INTEGRADO' &&
+    (sem === '22/06/2026' || sem === '29/06/2026')
+) {
+    alerta = `
+    <div style="
+        background:#fff3cd;
+        border:3px solid #ff9800;
+        color:#7a4f00;
+        padding:15px;
+        margin-bottom:10px;
+        border-radius:8px;
+        font-weight:bold;
+        text-align:center;
+        font-size:18px;
+    ">
+        ⚠️ ATENÇÃO: ESTA É UMA SEMANA DE RECUPERAÇÃO DOS CURSOS TÉCNICOS INTEGRADOS
+    </div>`;
+}
+
+if (
+    modalidade === 'SUPERIOR' &&
+    sem === '29/06/2026'
+) {
+    alerta = `
+    <div style="
+        background:#ffebee;
+        border:3px solid #d32f2f;
+        color:#b71c1c;
+        padding:15px;
+        margin-bottom:10px;
+        border-radius:8px;
+        font-weight:bold;
+        text-align:center;
+        font-size:18px;
+    ">
+        🚨 ATENÇÃO: ESTA É UMA SEMANA DE EXAMES DOS CURSOS SUPERIORES
+    </div>`;
+}
+
+document.getElementById('alertaSemanaEspecial').innerHTML = alerta;
 
     const turmasAtivas = document.getElementById('selectModalidade').value === "SUPERIOR"
         ? getTurmasAtivasNaSemana(dias)
@@ -2232,21 +959,20 @@ function renderizarTabela(){
 
     let html = "";
 
+    // 🔥 Regras de destaque
     const regrasDestaque = [
-        { match: v => v.includes("RESERVA ENSINO"), classe: "reserva-ensino" },
-        { match: v => v.includes("PPS/ATENDIMENTO"), classe: "pps" },
-        { match: v => v.includes("ESTUDOS INDIVIDUAIS"), classe: "estudos" },
-        { match: v => v.includes("REUNIAO DE SERVIDORES"), classe: "reuniao" },
-        { match: v => v.includes("CAED") || v.includes("PRE-CONSELHO"), classe: "caed" },
-        { match: v => v.includes("_REP -"), classe: "reposicao" }
-    ];
+    { match: v => v.includes("RESERVA ENSINO"), classe: "reserva-ensino" },
+    { match: v => v.includes("PPS/ATENDIMENTO"), classe: "pps" },
+    { match: v => v.includes("ESTUDOS INDIVIDUAIS"), classe: "estudos" },
+    { match: v => v.includes("REUNIAO DE SERVIDORES"), classe: "reuniao" },
+    { match: v => v.includes("CAED") || v.includes("PRE-CONSELHO"), classe: "caed" },
+    { match: v => v.includes("_REP -"), classe: "reposicao" }
+];
 
     Object.keys(dias).forEach(dia => {
-
         const p = dia.split('/');
         const dObj = new Date(p[2], p[1]-1, p[0]);
 
-        // 🔴 FERIADO
         if (isFeriado(dia)){
             html += `<table>
                 <tr class="day-divider">
@@ -2264,168 +990,65 @@ function renderizarTabela(){
         }
 
         html += `<table>`;
-
-        // 🔹 CABEÇALHO DO DIA
         html += `<tr class="day-divider">
                     <td colspan="${turmasAtivas.length+1}">
                         ${nomes[dObj.getDay()]} - ${dia}
                     </td>
                  </tr>`;
 
-        // 🔹 CABEÇALHO DAS TURMAS
         html += `<tr>
                     <th class="time-col">Horário</th>`;
 
-       turmasAtivas.forEach(t => {
-
-    html += `
-      <th
-        class="${getCursoInfo(t).cl}"
-        title="${t}"
-      >
-        ${abreviarTurma(t)}
-      </th>
-    `;
-
-});
+        turmasAtivas.forEach(t => {
+            html += `<th class="${getCursoInfo(t).cl}">${t}</th>`;
+        });
 
         html += `</tr>`;
 
-        let linhas = dias[dia];
-        let i = 0;
-
-        while(i < linhas.length){
-
-            const r = linhas[i];
-            const horario = r[1];
-
-            const eventosLinha =
-  getEventosDaLinha(
-    dia,
-    horario,
-    turmasAtivas
-  );
-
-            // 🔹 LINHA NORMAL (ORIGINAL PRESERVADA)
-            const isInt = r[1] && r[1].toUpperCase().includes("INTERVALO");
+        dias[dia].forEach(r => {
+            const isInt = r[1].toUpperCase().includes("INTERVALO");
             const linhaVazia = r.slice(2).every(v => !v || v.trim() === "");
 
             html += `<tr class="${isInt ? 'intervalo' : ''} ${linhaVazia ? 'linha-vazia' : ''}">
                         <td class="time-col">${r[1]}</td>`;
 
-            for(let col=0; col<turmasAtivas.length; col++){
+            turmasAtivas.forEach(t => {
+                const idx = dadosGlobais[0].indexOf(t);
+                let val = (r[idx] || "").trim();
 
-  const turma =
-    turmasAtivas[col];
+                let classesExtras = [];
 
-  const evento =
-    existeEventoNaColuna(
-      eventosLinha,
-      col
-    );
+const valNorm = normalizarTexto(val);
 
-  if(evento){
-
-    const primeiraColuna =
-      evento.colunas[0].indice;
-
-    if(col !== primeiraColuna){
-      continue;
+regrasDestaque.forEach(regra => {
+    if (regra.match(valNorm)) {
+        classesExtras.push(regra.classe);
     }
-
-    const rowspan =
-      calcularRowspanEventoReal(
-        dia,
-        evento,
-        linhas
-      );
-
-    const contiguas =
-      saoContiguas(
-        evento.colunas
-      );
-
-    const colspan =
-      contiguas
-      ? evento.colunas.length
-      : 1;
-
-    html += `
-      <td
-        rowspan="${rowspan}"
-        colspan="${colspan}"
-        class="evento-bloco"
-      >
-        ${evento.descricao}
-      </td>
-    `;
-
-    continue;
-  }
-
-  const idx =
-    dadosGlobais[0]
-    .indexOf(turma);
-
-  let val =
-    (r[idx] || "")
-    .trim();
-
-  let classesExtras = [];
-
-  const valNorm =
-    normalizarTexto(val);
-
-  regrasDestaque.forEach(regra=>{
-
-    if(regra.match(valNorm)){
-      classesExtras.push(
-        regra.classe
-      );
-    }
-
-  });
-
-  if(
+});
+              
+                // 🔥 manter regras antigas
+               if (
     val.includes("[+]") ||
     val.includes("*") ||
     val.includes("[R]") ||
     valNorm.includes("INTERVALO")
-  ){
-    classesExtras.push(
-      "marcacao-extra"
-    );
-  }
-
-  html += `
-    <td
-      class="
-        aula-cell
-        ${getCursoInfo(turma).cl}
-        ${classesExtras.join(" ")}
-      "
-    >
-      ${val}
-    </td>
-  `;
+) {
+    classesExtras.push("marcacao-extra");
 }
 
-            html += `</tr>`;
+                html += `<td class="aula-cell ${getCursoInfo(t).cl} ${classesExtras.join(" ")}">
+                            ${val}
+                         </td>`;
+            });
 
-            i++;
-        }
+            html += `</tr>`;
+        });
 
         html += `</table><br>`;
     });
 
-   container.innerHTML = html;
-
-criarBotoesDias();
-
-/* 🔥 reaplica busca automaticamente */
-filtrarProfessor();
-gerarPreviewProfessor();
-
+    container.innerHTML = html;
+  criarBotoesDias();
 }
 
   const coresPDF = {
@@ -2445,13 +1068,6 @@ function coletarVagasDoDia(dia) {
   const vagas = [];
 
   if (!dias[dia]) return vagas;
-
-  // Lógica para ignorar sábado (0 = Domingo, 6 = Sábado)
-  const [d, m, a] = dia.split('/');
-  const dataObjeto = new Date(a, m - 1, d);
-  if (dataObjeto.getDay() === 6 || dataObjeto.getDay() === 0) {
-    return vagas; // Retorna vazio se for sábado ou domingo
-  }
 
   dias[dia].forEach(r => {
     const horario = r[1];
@@ -2509,15 +1125,17 @@ function gerarRelatorioDia(dia) {
   return texto;
 }
 
-function copiarRelatorioDia(dia) {
+function mostrarRelatorioDia(dia){
+
   const texto = gerarRelatorioDia(dia);
 
-  navigator.clipboard.writeText(texto).then(() => {
-    alert("Relatório copiado para área de transferência!");
-  });
+  mostrarMensagemPainel(
+    `📅 Relatório de aulas vagas - ${dia}`,
+    texto
+  );
 }
 
-function gerarRelatorioSemanaTexto() {
+function gerarRelatorioSemana() {
   const sem = document.getElementById('selectSemana').value;
   const dias = semanasAgrupadas[sem].dias;
 
@@ -2525,8 +1143,8 @@ function gerarRelatorioSemanaTexto() {
 
   const agrupado = {};
 
+  // 🔥 AGRUPA DIA + TURMA
   Object.keys(dias).forEach(dia => {
-    // A função coletarVagasDoDia agora já filtra internamente apenas seg-sex
     const vagas = coletarVagasDoDia(dia);
 
     vagas.forEach(v => {
@@ -2547,20 +1165,29 @@ function gerarRelatorioSemanaTexto() {
   const listaFinal = Object.values(agrupado);
 
   if (listaFinal.length === 0) {
-    texto += "Não há aulas vagas na semana.";
-    return texto;
-  }
 
+  texto += "Não há aulas vagas na semana.";
+
+  mostrarMensagemPainel(
+    "📊 Relatório semanal de aulas vagas",
+    texto
+  );
+
+  return;
+}
+
+  // 🔥 ORGANIZA POR DIA
   listaFinal.sort((a, b) => {
     const [da, ma, aa] = a.dia.split('/');
     const [db, mb, ab] = b.dia.split('/');
-    return new Date(aa, ma - 1, da) - new Date(ab, mb - 1, db);
+    return new Date(aa, ma-1, da) - new Date(ab, mb-1, db);
   });
 
   let diaAtual = "";
 
   listaFinal.forEach(item => {
 
+    // 🔥 quebra por dia
     if (item.dia !== diaAtual) {
       texto += `📅 DATA: ${item.dia}\n\n`;
       diaAtual = item.dia;
@@ -2572,7 +1199,10 @@ function gerarRelatorioSemanaTexto() {
     texto += `⏰ AULAS VAGAS: ${horariosUnicos.join(", ")}\n\n`;
   });
 
-  return texto;
+  mostrarMensagemPainel(
+  "📊 Relatório semanal de aulas vagas",
+  texto
+);
 }
   
 function exportarPDF(){
@@ -2758,68 +1388,61 @@ const mod = document.getElementById('selectModalidade').value;
 const nomeArquivo = `HORÁRIO ${mod} - SEMANA DE ${sem}`;
 pdf.save(nomeArquivo);
 }
-  
-function abrirRelatorioDia(dia){
-  const texto = gerarRelatorioDia(dia);
-  mostrarPainelVagas(texto);
-}
-  
+
 function criarBotoesDias() {
 
   const sem = document.getElementById('selectSemana').value;
+
   const dias = semanasAgrupadas[sem].dias;
 
   let html = `
     <div style="
       padding:10px;
       display:flex;
-      gap:8px;
+      gap:10px;
       flex-wrap:wrap;
-      justify-content:center;
     ">
   `;
 
   Object.keys(dias).forEach(dia => {
 
     const [d,m,a] = dia.split('/');
-    const dataObj = new Date(a, m - 1, d);
 
-    // 🔥 REMOVE SÁBADO
-    if(dataObj.getDay() === 6){
-      return;
-    }
+    const data = new Date(a,m-1,d);
+
+    const diaSemana = data.getDay();
+
+    // ignora sábado e domingo
+    if (diaSemana === 6 || diaSemana === 0) return;
 
     html += `
-      <button onclick="abrirRelatorioDia('${dia}')"
+      <button
+        onclick="mostrarRelatorioDia('${dia}')"
         style="
-          padding:9px 12px;
+          padding:10px;
           background:#2e7d32;
           color:white;
           border:none;
-          border-radius:10px;
+          border-radius:6px;
           cursor:pointer;
-          font-size:12px;
-          font-weight:600;
         ">
         📅 ${dia}
       </button>
     `;
   });
 
-  // 🔥 BOTÃO SEMANA INTEIRA NO FINAL
   html += `
-      <button onclick="abrirRelatorioSemana()"
+      <button
+        onclick="gerarRelatorioSemana()"
         style="
-          padding:9px 12px;
+          padding:10px;
           background:#d32f2f;
           color:white;
           border:none;
-          border-radius:10px;
+          border-radius:6px;
           cursor:pointer;
-          font-size:12px;
-          font-weight:700;
         ">
-        📊 Semana
+        📊 Semana inteira
       </button>
     </div>
   `;
@@ -2827,154 +1450,25 @@ function criarBotoesDias() {
   document.getElementById("botoesRelatorio").innerHTML = html;
 }
 
-  function abrirRelatorioSemana(){
-  const texto = gerarRelatorioSemanaTexto();
-  mostrarPainelVagas(texto);
-}
-  
-function gerarGradeProfessor(nomeProf){
-
-  const sem = document.getElementById('selectSemana').value;
-  const dias = semanasAgrupadas[sem].dias;
-
-  const diasSemana = ["SEGUNDA-FEIRA","TERÇA-FEIRA","QUARTA-FEIRA","QUINTA-FEIRA","SEXTA-FEIRA", "SÁBADO"];
-
-  const mapa = {}; // horario -> {dia: valor}
-
-  Object.keys(dias).forEach(dia => {
-
-    const [d, m, a] = dia.split('/');
-const dataObj = new Date(a, m - 1, d); // 🔥 forma correta (local time)
-    const nomeDia = ["DOMINGO","SEGUNDA-FEIRA","TERÇA-FEIRA","QUARTA-FEIRA","QUINTA-FEIRA","SEXTA-FEIRA","SÁBADO"][dataObj.getDay()];
-
-    if(!diasSemana.includes(nomeDia)) return;
-
-    dias[dia].forEach(r => {
-
-      const horario = r[1];
-
-      if(!mapa[horario]){
-        mapa[horario] = {};
-      }
-
-      turmasDaPlanilha.forEach(turma => {
-        const idx = dadosGlobais[0].indexOf(turma);
-        const val = (r[idx] || "");
-
-        const nomeBusca = normalizarTexto(nomeProf);
-const valNorm = normalizarTexto(val);
-
-const nomesSeparados = valNorm.split(/[\n,;/]/); // quebra por vários separadores
-
-if(nomesSeparados.some(n => n.includes(nomeBusca))){
-          if(!mapa[horario][nomeDia]){
-  mapa[horario][nomeDia] = [];
-}
-
-mapa[horario][nomeDia].push({
-  turma: turma,
-  aula: val
-});
-        }
-      });
-
-    });
-
-  });
-
-  return mapa;
-}
-
-function mostrarFichaProfessorTabela(nome){
-
-  const grade = gerarGradeProfessor(nome);
-
-  const diasSemana = ["SEGUNDA-FEIRA","TERÇA-FEIRA","QUARTA-FEIRA","QUINTA-FEIRA","SEXTA-FEIRA","SÁBADO"];
-
-  let html = `
-    <h3>👨‍🏫 FICHA SEMANAL - ${nome}</h3>
-    <table border="1" style="border-collapse:collapse;width:100%;font-size:12px;">
-      <tr>
-        <th>Horário</th>
-        ${diasSemana.map(d=>`<th>${d}</th>`).join("")}
-      </tr>
-  `;
-
-  Object.keys(grade).forEach(horario => {
-
-    html += `<tr>`;
-    html += `<td><b>${horario}</b></td>`;
-
-    diasSemana.forEach(dia=>{
-      let conteudo = grade[horario][dia];
-
-if(Array.isArray(conteudo)){
-  conteudo = conteudo.map(item => {
-    return `<b>${item.turma}</b><br>${item.aula}`;
-  }).join("<hr style='margin:3px 0;'>");
-}
-
-html += `<td>${conteudo || "-"}</td>`;
-    });
-
-    html += `</tr>`;
-  });
-
-  html += `</table>`;
-
-  document.getElementById("conteudoVagas").innerHTML = html;
-  document.getElementById("painelVagas").style.display = "block";
-}
-
-  function gerarPreviewProfessor(){
-  const nome = document.getElementById('searchProf').value.trim();
-
-  if(nome.length > 3){
-    mostrarFichaProfessorTabela(nome);
-
-    document.querySelector("#painelVagas strong").innerText = "👨‍🏫 Ficha do Professor";
-
-  } else {
-    document.getElementById("painelVagas").style.display = "none";
-  }
-}
-
-  function gerarFichaTurma(nomeTurma){
-
-  const sem = document.getElementById('selectSemana').value;
-  const dias = semanasAgrupadas[sem].dias;
-
-  let resultado = [];
-
-  Object.keys(dias).forEach(dia => {
-
-    dias[dia].forEach(r => {
-
-      const horario = r[1];
-      const idx = dadosGlobais[0].indexOf(nomeTurma);
-      const val = (r[idx] || "");
-
-      if(val){
-        resultado.push({
-          dia,
-          horario,
-          aula: val
-        });
-      }
-
-    });
-
-  });
-
-  return resultado;
-}
-  
 window.addEventListener("beforeunload", () => {
   salvarSnapshotAtual();
 });
+
+  document.getElementById("btnTema").addEventListener("click", () => {
+
+  const html = document.documentElement;
+
+  if (html.getAttribute("data-theme") === "dark") {
+    html.removeAttribute("data-theme");
+    document.getElementById("btnTema").innerHTML = "🌙";
+  } else {
+    html.setAttribute("data-theme", "dark");
+    document.getElementById("btnTema").innerHTML = "☀️";
+  }
+
+});
   
 window.onload=init;
-
 </script>
 
 </body>
