@@ -404,22 +404,52 @@ tr.linha-vazia td{
 </div>
 </div>
 
- <div id="abaProfessor">
+<div class="tabs-container">
 
-    <div class="controls-card">
+  <button class="tab-btn active"
+          onclick="abrirAba('dashboard',this)">
+          📊 Dashboard
+  </button>
 
-        <select id="selectSemanaProfessor"></select>
+  <button class="tab-btn"
+          onclick="abrirAba('horarios',this)">
+          📅 Horários
+  </button>
 
-        <select id="selectProfessor"
-                onchange="gerarGradeProfessor()">
-        </select>
+<button class="tab-btn"
+          onclick="abrirAba('sabados',this)">
+          📚 Sábados Letivos
+  </button>
+   
+<button class="tab-btn"
+          onclick="abrirAba('professores',this)">
+          👨‍🏫 Professores
+  </button>
 
-    </div>
+  <button class="tab-btn"
+          onclick="abrirAba('turmas',this)">
+          🏫 Turmas
+  </button>
 
-    <div id="gradeProfessor"></div>
+  <button class="tab-btn"
+          onclick="abrirAba('estatisticas',this)">
+          📈 Estatísticas
+  </button>
+
+<button id="btnTema">🌙</button>
+   
+</div>
+
+<div id="dashboard"
+     class="tab-content active">
+
+  <div id="dashboardContent"></div>
 
 </div>
-  
+
+<div id="horarios"
+     class="tab-content">
+
 <div class="header-sticky">
 <div class="controls-card">
 <select id="selectModalidade" onchange="trocarModalidade()">
@@ -434,7 +464,6 @@ placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
 
 <button class="btn-pdf" onclick="exportarPDF()">📄 Baixe o PDF da Semana</button>
 
-<button id="btnTema">🌙</button>
 </div>
 </div>
 
