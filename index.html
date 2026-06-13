@@ -1781,7 +1781,25 @@ function calcularIndicadores(dados){
   };
 }
   
-window.onload=init;
+window.onload = async () => {
+
+  const tema = localStorage.getItem("tema");
+
+  if (tema === "dark") {
+    document.documentElement.setAttribute("data-theme","dark");
+    document.getElementById("btnTema").innerHTML = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    document.getElementById("btnTema").innerHTML = "🌙";
+  }
+
+  await init();
+
+  console.log("Integrado:", dadosIntegrado.length);
+  console.log("Superior:", dadosSuperior.length);
+
+  gerarDashboard();
+};
 </script>
 
 </body>
