@@ -577,9 +577,17 @@ tr.linha-vazia td{
 
 .dashboard-grid{
     display:grid;
-    grid-template-columns:repeat(3,1fr);
+
+    grid-template-columns:
+        1.2fr
+        1.2fr
+        1fr;
+
     gap:20px;
+
     padding:20px;
+
+    align-items:start;
 }
 
 .dashboard-column{
@@ -605,20 +613,23 @@ tr.linha-vazia td{
 .recuperacao-card,
 .exame-card{
 
-    background:rgba(46,125,50,.08);
+    background:white;
 
-    padding:12px;
+    border-left:5px solid #2e7d32;
 
-    border-radius:10px;
+    padding:14px;
 
-    margin-bottom:10px;
+    border-radius:12px;
+
+    margin-bottom:12px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 
     display:flex;
     flex-direction:column;
 
     gap:6px;
 }
-
 .dashboard-card strong{
     font-size:22px;
 }
@@ -659,6 +670,44 @@ tr.linha-vazia td{
         grid-template-columns:1fr;
     }
 
+}
+
+  [data-theme="dark"] .dashboard-card,
+[data-theme="dark"] .info-card,
+[data-theme="dark"] .recuperacao-card,
+[data-theme="dark"] .exame-card{
+
+    background:#1e293b;
+
+    color:#f8fafc;
+
+    border-left:5px solid #4caf50;
+}
+
+[data-theme="dark"] details{
+    color:#f8fafc;
+}
+
+  details{
+
+    cursor:pointer;
+
+    padding:10px;
+
+    border-radius:10px;
+
+    background:rgba(46,125,50,.05);
+}
+
+summary{
+
+    font-weight:bold;
+
+    font-size:15px;
+
+    color:#2e7d32;
+
+    margin-bottom:10px;
 }
   
 </style>
@@ -1967,96 +2016,96 @@ function gerarDashboard(){
 
         <!-- COLUNA GERAL -->
 
-        <div class="dashboard-column">
+<div class="dashboard-column">
 
-            <div class="dashboard-panel">
+    <div class="dashboard-panel">
 
-                <h2>📅 Calendário Acadêmico</h2>
+        <h2>📋 Informações Gerais</h2>
 
-                <div class="info-card">
-                    📚 1º Semestre
-                    <br>
-                    Fevereiro → Julho
-                </div>
+        <div class="info-card">
+            🎉 Feriados Cadastrados
+            <strong>${FERIADOS.length}</strong>
+        </div>
 
-                <div class="info-card">
-                    📚 2º Semestre
-                    <br>
-                    Julho → Dezembro
-                </div>
+        <div class="info-card">
+            📚 1º Semestre
+            <br>
+            Fevereiro → Julho
+        </div>
 
-            </div>
-
-            <div class="dashboard-panel">
-
-                <h2>🎉 Feriados Cadastrados</h2>
-
-                <div class="dashboard-card">
-
-                    <table class="mini-table">
-
-                        <tbody>
-
-                            ${FERIADOS.map(f => `
-                                <tr>
-                                    <td>${f}</td>
-                                </tr>
-                            `).join("")}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-            <div class="dashboard-panel">
-
-                <h2>🔄 Recuperação Integrado</h2>
-
-                <div class="recuperacao-card">
-                    22/06 → 27/06
-                </div>
-
-                <div class="recuperacao-card">
-                    29/06 → 04/07
-                </div>
-
-                <div class="recuperacao-card">
-                    30/11 → 05/12
-                </div>
-
-                <div class="recuperacao-card">
-                    07/12 → 08/12
-                </div>
-
-            </div>
-
-            <div class="dashboard-panel">
-
-                <h2>📝 Exames</h2>
-
-                <div class="exame-card">
-                    Integrado<br>
-                    09/12 → 11/12
-                </div>
-
-                <div class="exame-card">
-                    Superior<br>
-                    29/06 → 04/07
-                </div>
-
-                <div class="exame-card">
-                    Superior<br>
-                    07/12 → 11/12
-                </div>
-
-            </div>
-
+        <div class="info-card">
+            📚 2º Semestre
+            <br>
+            Julho → Dezembro
         </div>
 
     </div>
+
+    <div class="dashboard-panel">
+
+        <h2>🔄 Recuperação Integrado</h2>
+
+        <div class="recuperacao-card">
+            22/06 → 04/07
+        </div>
+
+        <div class="recuperacao-card">
+            30/11 → 08/12
+        </div>
+
+    </div>
+
+    <div class="dashboard-panel">
+
+        <h2>📝 Exames</h2>
+
+        <div class="exame-card">
+            Integrado
+            <br>
+            09/12 → 11/12
+        </div>
+
+        <div class="exame-card">
+            Superior
+            <br>
+            29/06 → 04/07
+        </div>
+
+        <div class="exame-card">
+            Superior
+            <br>
+            07/12 → 11/12
+        </div>
+
+    </div>
+
+    <div class="dashboard-panel">
+
+        <details>
+
+            <summary>
+                🎉 Ver todos os feriados
+            </summary>
+
+            <table class="mini-table">
+
+                <tbody>
+
+                    ${FERIADOS.map(f=>`
+                        <tr>
+                            <td>${f}</td>
+                        </tr>
+                    `).join("")}
+
+                </tbody>
+
+            </table>
+
+        </details>
+
+    </div>
+
+</div>
     `;
 }
   
