@@ -440,6 +440,139 @@ tr.linha-vazia td{
 .tab-content.active{
   display:block;
 }
+
+  /* ==========================
+   DASHBOARD MODERNO
+========================== */
+
+.dashboard-header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.dashboard-header h1{
+    margin:0;
+    font-size:28px;
+}
+
+.dashboard-header p{
+    opacity:.7;
+    margin-top:5px;
+}
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:20px;
+    padding:20px;
+}
+
+.dashboard-column{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.dashboard-panel{
+    background:var(--surface);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:var(--shadow);
+}
+
+.dashboard-panel h2{
+    margin-top:0;
+    color:var(--primary);
+}
+
+.dashboard-card{
+    background:linear-gradient(
+        135deg,
+        #2e7d32,
+        #43a047
+    );
+    color:white;
+    border-radius:14px;
+    padding:15px;
+    margin-bottom:10px;
+}
+
+.dashboard-card strong{
+    display:block;
+    font-size:28px;
+    margin-top:5px;
+}
+
+.progress-wrap{
+    margin-top:10px;
+}
+
+.progress-bar{
+    height:14px;
+    border-radius:20px;
+    overflow:hidden;
+    background:#dcdcdc;
+}
+
+.progress-fill{
+    height:100%;
+    background:#2e7d32;
+}
+
+.progress-label{
+    margin-top:4px;
+    font-size:12px;
+    text-align:right;
+}
+
+.feriado-card{
+    background:var(--bg);
+    border-left:4px solid #ff9800;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:8px;
+}
+
+.info-card{
+    background:var(--bg);
+    border-left:4px solid var(--primary);
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:8px;
+}
+
+.recuperacao-card{
+    background:#fff3cd;
+    color:#7a4f00;
+    border-left:5px solid #ff9800;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:8px;
+}
+
+.exame-card{
+    background:#ffebee;
+    color:#b71c1c;
+    border-left:5px solid #d32f2f;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:8px;
+}
+
+@media(max-width:1100px){
+
+    .dashboard-grid{
+        grid-template-columns:1fr 1fr;
+    }
+}
+
+@media(max-width:768px){
+
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+}
+  
 </style>
 </head>
 
@@ -1667,17 +1800,184 @@ function abrirAba(id, botao){
 
 function gerarDashboard(){
 
-  const statsIntegrado =
-    calcularIndicadores(dadosIntegrado);
+    const integrado =
+        calcularIndicadores(dadosIntegrado);
 
-  const statsSuperior =
-    calcularIndicadores(dadosSuperior);
+    const superior =
+        calcularIndicadores(dadosSuperior);
 
-  document.getElementById("dashboardIntegrado").innerHTML =
-      cardDashboard("🎓 Integrado", statsIntegrado);
+    const agora =
+        new Date().toLocaleString("pt-BR");
 
-  document.getElementById("dashboardSuperior").innerHTML =
-      cardDashboard("🎓 Superior", statsSuperior);
+    document.getElementById(
+        "dashboardContent"
+    ).innerHTML = `
+
+    <div class="dashboard-header">
+
+        <h1>📊 Dashboard Acadêmico 2026</h1>
+
+        <p>
+            Última atualização:
+            ${agora}
+        </p>
+
+    </div>
+
+    <div class="dashboard-grid">
+
+        <!-- INTEGRADO -->
+
+        <div class="dashboard-column">
+
+            <div class="dashboard-panel">
+
+                <h2>🎓 Integrado</h2>
+
+                <div class="dashboard-card">
+                    Dias Letivos
+                    <strong>
+                        ${integrado.diasLetivos}
+                    </strong>
+
+                    ${gerarBarraProgresso(
+                        integrado.diasLetivos,
+                        200
+                    )}
+                </div>
+
+                <div class="dashboard-card">
+                    Quantidade de Aulas
+                    <strong>${integrado.aulas}</strong>
+                </div>
+
+                <div class="dashboard-card">
+                    Aulas Vagas
+                    <strong>${integrado.vagas}</strong>
+                </div>
+
+                <div class="dashboard-card">
+                    Sábados Letivos
+                    <strong>${integrado.sabados}</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- SUPERIOR -->
+
+        <div class="dashboard-column">
+
+            <div class="dashboard-panel">
+
+                <h2>🎓 Superior</h2>
+
+                <div class="dashboard-card">
+                    Dias Letivos
+                    <strong>
+                        ${superior.diasLetivos}
+                    </strong>
+
+                    ${gerarBarraProgresso(
+                        superior.diasLetivos,
+                        100
+                    )}
+                </div>
+
+                <div class="dashboard-card">
+                    Quantidade de Aulas
+                    <strong>${superior.aulas}</strong>
+                </div>
+
+                <div class="dashboard-card">
+                    Aulas Vagas
+                    <strong>${superior.vagas}</strong>
+                </div>
+
+                <div class="dashboard-card">
+                    Sábados Letivos
+                    <strong>${superior.sabados}</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- GERAL -->
+
+        <div class="dashboard-column">
+
+            <div class="dashboard-panel">
+
+                <h2>📅 Informações Gerais</h2>
+
+                <div class="info-card">
+                    📚 1º Semestre
+                    <br>
+                    Fevereiro → Julho
+                </div>
+
+                <div class="info-card">
+                    📚 2º Semestre
+                    <br>
+                    Julho → Dezembro
+                </div>
+
+            </div>
+
+            <div class="dashboard-panel">
+
+                <h2>🎉 Feriados</h2>
+
+                ${FERIADOS.map(f=>`
+                    <div class="feriado-card">
+                        ${f}
+                    </div>
+                `).join("")}
+
+            </div>
+
+            <div class="dashboard-panel">
+
+                <h2>🔄 Recuperações</h2>
+
+                <div class="recuperacao-card">
+                    22/06/2026
+                </div>
+
+                <div class="recuperacao-card">
+                    29/06/2026
+                </div>
+
+                <div class="recuperacao-card">
+                    30/11/2026
+                </div>
+
+                <div class="recuperacao-card">
+                    07/12/2026
+                </div>
+
+            </div>
+
+            <div class="dashboard-panel">
+
+                <h2>📝 Exames</h2>
+
+                <div class="exame-card">
+                    29/06/2026
+                </div>
+
+                <div class="exame-card">
+                    07/12/2026
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    `;
 }
   
 function cardDashboard(titulo,d){
@@ -1793,6 +2093,31 @@ function calcularIndicadores(dados){
       vagas,
       sabados: sabadosComAula.size
   };
+}
+
+  function gerarBarraProgresso(valor,maximo){
+
+    const perc =
+        Math.min(
+            100,
+            ((valor/maximo)*100).toFixed(1)
+        );
+
+    return `
+        <div class="progress-wrap">
+
+            <div class="progress-bar">
+                <div class="progress-fill"
+                     style="width:${perc}%">
+                </div>
+            </div>
+
+            <div class="progress-label">
+                ${valor}/${maximo} (${perc}%)
+            </div>
+
+        </div>
+    `;
 }
   
 window.onload = async () => {
