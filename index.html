@@ -1628,6 +1628,146 @@ window.addEventListener("beforeunload", () => {
 
   botao.classList.add('active');
 }
+
+  function gerarDashboard(){
+
+  const statsIntegrado =
+    calcularIndicadores(dadosIntegrado);
+
+  const statsSuperior =
+    calcularIndicadores(dadosSuperior);
+
+  document.getElementById("dashboardContent").innerHTML = `
+      <div class="dashboard-grid">
+
+          ${cardDashboard(
+            "🎓 Integrado",
+            statsIntegrado
+          )}
+
+          ${cardDashboard(
+            "🎓 Superior",
+            statsSuperior
+          )}
+
+      </div>
+  `;
+}
+
+function cardDashboard(titulo,d){
+
+return `
+<div class="dash-card">
+
+<h2>${titulo}</h2>
+
+<div class="dash-item">
+  <span>Dias Letivos</span>
+  <strong>${d.diasLetivos}</strong>
+</div>
+
+<div class="dash-item">
+  <span>Quantidade de Aulas</span>
+  <strong>${d.aulas}</strong>
+</div>
+
+<div class="dash-item">
+  <span>Aulas Vagas</span>
+  <strong>${d.vagas}</strong>
+</div>
+
+<div class="dash-item">
+  <span>Sábados Letivos</span>
+  <strong>${d.sabados}</strong>
+</div>
+
+</div>
+`;
+}
+
+function calcularIndicadores(dados){
+
+  let diasLetivos = new Set();
+  let sabadosComAula = new Set();
+
+  let aulas = 0;
+  let vagas = 0;
+
+  const hoje = new Date();
+  hoje.setHours(23,59,59,999);
+
+  let ultimaData = "";
+
+  for(let i=1;i<dados.length;i++){
+
+      const row = dados[i];
+
+      if(row[0]) ultimaData = row[0];
+
+      const dataStr = ultimaData;
+      if(!dataStr) continue;
+
+      const [d,m,a] = dataStr.split('/');
+      const data = new Date(a,m-1,d);
+
+      // ignora datas futuras
+      if(data > hoje) continue;
+
+      // ignora feriados
+      if(isFeriado(dataStr)) continue;
+
+      const horario = normalizarTexto(row[1] || "");
+
+      // ignora linhas especiais
+      const linhaIgnorada =
+        horario.includes("INTERVALO") ||
+        horario.includes("[+]") ||
+        horario.includes("[R]") ||
+        horario.includes("*");
+
+      let temAulaNoDia = false;
+
+      if(!linhaIgnorada){
+
+          for(let j=2;j<row.length;j++){
+
+              const val = (row[j] || "").trim();
+
+              if(!val) continue;
+
+              temAulaNoDia = true;
+
+              aulas++;
+
+              const norm = normalizarTexto(val);
+
+              if(
+                  norm.includes("RESERVA ENSINO") ||
+                  norm.includes("ESTUDOS INDIVIDUAIS")
+              ){
+                  vagas++;
+              }
+          }
+      }
+
+      // 🔥 só conta o dia se tiver aula REAL
+      if(temAulaNoDia){
+          diasLetivos.add(dataStr);
+
+          // 🔥 sábado letivo real (com aula)
+          if(data.getDay() === 6){
+              sabadosComAula.add(dataStr);
+          }
+      }
+  }
+
+  return {
+      diasLetivos: diasLetivos.size,
+      aulas,
+      vagas,
+      sabados: sabadosComAula.size
+  };
+}
   
 window.onload=init;
 </script>
