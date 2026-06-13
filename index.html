@@ -963,6 +963,12 @@ async function init(){
   dadosGlobais = parseCSV(await res.text());
 
   processarDados();
+   await carregarIntegrado();
+    await carregarSuperior();
+
+    gerarDashboard();
+
+    abrirAba("dashboard");
 
   // 🔥 GARANTE verificação após tudo carregado
   setTimeout(() => {
