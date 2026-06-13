@@ -572,6 +572,94 @@ tr.linha-vazia td{
         grid-template-columns:1fr;
     }
 }
+
+  /* DASHBOARD */
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+    padding:20px;
+}
+
+.dashboard-column{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.dashboard-panel{
+    background:var(--surface);
+    border-radius:15px;
+    padding:15px;
+    box-shadow:var(--shadow);
+}
+
+.dashboard-panel h2{
+    margin-top:0;
+    color:var(--primary);
+}
+
+.dashboard-card,
+.info-card,
+.recuperacao-card,
+.exame-card{
+
+    background:rgba(46,125,50,.08);
+
+    padding:12px;
+
+    border-radius:10px;
+
+    margin-bottom:10px;
+
+    display:flex;
+    flex-direction:column;
+
+    gap:6px;
+}
+
+.dashboard-card strong{
+    font-size:22px;
+}
+
+.dashboard-header{
+    text-align:center;
+    padding:20px;
+}
+
+.progress-container{
+    width:100%;
+    height:12px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    background:#2e7d32;
+    border-radius:20px;
+}
+
+.mini-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+.mini-table td{
+    border-bottom:1px solid #ddd;
+    padding:5px;
+}
+
+@media(max-width:1000px){
+
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+
+}
   
 </style>
 </head>
@@ -1811,7 +1899,7 @@ function gerarDashboard(){
 
     <div class="dashboard-grid">
 
-        <!-- INTEGRADO -->
+        <!-- COLUNA INTEGRADO -->
 
         <div class="dashboard-column">
 
@@ -1821,14 +1909,8 @@ function gerarDashboard(){
 
                 <div class="dashboard-card">
                     Dias Letivos
-                    <strong>
-                        ${integrado.diasLetivos}
-                    </strong>
-
-                    ${gerarBarraProgresso(
-                        integrado.diasLetivos,
-                        200
-                    )}
+                    <strong>${integrado.diasLetivos}</strong>
+                    ${gerarBarraProgresso(integrado.diasLetivos,200)}
                 </div>
 
                 <div class="dashboard-card">
@@ -1850,7 +1932,7 @@ function gerarDashboard(){
 
         </div>
 
-        <!-- SUPERIOR -->
+        <!-- COLUNA SUPERIOR -->
 
         <div class="dashboard-column">
 
@@ -1860,14 +1942,8 @@ function gerarDashboard(){
 
                 <div class="dashboard-card">
                     Dias Letivos
-                    <strong>
-                        ${superior.diasLetivos}
-                    </strong>
-
-                    ${gerarBarraProgresso(
-                        superior.diasLetivos,
-                        100
-                    )}
+                    <strong>${superior.diasLetivos}</strong>
+                    ${gerarBarraProgresso(superior.diasLetivos,100)}
                 </div>
 
                 <div class="dashboard-card">
@@ -1889,13 +1965,13 @@ function gerarDashboard(){
 
         </div>
 
-        <!-- GERAL -->
+        <!-- COLUNA GERAL -->
 
         <div class="dashboard-column">
 
             <div class="dashboard-panel">
 
-                <h2>📅 Informações Gerais</h2>
+                <h2>📅 Calendário Acadêmico</h2>
 
                 <div class="info-card">
                     📚 1º Semestre
@@ -1913,34 +1989,46 @@ function gerarDashboard(){
 
             <div class="dashboard-panel">
 
-                <h2>🎉 Feriados</h2>
+                <h2>🎉 Feriados Cadastrados</h2>
 
-                ${FERIADOS.map(f=>`
-                    <div class="feriado-card">
-                        ${f}
-                    </div>
-                `).join("")}
+                <div class="dashboard-card">
+
+                    <table class="mini-table">
+
+                        <tbody>
+
+                            ${FERIADOS.map(f => `
+                                <tr>
+                                    <td>${f}</td>
+                                </tr>
+                            `).join("")}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
 
             </div>
 
             <div class="dashboard-panel">
 
-                <h2>🔄 Recuperações</h2>
+                <h2>🔄 Recuperação Integrado</h2>
 
                 <div class="recuperacao-card">
-                    22/06/2026
+                    22/06 → 27/06
                 </div>
 
                 <div class="recuperacao-card">
-                    29/06/2026
+                    29/06 → 04/07
                 </div>
 
                 <div class="recuperacao-card">
-                    30/11/2026
+                    30/11 → 05/12
                 </div>
 
                 <div class="recuperacao-card">
-                    07/12/2026
+                    07/12 → 08/12
                 </div>
 
             </div>
@@ -1950,11 +2038,18 @@ function gerarDashboard(){
                 <h2>📝 Exames</h2>
 
                 <div class="exame-card">
-                    29/06/2026
+                    Integrado<br>
+                    09/12 → 11/12
                 </div>
 
                 <div class="exame-card">
-                    07/12/2026
+                    Superior<br>
+                    29/06 → 04/07
+                </div>
+
+                <div class="exame-card">
+                    Superior<br>
+                    07/12 → 11/12
                 </div>
 
             </div>
@@ -2080,28 +2175,27 @@ function calcularIndicadores(dados){
   };
 }
 
-  function gerarBarraProgresso(valor,maximo){
+function gerarBarraProgresso(valor,total){
 
-    const perc =
+    const percentual =
         Math.min(
-            100,
-            ((valor/maximo)*100).toFixed(1)
+            (valor/total)*100,
+            100
         );
 
     return `
-        <div class="progress-wrap">
+        <div class="progress-container">
 
-            <div class="progress-bar">
-                <div class="progress-fill"
-                     style="width:${perc}%">
-                </div>
-            </div>
-
-            <div class="progress-label">
-                ${valor}/${maximo} (${perc}%)
+            <div
+                class="progress-bar"
+                style="width:${percentual}%">
             </div>
 
         </div>
+
+        <small>
+            ${percentual.toFixed(1)}%
+        </small>
     `;
 }
   
