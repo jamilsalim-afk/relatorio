@@ -1318,8 +1318,6 @@ async function init(){
 
     gerarDashboard();
 
-    abrirAba("dashboard");
-
   // 🔥 GARANTE verificação após tudo carregado
   setTimeout(() => {
     verificarMudancaAoAbrir();
@@ -2304,8 +2302,10 @@ window.onload = async () => {
 
   await init();
 
-  console.log("Integrado:", dadosIntegrado.length);
-  console.log("Superior:", dadosSuperior.length);
+  abrirAba(
+    "dashboard",
+    document.querySelector(".tab-btn")
+  );
 
   gerarDashboard();
 };
