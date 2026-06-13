@@ -636,12 +636,27 @@ color:white !important;
     color:var(--primary);
 }
 
-.dashboard-card,
+  .dashboard-panel{
+    color:var(--text);
+}
+
+.dashboard-panel strong{
+    color:inherit;
+}
+
+.info-card,
+.recuperacao-card,
+.exame-card{
+    color:var(--text);
+}
+
 .info-card,
 .recuperacao-card,
 .exame-card{
 
-    background:white;
+    background:var(--surface);
+
+    color:var(--text);
 
     border-left:5px solid #2e7d32;
 
@@ -658,6 +673,23 @@ color:white !important;
 
     gap:6px;
 }
+
+/* NÃO altera os cards coloridos */
+.dashboard-card{
+
+    padding:18px;
+
+    border-radius:14px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.12);
+
+    min-height:110px;
+}
+  
 .dashboard-card strong{
     font-size:22px;
 }
@@ -733,9 +765,22 @@ summary{
 
     font-size:15px;
 
-    color:#2e7d32;
+    color:var(--primary);
 
     margin-bottom:10px;
+}
+
+[data-theme="dark"] .dashboard-panel{
+    background:#1e293b;
+    color:#f8fafc;
+}
+
+[data-theme="dark"] .dashboard-panel h2{
+    color:#66bb6a;
+}
+
+[data-theme="dark"] summary{
+    color:#66bb6a;
 }
   
 </style>
