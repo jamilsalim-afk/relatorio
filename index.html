@@ -486,21 +486,36 @@ tr.linha-vazia td{
 }
 
 .dashboard-card{
-    background:linear-gradient(
-        135deg,
-        #2e7d32,
-        #43a047
-    );
-    color:white;
+    padding:18px;
     border-radius:14px;
-    padding:15px;
-    margin-bottom:10px;
+    color:white;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 4px 12px rgba(0,0,0,.12);
+    min-height:110px;
 }
 
 .dashboard-card strong{
     display:block;
-    font-size:28px;
-    margin-top:5px;
+    font-size:30px;
+    margin-top:10px;
+    font-weight:700;
+}
+
+.card-dias{
+    background:linear-gradient(135deg,#1976d2,#42a5f5);
+}
+
+.card-aulas{
+    background:linear-gradient(135deg,#2e7d32,#66bb6a);
+}
+
+.card-vagas{
+    background:linear-gradient(135deg,#ef6c00,#ffb74d);
+}
+
+.card-sabados{
+    background:linear-gradient(135deg,#7b1fa2,#ba68c8);
 }
 
 .progress-wrap{
@@ -1956,23 +1971,23 @@ function gerarDashboard(){
 
                 <h2>🎓 Integrado</h2>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card card-dias">
                     Dias Letivos
                     <strong>${integrado.diasLetivos}</strong>
                     ${gerarBarraProgresso(integrado.diasLetivos,200)}
                 </div>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card card-aulas">
                     Quantidade de Aulas
                     <strong>${integrado.aulas}</strong>
                 </div>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card card-vagas">
                     Aulas Vagas
                     <strong>${integrado.vagas}</strong>
                 </div>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card card-sabados">
                     Sábados Letivos
                     <strong>${integrado.sabados}</strong>
                 </div>
@@ -1989,23 +2004,23 @@ function gerarDashboard(){
 
                 <h2>🎓 Superior</h2>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card card-dias">
                     Dias Letivos
                     <strong>${superior.diasLetivos}</strong>
                     ${gerarBarraProgresso(superior.diasLetivos,100)}
                 </div>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card card-aulas">
                     Quantidade de Aulas
                     <strong>${superior.aulas}</strong>
                 </div>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card card-vagas">
                     Aulas Vagas
                     <strong>${superior.vagas}</strong>
                 </div>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card card-sabados">
                     Sábados Letivos
                     <strong>${superior.sabados}</strong>
                 </div>
@@ -2022,12 +2037,7 @@ function gerarDashboard(){
 
         <h2>📋 Informações Gerais</h2>
 
-        <div class="info-card">
-            🎉 Feriados Cadastrados
-            <strong>${FERIADOS.length}</strong>
-        </div>
-
-        <div class="info-card">
+       <div class="info-card">
             📚 1º Semestre
             <br>
             Fevereiro → Julho
@@ -2076,32 +2086,6 @@ function gerarDashboard(){
             <br>
             07/12 → 11/12
         </div>
-
-    </div>
-
-    <div class="dashboard-panel">
-
-        <details>
-
-            <summary>
-                🎉 Ver todos os feriados
-            </summary>
-
-            <table class="mini-table">
-
-                <tbody>
-
-                    ${FERIADOS.map(f=>`
-                        <tr>
-                            <td>${f}</td>
-                        </tr>
-                    `).join("")}
-
-                </tbody>
-
-            </table>
-
-        </details>
 
     </div>
 
