@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -404,52 +405,6 @@ tr.linha-vazia td{
 </div>
 </div>
 
-<div class="tabs-container">
-
-  <button class="tab-btn active"
-          onclick="abrirAba('dashboard',this)">
-          📊 Dashboard
-  </button>
-
-  <button class="tab-btn"
-          onclick="abrirAba('horarios',this)">
-          📅 Horários
-  </button>
-
-<button class="tab-btn"
-          onclick="abrirAba('sabados',this)">
-          📚 Sábados Letivos
-  </button>
-   
-<button class="tab-btn"
-          onclick="abrirAba('professores',this)">
-          👨‍🏫 Professores
-  </button>
-
-  <button class="tab-btn"
-          onclick="abrirAba('turmas',this)">
-          🏫 Turmas
-  </button>
-
-  <button class="tab-btn"
-          onclick="abrirAba('estatisticas',this)">
-          📈 Estatísticas
-  </button>
-
-<button id="btnTema">🌙</button>
-   
-</div>
-
-<div id="dashboard"
-     class="tab-content active">
-
-  <div id="dashboardContent"></div>
-
-</div>
-
-<div id="horarios"
-     class="tab-content">
-
 <div class="header-sticky">
 <div class="controls-card">
 <select id="selectModalidade" onchange="trocarModalidade()">
@@ -464,14 +419,15 @@ placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
 
 <button class="btn-pdf" onclick="exportarPDF()">📄 Baixe o PDF da Semana</button>
 
+<button id="btnTema">🌙</button>
 </div>
 </div>
 
 <div class="week-container">
 
 <!-- 🔥 AVISO DE SEMANA ESPECIAL -->
-<div id="alertaSemanaEspecial"></div>  
-  
+<div id="alertaSemanaEspecial"></div>
+
 <!-- 🔥 BOTÕES NOVOS -->
 <div id="botoesRelatorio"></div>
 
@@ -529,13 +485,6 @@ SUPERIOR:{id:'14ALXZgFIT68ee9ajuIdG63SpGVm0HyTjwp63-J6vRyg',gid:'669887707'}
 };
 
 let dadosGlobais=[],turmasDaPlanilha=[],semanasAgrupadas={};
-let dadosIntegrado = [];
-let dadosSuperior = [];
-
-let semanasIntegrado = {};
-let semanasSuperior = {};
-
-let listaProfessores = [];
 
   function deveCompararDia(dataStr){
 
@@ -861,9 +810,6 @@ async function init(){
   dadosGlobais = parseCSV(await res.text());
 
   processarDados();
-  await carregarDadosProfessor();
-
-preencherSemanasProfessor();
 
   // 🔥 GARANTE verificação após tudo carregado
   setTimeout(() => {
@@ -965,7 +911,7 @@ let alerta = '';
 
 if (
     modalidade === 'INTEGRADO' &&
-    (sem === '22/06/2026' || sem === '29/06/2026')
+    (sem === '22/06/2026' || sem === '29/06/2026' || sem === '30/11/2026' || sem === '07/12/2026')
 ) {
     alerta = `
     <div style="
@@ -985,7 +931,7 @@ if (
 
 if (
     modalidade === 'SUPERIOR' &&
-    sem === '29/06/2026'
+    (sem === '29/06/2026' || sem === '07/12/2026')
 ) {
     alerta = `
     <div style="
@@ -1521,315 +1467,6 @@ window.addEventListener("beforeunload", () => {
   }
 
 });
-
-async function carregarDadosProfessor(){
-
-    // INTEGRADO
-    let urlI =
-      `https://docs.google.com/spreadsheets/d/${SHEETS.INTEGRADO.id}/export?format=csv&gid=${SHEETS.INTEGRADO.gid}`;
-
-    let csvI = await fetch(urlI);
-    dadosIntegrado = parseCSV(await csvI.text());
-
-    // SUPERIOR
-    let urlS =
-      `https://docs.google.com/spreadsheets/d/${SHEETS.SUPERIOR.id}/export?format=csv&gid=${SHEETS.SUPERIOR.gid}`;
-
-    let csvS = await fetch(urlS);
-    dadosSuperior = parseCSV(await csvS.text());
-
-    semanasIntegrado = processarSemanasProfessor(dadosIntegrado);
-    semanasSuperior = processarSemanasProfessor(dadosSuperior);
-
-    gerarListaProfessores();
-}
-
-  function processarSemanasProfessor(dados){
-
-    let semanas = {};
-    let ultimaData = "";
-
-    for(let i=1;i<dados.length;i++){
-
-        let linha = [...dados[i]];
-
-        if(linha[0]) ultimaData = linha[0];
-
-        linha[0] = ultimaData;
-
-        if(!linha[0]) continue;
-
-        const [d,m,a] = linha[0].split('/');
-
-        const data = new Date(a,m-1,d);
-
-        const segunda = new Date(data);
-
-        segunda.setDate(
-            segunda.getDate() - segunda.getDay() + 1
-        );
-
-        const semana =
-            segunda.toLocaleDateString('pt-BR');
-
-        if(!semanas[semana]){
-            semanas[semana] = {
-                dias:{}
-            };
-        }
-
-        if(!semanas[semana].dias[linha[0]]){
-            semanas[semana].dias[linha[0]] = [];
-        }
-
-        semanas[semana].dias[linha[0]].push(linha);
-    }
-
-    return semanas;
-}
-
-  function gerarListaProfessores(){
-
-    let profs = [];
-
-    [dadosIntegrado,dadosSuperior].forEach(base=>{
-
-        for(let i=1;i<base.length;i++){
-
-            for(let j=2;j<base[i].length;j++){
-
-                let valor =
-                    (base[i][j] || "").trim();
-
-                if(!valor.includes(" - "))
-                    continue;
-
-                let partes =
-                    valor.split(" - ");
-
-                let professor =
-                    partes[partes.length-1].trim();
-
-                if(professor){
-                    profs.push(professor);
-                }
-            }
-        }
-
-    });
-
-    listaProfessores =
-      [...new Set(profs)].sort();
-
-    preencherSelectProfessor();
-}
-
-  function preencherSelectProfessor(){
-
-    const sel =
-      document.getElementById("selectProfessor");
-
-    sel.innerHTML =
-      '<option value="">Selecione</option>';
-
-    listaProfessores.forEach(p=>{
-
-        sel.innerHTML +=
-          `<option value="${p}">
-             ${p}
-           </option>`;
-    });
-}
-
-  function preencherSemanasProfessor(){
-
-    const sel =
-      document.getElementById(
-        "selectSemanaProfessor"
-      );
-
-    sel.innerHTML = "";
-
-    const semanas =
-      Object.keys(semanasIntegrado);
-
-    ordenarDatasBR(semanas);
-
-    semanas.forEach(s=>{
-
-        sel.innerHTML +=
-          `<option value="${s}">
-             Semana de ${s}
-           </option>`;
-    });
-
-}
-
-  function buscarAulasProfessor(){
-
-    const professor =
-      document.getElementById(
-        "selectProfessor"
-      ).value;
-
-    const semana =
-      document.getElementById(
-        "selectSemanaProfessor"
-      ).value;
-
-    let aulas = [];
-
-    [
-      {dados:dadosIntegrado,semanas:semanasIntegrado},
-      {dados:dadosSuperior,semanas:semanasSuperior}
-    ].forEach(base=>{
-
-        const dias =
-          base.semanas[semana]?.dias || {};
-
-        Object.keys(dias).forEach(dia=>{
-
-            dias[dia].forEach(linha=>{
-
-                const horario = linha[1];
-
-                for(let col=2;
-                    col<linha.length;
-                    col++){
-
-                    let valor =
-                      (linha[col] || "").trim();
-
-                    if(!valor.includes(" - "))
-                        continue;
-
-                    let partes =
-                      valor.split(" - ");
-
-                    let prof =
-                      partes[partes.length-1].trim();
-
-                    if(
-                      prof.toUpperCase() !==
-                      professor.toUpperCase()
-                    ) return;
-
-                    let disciplina =
-                      partes.slice(0,-1)
-                            .join(" - ");
-
-                    aulas.push({
-
-                        dia,
-
-                        horario,
-
-                        turma:
-                          base.dados[0][col],
-
-                        disciplina
-                    });
-                }
-
-            });
-
-        });
-
-    });
-
-    return aulas;
-}
-
-  function gerarGradeProfessor(){
-
-    const aulas =
-      buscarAulasProfessor();
-
-    const diasSemana = [
-      "SEGUNDA",
-      "TERÇA",
-      "QUARTA",
-      "QUINTA",
-      "SEXTA",
-      "SÁBADO"
-    ];
-
-    let horarios =
-      [...new Set(
-        aulas.map(a=>a.horario)
-      )];
-
-    let html = `
-      <table>
-        <tr>
-          <th>Horário</th>
-          ${diasSemana.map(d=>
-            `<th>${d}</th>`
-          ).join("")}
-        </tr>
-    `;
-
-    horarios.forEach(h=>{
-
-        html += `<tr>`;
-
-        html += `<td>${h}</td>`;
-
-        diasSemana.forEach(nomeDia=>{
-
-            let conteudo = "";
-
-            aulas.forEach(a=>{
-
-                const data =
-                  a.dia.split('/');
-
-                const d =
-                  new Date(
-                    data[2],
-                    data[1]-1,
-                    data[0]
-                  );
-
-                const nomes = [
-                  "DOMINGO",
-                  "SEGUNDA",
-                  "TERÇA",
-                  "QUARTA",
-                  "QUINTA",
-                  "SEXTA",
-                  "SÁBADO"
-                ];
-
-                if(
-                  nomes[d.getDay()]
-                    .startsWith(nomeDia)
-                  &&
-                  a.horario===h
-                ){
-
-                    conteudo += `
-                      <div>
-                        <b>${a.turma}</b><br>
-                        ${a.disciplina}
-                      </div>
-                    `;
-                }
-
-            });
-
-            html += `<td>${conteudo}</td>`;
-        });
-
-        html += `</tr>`;
-    });
-
-    html += `</table>`;
-
-    document.getElementById(
-      "gradeProfessor"
-    ).innerHTML = html;
-}
   
 window.onload=init;
 </script>
