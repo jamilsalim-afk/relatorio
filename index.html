@@ -945,6 +945,28 @@ return r;
 });
 }
 
+async function carregarIntegrado(){
+
+  const url =
+    `https://docs.google.com/spreadsheets/d/${SHEETS.INTEGRADO.id}/export?format=csv&gid=${SHEETS.INTEGRADO.gid}`;
+
+  const res = await fetch(url);
+
+  dadosIntegrado =
+    parseCSV(await res.text());
+}
+
+async function carregarSuperior(){
+
+  const url =
+    `https://docs.google.com/spreadsheets/d/${SHEETS.SUPERIOR.id}/export?format=csv&gid=${SHEETS.SUPERIOR.gid}`;
+
+  const res = await fetch(url);
+
+  dadosSuperior =
+    parseCSV(await res.text());
+}
+  
 async function init(){
 
   document.getElementById('searchProf').value = "";
@@ -1627,7 +1649,7 @@ window.addEventListener("beforeunload", () => {
 
 });
 
-  function abrirAba(id, botao){
+function abrirAba(id, botao){
 
   document.querySelectorAll('.tab-content')
     .forEach(el => el.classList.remove('active'));
@@ -1638,10 +1660,12 @@ window.addEventListener("beforeunload", () => {
   document.getElementById(id)
     .classList.add('active');
 
-  botao.classList.add('active');
+  if(botao){
+      botao.classList.add('active');
+  }
 }
 
-  function gerarDashboard(){
+function gerarDashboard(){
 
   const statsIntegrado =
     calcularIndicadores(dadosIntegrado);
@@ -1649,23 +1673,13 @@ window.addEventListener("beforeunload", () => {
   const statsSuperior =
     calcularIndicadores(dadosSuperior);
 
-  document.getElementById("dashboardContent").innerHTML = `
-      <div class="dashboard-grid">
+  document.getElementById("dashboardIntegrado").innerHTML =
+      cardDashboard("🎓 Integrado", statsIntegrado);
 
-          ${cardDashboard(
-            "🎓 Integrado",
-            statsIntegrado
-          )}
-
-          ${cardDashboard(
-            "🎓 Superior",
-            statsSuperior
-          )}
-
-      </div>
-  `;
+  document.getElementById("dashboardSuperior").innerHTML =
+      cardDashboard("🎓 Superior", statsSuperior);
 }
-
+  
 function cardDashboard(titulo,d){
 
 return `
