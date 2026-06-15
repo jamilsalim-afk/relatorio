@@ -2488,6 +2488,49 @@ function obterSabadosSemana() {
   return resultado;
 }
 
+  // ======================================================
+// 🔥 ABREVIAR TURMA
+// ======================================================
+function abreviarTurma(nome) {
+
+  return nome
+
+    .replaceAll("1 SEMESTRE", "1º")
+    .replaceAll("2 SEMESTRE", "2º")
+    .replaceAll("3 SEMESTRE", "3º")
+    .replaceAll("4 SEMESTRE", "4º")
+    .replaceAll("5 SEMESTRE", "5º")
+    .replaceAll("6 SEMESTRE", "6º")
+    .replaceAll("7 SEMESTRE", "7º")
+    .replaceAll("8 SEMESTRE", "8º")
+    .replaceAll("9 SEMESTRE", "9º")
+    .replaceAll("10 SEMESTRE", "10º")
+
+    .replaceAll("AGROECOLOGIA", "AGROEC.")
+    .replaceAll("AGROPECUÁRIA", "AGROP.")
+    .replaceAll("AGROPECUARIA", "AGROP.")
+    .replaceAll("INFORMÁTICA", "INFO")
+    .replaceAll("INFORMATICA", "INFO")
+
+    .replaceAll("GEOGRAFIA", "GEO.")
+    .replaceAll("MATEMÁTICA", "MAT.")
+    .replaceAll("MATEMATICA", "MAT.")
+    .replaceAll("AGRONEGÓCIO", "AGRONEG.")
+    .replaceAll("AGRONEGOCIO", "AGRONEG.")
+    .replaceAll("ZOOTECNIA", "ZOO.")
+    .replaceAll("AGRONOMIA", "AGRON.")
+
+    .replaceAll("MATUTINO", "MAT.")
+    .replaceAll("VESPERTINO", "VESP.")
+    .replaceAll("NOTURNO", "NOT.")
+
+    .replaceAll("INTEGRADO", "INT.")
+    .replaceAll("SUPERIOR", "SUP.")
+
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // ======================================================
 // 🔥 RENDER ABA SÁBADOS
 // ======================================================
