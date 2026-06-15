@@ -1832,7 +1832,20 @@ function renderizarTabela(){
 
     container.innerHTML = html;
 
-    criarBotoesDias();
+const busca =
+    normalizarTexto(
+        document.getElementById('searchProf')?.value || ''
+    );
+
+if (busca) {
+    container.style.width = "fit-content";
+    container.style.maxWidth = "100%";
+} else {
+    container.style.width = "";
+    container.style.maxWidth = "";
+}
+
+criarBotoesDias();
 }
 
   const coresPDF = {
