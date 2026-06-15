@@ -934,7 +934,7 @@ placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
               Modalidade
             </label>
 
-           <select id="selectModalidade" onchange="trocarModalidade()">
+           <select id="selectModalidade" onchange="trocarModalidadeSabados()">
 <option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
 <option value="SUPERIOR">CURSOS SUPERIORES</option>
 </select>
@@ -2126,6 +2126,10 @@ function abrirAba(id, botao){
 
   if(botao){
       botao.classList.add('active');
+  }
+
+  if(id === "sabados"){
+      renderSabados();
   }
 }
 
