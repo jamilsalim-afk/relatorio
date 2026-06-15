@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 - V2.0
 </div>
 
 </div>
@@ -1561,13 +1561,15 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
     const filtrados = dados.filter(linha => {
 
-        const prof = normalizarProfessor(linha.professor);
-        return prof === profNorm && linha.semana === semanaSelecionada;
+        const prof = normalizarProfessor(linha[0]); // professor
+        const semana = (linha[1] || "").toString().trim();
+
+        return prof === profNorm && semana === semanaSelecionada;
     });
 
     const dias = ["SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
 
-    const horarios = [...new Set(filtrados.map(l => l.horario))].sort();
+    const horarios = [...new Set(filtrados.map(l => l[3]))].sort();
 
     const grade = {};
 
@@ -1578,14 +1580,14 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
     filtrados.forEach(l => {
 
-        const dia = normalizarDia(l.dia);
-        const hora = l.horario;
+        const dia = normalizarDia(l[2]); // dia
+        const hora = l[3]; // horário
 
         if (!grade[hora]) return;
         if (!dia) return;
 
         grade[hora][dia] =
-            `${l.disciplina || ""} - ${l.turma || ""}`;
+            `${l[4] || ""} - ${l[5] || ""}`;
     });
 
     return { dias, horarios, grade };
