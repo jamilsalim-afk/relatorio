@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 - V2.0
 </div>
 
 </div>
@@ -951,8 +951,20 @@ placeholder="🔍 Professor ou disciplina..." onkeyup="renderSabados()">
 </div>
 
 <div id="professores" class="tab-content">
-<div style="padding:30px">
-🚧 Em construção
+
+<div class="header-sticky">
+<div class="controls-card">
+<select id="selectProfessor" onchange="renderProfessor()">
+<option value="">Selecione um professor</option>
+</select>
+<select id="selectSemanaProfessor" onchange="renderProfessor()">
+</select>
+
+</div>
+</div>
+<div class="week-container">
+<div class="table-responsive" id="tabelaProfessor">
+</div>
 </div>
 </div>
 
@@ -976,13 +988,15 @@ BR 364, Km 228, Lote 2-A - Zona Rural<br>
 <script>
 const SHEETS={
 INTEGRADO:{id:'1j33kiPqwtzZNuvkBgYDaIiXZvVMY_J0qWAtRfYGdnD8',gid:'1357770092'},
-SUPERIOR:{id:'14ALXZgFIT68ee9ajuIdG63SpGVm0HyTjwp63-J6vRyg',gid:'669887707'}
+SUPERIOR:{id:'14ALXZgFIT68ee9ajuIdG63SpGVm0HyTjwp63-J6vRyg',gid:'669887707'},
+PROFESSORES:{id:'1IDjs0oS6lQBGDrL7ja1Ge0vaBdNCNIULDH7J5p89c5s',gid:'1694280391'}
 };
 
 let dadosGlobais = [];
 
 let dadosIntegrado = [];
 let dadosSuperior = [];
+let dadosProfessores = [];
 
 let turmasDaPlanilha = [];
 let semanasAgrupadas = {};
@@ -1286,6 +1300,17 @@ async function carregarSuperior(){
   dadosSuperior =
     parseCSV(await res.text());
 }
+
+async function carregarProfessores(){
+
+    const url =
+      `https://docs.google.com/spreadsheets/d/${SHEETS.PROFESSORES.id}/export?format=csv&gid=${SHEETS.PROFESSORES.gid}`;
+
+    const res = await fetch(url);
+
+    dadosProfessores =
+      parseCSV(await res.text());
+}
   
 async function init(){
 
@@ -1306,9 +1331,12 @@ async function init(){
 
   processarDados();
    await carregarIntegrado();
-    await carregarSuperior();
+   await carregarSuperior();
+   await carregarProfessores();
 
     gerarDashboard();
+ carregarListaProfessores();
+ carregarSemanasProfessor();
 
   // 🔥 GARANTE verificação após tudo carregado
   setTimeout(() => {
@@ -1394,6 +1422,78 @@ const v=(r[idx]||"").trim();
 return v && v!=="-" && !r[1].toUpperCase().includes("INTERVALO");
 }));
 });
+}
+
+function carregarListaProfessores(){
+
+    const select =
+        document.getElementById("selectProfessor");
+
+    if(!select) return;
+
+    select.innerHTML =
+        '<option value="">Selecione um professor</option>';
+
+    dadosProfessores
+    .slice(1)
+    .sort((a,b)=>
+        a[0].localeCompare(b[0],'pt-BR')
+    )
+    .forEach(linha=>{
+
+        const nome = linha[0];
+
+        select.innerHTML += `
+            <option value="${nome}">
+                ${nome}
+            </option>
+        `;
+
+    });
+
+}
+
+function carregarSemanasProfessor(){
+
+    const origem =
+        document.getElementById('selectSemana');
+
+    const destino =
+        document.getElementById('selectSemanaProfessor');
+
+    if(!origem || !destino) return;
+
+    destino.innerHTML =
+        origem.innerHTML;
+
+    destino.value =
+        origem.value;
+}
+
+function renderProfessor(){
+
+    const container =
+        document.getElementById("tabelaProfessor");
+
+    if(!container) return;
+
+    const professor =
+        document.getElementById("selectProfessor").value;
+
+    const semana =
+        document.getElementById("selectSemanaProfessor").value;
+
+    container.innerHTML = `
+        <div style="
+            padding:30px;
+            text-align:center;
+            font-size:18px;
+            font-weight:600;
+        ">
+            Professor: ${professor || "Nenhum"}<br>
+            Semana: ${semana || "Nenhuma"}
+        </div>
+    `;
 }
 
 function renderizarTabela(){
