@@ -925,65 +925,52 @@ placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
   </div>
 
 <div id="sabados" class="tab-content">
-<div style="padding:30px">
-        <div class="controls-grid">
 
-          <div class="control-box">
+    <div class="header-sticky">
 
-            <label>
-              Modalidade
-            </label>
+        <div class="controls-card">
 
-           <select id="selectModalidade" onchange="trocarModalidadeSabados()">
-<option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
-<option value="SUPERIOR">CURSOS SUPERIORES</option>
-</select>
+            <select id="selectModalidadeSabados"
+                    onchange="trocarModalidadeSabados()">
 
-          </div>
+                <option value="INTEGRADO">
+                    CURSOS TÉCNICOS INTEGRADOS
+                </option>
 
-          <div class="control-box control-grow">
+                <option value="SUPERIOR">
+                    CURSOS SUPERIORES
+                </option>
 
-            <label>
-              Busca
-            </label>
+            </select>
 
             <input
-              type="text"
-              id="searchSabados"
-              class="search-input"
-              placeholder="Professor ou disciplina..."
-              onkeyup="renderSabados()"
-            />
+                type="text"
+                id="searchSabados"
+                class="search-box"
+                placeholder="🔍 Professor ou disciplina..."
+                onkeyup="renderSabados()"
+            >
 
-          </div>
-
-          <button
-            class="action-btn"
-            onclick="exportarPDFSabados()"
-          >
-
-            <i class="fa-solid fa-file-pdf"></i>
-
-            <span>
-              PDF
-            </span>
-
-          </button>
+            <button
+                class="btn-pdf"
+                onclick="exportarPDFSabados()"
+            >
+                📄 Baixe o PDF dos Sábados
+            </button>
 
         </div>
 
-        <div class="table-card">
+    </div>
 
-          <!-- IMPORTANTE -->
-          <!-- MANTIDO O ID ORIGINAL -->
-          <div
+    <div class="week-container">
+
+        <div
             class="table-responsive"
             id="containerSabados"
-          ></div>
+        ></div>
 
-        </div>
+    </div>
 
-</div>
 </div>
 
 <div id="professores" class="tab-content">
