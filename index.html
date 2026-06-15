@@ -1554,16 +1554,16 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
     const profNorm = normalizarProfessor(professorSelecionado);
 
-    const filtrados = dados.filter((linha, i) => {
+    const filtrados = dados.filter(linha => {
 
-        console.log("LINHA", i, linha);
+    const prof = normalizarProfessor(linha[0]);
 
-        const prof = normalizarProfessor(linha[0]);
+    const selectProf = normalizarProfessor(
+        (professorSelecionado || "").toString()
+    );
 
-        console.log("PROF EXTRAIDO:", prof, " | ORIGINAL:", linha[0]);
-
-        return prof === profNorm;
-    });
+    return prof === selectProf;
+});
 
     console.log("FILTRADOS FINAL:", filtrados);
 
