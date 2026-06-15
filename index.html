@@ -180,7 +180,8 @@ select,
 }
 
 .table-responsive{
-  width:100%;
+  display:inline-block;
+  max-width:100%;
   overflow-x:auto;
   background:var(--surface);
   border-radius:8px;
@@ -1691,9 +1692,22 @@ function renderizarTabela(){
         </div>`;
     }
 
-    container.innerHTML = html;
+container.innerHTML = html;
 
-  criarBotoesDias();
+if (busca) {
+
+    container.style.display = "inline-block";
+    container.style.width = "auto";
+
+} else {
+
+    container.style.display = "block";
+    container.style.width = "100%";
+
+}
+
+criarBotoesDias();
+  
 }
 
   const coresPDF = {
