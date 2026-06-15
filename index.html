@@ -1321,10 +1321,8 @@ async function init(){
 
   const mod = document.getElementById('selectModalidade').value;
 
-  // 🔥 LIMPA PAINEL ao trocar
   document.getElementById("painelAlteracoes").style.display = "none";
 
-  // 🔥 FLAG DE TROCA
   window.trocouModalidade = true;
 
   const url = `https://docs.google.com/spreadsheets/d/${SHEETS[mod].id}/export?format=csv&gid=${SHEETS[mod].gid}`;
@@ -1333,19 +1331,25 @@ async function init(){
   dadosGlobais = parseCSV(await res.text());
 
   processarDados();
-   await carregarIntegrado();
-   await carregarSuperior();
-   await carregarProfessores();
 
-    gerarDashboard();
- carregarListaProfessores();
- carregarSemanasProfessor();
+  // 🔥 IMPORTANTE: GARANTIR BASE PRONTA
+  await carregarIntegrado();
+  await carregarSuperior();
 
-  // 🔥 GARANTE verificação após tudo carregado
+  // 🔥 AGORA monta base única e índice
+  montarBaseGeral(dadosIntegrado, dadosSuperior);
+
+  // 🔥 SÓ DEPOIS disso UI
+  carregarListaProfessores();
+  carregarSemanasProfessor();
+
+  gerarDashboard();
+
   setTimeout(() => {
     verificarMudancaAoAbrir();
   }, 200);
 }
+  
 function getCursoInfo(t){
 t=t.toUpperCase();
 if(t.includes("AGROEC")) return {cl:"c-agroec",rgb:[232,245,233]};
