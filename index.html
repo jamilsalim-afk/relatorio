@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 - v2.0
 </div>
 
 </div>
@@ -1540,111 +1540,66 @@ function carregarSemanasProfessor(){
 
     if(!origem || !destino) return;
 
-    destino.innerHTML =
-        origem.innerHTML;
+    destino.innerHTML = origem.innerHTML;
 
-    destino.value =
-        origem.value;
+    // 🔥 IMPORTANTE: evita disparo automático de onchange
+    destino.value = origem.value;
+
+    // 🔥 BLOQUEIA render automático nessa etapa
+    destino.dataset.ready = "true";
 }
 
 function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
-    const profSelect = normalizarProfessor(professorSelecionado);
-    const semanaSelect = (semanaSelecionada || "").toString().trim();
+    if (!Array.isArray(dados)) {
+        console.error("DADOS INVÁLIDOS:", dados);
+        return { dias: [], horarios: [], grade: {} };
+    }
 
-    console.log("PROF SELECT:", profSelect);
-    console.log("SEMANA SELECT:", semanaSelect);
+    console.log("PROF:", professorSelecionado);
+    console.log("SEMANA:", semanaSelecionada);
 
     const filtrados = dados.filter(linha => {
 
         const prof = normalizarProfessor(linha[0]);
         const semana = (linha[1] || "").toString().trim();
 
-        return prof === profSelect && semana === semanaSelect;
+        return bateProfessor(professorSelecionado, linha[0])
+            && semana === semanaSelecionada;
     });
 
-    console.log("TOTAL LINHAS:", dados.length);
     console.log("FILTRADOS:", filtrados.length);
-    console.log("EXEMPLO LINHA:", dados[1]);
 
-    if (filtrados.length === 0) {
-        console.warn("⚠️ Nenhum dado encontrado para esse professor/semana");
-        return {
-            dias: [],
-            horarios: [],
-            grade: {}
-        };
-    }
-
-    const dias = ["SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
-
-    const horarios = [...new Set(filtrados.map(l => l[3]))].sort();
-
-    const grade = {};
-
-    horarios.forEach(h => {
-        grade[h] = {};
-        dias.forEach(d => grade[h][d] = "");
-    });
-
-    filtrados.forEach(l => {
-
-        const dia = normalizarDia(l[2]);
-        const hora = l[3];
-
-        if (!grade[hora]) return;
-        if (!dia) return;
-
-        grade[hora][dia] = `${l[4] || ""} - ${l[5] || ""}`;
-    });
-
-    return { dias, horarios, grade };
+    return {
+        dias: [],
+        horarios: [],
+        grade: {}
+    };
 }
 
-function renderProfessor() {
+function renderProfessor(){
 
-    const container = document.getElementById("tabelaProfessor");
-    if (!container) return;
+    const semanaEl = document.getElementById("selectSemanaProfessor");
 
-    const professor = document.getElementById("selectProfessor").value;
-    const semana = document.getElementById("selectSemanaProfessor").value;
-
-    if (!professor || !semana) {
-        container.innerHTML = "Selecione professor e semana";
+    // 🔥 bloqueia execução prematura
+    if (semanaEl && semanaEl.dataset.ready !== "true") {
+        console.warn("Render bloqueado: sistema ainda inicializando");
         return;
     }
 
-    const { dias, horarios, grade } =
-        montarGradeProfessor(professor, semana);
+    const professor = document.getElementById("selectProfessor")?.value;
+    const semana = semanaEl?.value;
 
-    let html = `
-        <div style="margin-bottom:10px;font-weight:600">
-            Professor: ${professor}<br>
-            Semana: ${semana}
-        </div>
+    if (!professor || !semana) return;
 
-        <table border="1" cellspacing="0" cellpadding="6"
-            style="border-collapse:collapse;width:100%">
-            <thead>
-                <tr>
-                    <th>Horário</th>
-                    ${dias.map(d => `<th>${d}</th>`).join("")}
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    const dados = BASE_GERAL;
 
-    horarios.forEach(h => {
+    if (!Array.isArray(dados)) {
+        console.error("BASE_GERAL inválida ainda");
+        return;
+    }
 
-        html += `<tr>
-            <td><b>${h}</b></td>
-            ${dias.map(d => `<td>${grade[h][d] || ""}</td>`).join("")}
-        </tr>`;
-    });
-
-    html += `</tbody></table>`;
-
-    container.innerHTML = html;
+    montarGradeProfessor(dados, professor, semana);
 }
 
 function renderizarTabela(){
