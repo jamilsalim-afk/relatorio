@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 - V2.0
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -1465,13 +1465,13 @@ function normalizarDia(texto) {
     console.log("BASE CARREGADA:", BASE_GERAL.length);
 }
 
-  function montarIndiceProfessores() {
+ function montarIndiceProfessores() {
 
     INDEX_PROFESSOR = {};
 
     BASE_GERAL.forEach(linha => {
 
-        const prof = normalizarProfessor(linha[0]);
+        const prof = linha[0]; // 🔥 SEM normalizar aqui
 
         if (!INDEX_PROFESSOR[prof]) {
             INDEX_PROFESSOR[prof] = [];
@@ -1479,8 +1479,6 @@ function normalizarDia(texto) {
 
         INDEX_PROFESSOR[prof].push(linha);
     });
-
-    console.log("ÍNDICE PROFESSORES OK");
 }
 
 function carregarListaProfessores() {
@@ -1491,17 +1489,15 @@ function carregarListaProfessores() {
     select.innerHTML = '<option value="">Selecione um professor</option>';
 
     Object.keys(INDEX_PROFESSOR)
-        .sort((a,b) => a.localeCompare(b,'pt-BR'))
+        .sort((a, b) => a.localeCompare(b, 'pt-BR'))
         .forEach(nome => {
             select.innerHTML += `<option value="${nome}">${nome}</option>`;
         });
 }
 
-  function getDadosProfessor(professor, semana) {
+function getDadosProfessor(professor, semana) {
 
-    const profNorm = normalizarProfessor(professor);
-
-    const dados = INDEX_PROFESSOR[profNorm] || [];
+    const dados = INDEX_PROFESSOR[professor] || [];
 
     return dados.filter(linha => linha[1] === semana);
 }
@@ -1553,7 +1549,7 @@ function montarGradeProfessor(professor, semana) {
     return { dias, horarios, grade };
 }
 
-  function renderProfessor() {
+function renderProfessor() {
 
     const container = document.getElementById("tabelaProfessor");
     if (!container) return;
