@@ -189,7 +189,6 @@ select,
 }
 
 table{
-  min-width:1400px;
   width:100%;
   border-collapse:separate;
   border-spacing:0;
@@ -1573,7 +1572,7 @@ function renderizarTabela(){
             return;
         }
 
-        html += `<table class="${busca ? 'tabela-busca' : ''}">`;
+        html += `<table>`;
 
         html += `
         <tr class="day-divider">
@@ -1694,21 +1693,6 @@ function renderizarTabela(){
     }
 
 container.innerHTML = html;
-
-const weekContainer =
-    container.closest('.week-container');
-
-if (busca) {
-
-    weekContainer.style.display = "inline-block";
-    weekContainer.style.width = "auto";
-
-} else {
-
-    weekContainer.style.display = "";
-    weekContainer.style.width = "";
-
-}
 
 criarBotoesDias();
   
