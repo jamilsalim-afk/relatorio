@@ -1452,31 +1452,21 @@ function normalizarProfessor(nome) {
 
 function carregarListaProfessores(){
 
-    const select =
-        document.getElementById("selectProfessor");
-
+    const select = document.getElementById("selectProfessor");
     if(!select) return;
 
-    select.innerHTML =
-        '<option value="">Selecione um professor</option>';
+    select.innerHTML = '<option value="">Selecione um professor</option>';
 
-    dadosProfessores
-    .slice(1)
-    .sort((a,b)=>
-        a[0].localeCompare(b[0],'pt-BR')
-    )
-    .forEach(linha=>{
+    const professoresValidos = dadosProfessores
+        .map(l => l[0])
+        .filter(p => p && p.toString().trim() !== "");
 
-        const nome = linha[0];
+    const unicos = [...new Set(professoresValidos)]
+        .sort((a,b) => a.localeCompare(b,'pt-BR'));
 
-        select.innerHTML += `
-            <option value="${nome}">
-                ${nome}
-            </option>
-        `;
-
+    unicos.forEach(nome => {
+        select.innerHTML += `<option value="${nome}">${nome}</option>`;
     });
-
 }
 
 function carregarSemanasProfessor(){
