@@ -1530,147 +1530,214 @@ return v && v!=="-" && !r[1].toUpperCase().includes("INTERVALO");
 }
 
 function renderizarTabela(){
+
     const sem = document.getElementById('selectSemana').value;
     const dias = semanasAgrupadas[sem].dias;
     const container = document.getElementById('tabelaHorario');
 
-  // 🔥 AVISOS DE SEMANAS ESPECIAIS
+    // 🔥 AVISOS DE SEMANAS ESPECIAIS
 
-const modalidade =
-    document.getElementById('selectModalidade').value;
+    const modalidade =
+        document.getElementById('selectModalidade').value;
 
-let alerta = '';
+    let alerta = '';
 
-if (
-    modalidade === 'INTEGRADO' &&
-    (sem === '22/06/2026' || sem === '29/06/2026' || sem === '30/11/2026' || sem === '07/12/2026')
-) {
-    alerta = `
-    <div style="
-        background:#fff3cd;
-        border:3px solid #ff9800;
-        color:#7a4f00;
-        padding:15px;
-        margin-bottom:10px;
-        border-radius:8px;
-        font-weight:bold;
-        text-align:center;
-        font-size:18px;
-    ">
-        ⚠️ ATENÇÃO: ESTA É UMA SEMANA DE RECUPERAÇÃO DOS CURSOS TÉCNICOS INTEGRADOS
-    </div>`;
-}
+    if (
+        modalidade === 'INTEGRADO' &&
+        (sem === '22/06/2026' || sem === '29/06/2026' || sem === '30/11/2026' || sem === '07/12/2026')
+    ) {
+        alerta = `
+        <div style="
+            background:#fff3cd;
+            border:3px solid #ff9800;
+            color:#7a4f00;
+            padding:15px;
+            margin-bottom:10px;
+            border-radius:8px;
+            font-weight:bold;
+            text-align:center;
+            font-size:18px;
+        ">
+            ⚠️ ATENÇÃO: ESTA É UMA SEMANA DE RECUPERAÇÃO DOS CURSOS TÉCNICOS INTEGRADOS
+        </div>`;
+    }
 
-if (
-    modalidade === 'SUPERIOR' &&
-    (sem === '29/06/2026' || sem === '07/12/2026')
-) {
-    alerta = `
-    <div style="
-        background:#ffebee;
-        border:3px solid #d32f2f;
-        color:#b71c1c;
-        padding:15px;
-        margin-bottom:10px;
-        border-radius:8px;
-        font-weight:bold;
-        text-align:center;
-        font-size:18px;
-    ">
-        🚨 ATENÇÃO: ESTA É UMA SEMANA DE EXAMES DOS CURSOS SUPERIORES
-    </div>`;
-}
+    if (
+        modalidade === 'SUPERIOR' &&
+        (sem === '29/06/2026' || sem === '07/12/2026')
+    ) {
+        alerta = `
+        <div style="
+            background:#ffebee;
+            border:3px solid #d32f2f;
+            color:#b71c1c;
+            padding:15px;
+            margin-bottom:10px;
+            border-radius:8px;
+            font-weight:bold;
+            text-align:center;
+            font-size:18px;
+        ">
+            🚨 ATENÇÃO: ESTA É UMA SEMANA DE EXAMES DOS CURSOS SUPERIORES
+        </div>`;
+    }
 
-document.getElementById('alertaSemanaEspecial').innerHTML = alerta;
+    document.getElementById('alertaSemanaEspecial').innerHTML = alerta;
 
-    const turmasAtivas = document.getElementById('selectModalidade').value === "SUPERIOR"
-        ? getTurmasAtivasNaSemana(dias)
-        : turmasDaPlanilha;
+    let turmasAtivas =
+        document.getElementById('selectModalidade').value === "SUPERIOR"
+            ? getTurmasAtivasNaSemana(dias)
+            : [...turmasDaPlanilha];
 
-    const nomes = ["DOMINGO","SEGUNDA-FEIRA","TERÇA-FEIRA","QUARTA-FEIRA","QUINTA-FEIRA","SEXTA-FEIRA","SÁBADO"];
+    const nomes = [
+        "DOMINGO",
+        "SEGUNDA-FEIRA",
+        "TERÇA-FEIRA",
+        "QUARTA-FEIRA",
+        "QUINTA-FEIRA",
+        "SEXTA-FEIRA",
+        "SÁBADO"
+    ];
+
+    // ======================================================
+    // 🔍 FILTRO DE PROFESSOR/DISCIPLINA
+    // ======================================================
+
+    const busca = normalizarTexto(
+        document.getElementById('searchProf')?.value || ''
+    );
+
+    if (busca.length >= 3) {
+
+        turmasAtivas = turmasAtivas.filter(turma => {
+
+            const idx =
+                dadosGlobais[0].indexOf(turma);
+
+            return Object.values(dias).some(linhas => {
+
+                return linhas.some(r => {
+
+                    const valor =
+                        normalizarTexto(
+                            (r[idx] || '').trim()
+                        );
+
+                    return valor.includes(busca);
+
+                });
+
+            });
+
+        });
+
+    }
 
     let html = "";
 
     // 🔥 Regras de destaque
     const regrasDestaque = [
-    { match: v => v.includes("RESERVA ENSINO"), classe: "reserva-ensino" },
-    { match: v => v.includes("PPS/ATENDIMENTO"), classe: "pps" },
-    { match: v => v.includes("ESTUDOS INDIVIDUAIS"), classe: "estudos" },
-    { match: v => v.includes("REUNIAO DE SERVIDORES"), classe: "reuniao" },
-    { match: v => v.includes("CAED") || v.includes("PRE-CONSELHO"), classe: "caed" },
-    { match: v => v.includes("_REP -"), classe: "reposicao" }
-];
+        { match: v => v.includes("RESERVA ENSINO"), classe: "reserva-ensino" },
+        { match: v => v.includes("PPS/ATENDIMENTO"), classe: "pps" },
+        { match: v => v.includes("ESTUDOS INDIVIDUAIS"), classe: "estudos" },
+        { match: v => v.includes("REUNIAO DE SERVIDORES"), classe: "reuniao" },
+        { match: v => v.includes("CAED") || v.includes("PRE-CONSELHO"), classe: "caed" },
+        { match: v => v.includes("_REP -"), classe: "reposicao" }
+    ];
 
     Object.keys(dias).forEach(dia => {
+
         const p = dia.split('/');
         const dObj = new Date(p[2], p[1]-1, p[0]);
 
-        if (isFeriado(dia)){
-            html += `<table>
+        if (isFeriado(dia)) {
+
+            html += `
+            <table>
                 <tr class="day-divider">
-                    <td colspan="${turmasAtivas.length+1}">
+                    <td colspan="${turmasAtivas.length + 1}">
                         ${nomes[dObj.getDay()]} - ${dia}
                     </td>
                 </tr>
+
                 <tr>
-                    <td colspan="${turmasAtivas.length+1}" class="feriado">
+                    <td colspan="${turmasAtivas.length + 1}" class="feriado">
                         FERIADO
                     </td>
                 </tr>
             </table><br>`;
+
             return;
         }
 
         html += `<table>`;
-        html += `<tr class="day-divider">
-                    <td colspan="${turmasAtivas.length+1}">
-                        ${nomes[dObj.getDay()]} - ${dia}
-                    </td>
-                 </tr>`;
 
-        html += `<tr>
-                    <th class="time-col">Horário</th>`;
+        html += `
+        <tr class="day-divider">
+            <td colspan="${turmasAtivas.length + 1}">
+                ${nomes[dObj.getDay()]} - ${dia}
+            </td>
+        </tr>`;
+
+        html += `
+        <tr>
+            <th class="time-col">Horário</th>`;
 
         turmasAtivas.forEach(t => {
-            html += `<th class="${getCursoInfo(t).cl}">${t}</th>`;
+            html += `
+            <th class="${getCursoInfo(t).cl}">
+                ${t}
+            </th>`;
         });
 
         html += `</tr>`;
 
         dias[dia].forEach(r => {
-            const isInt = r[1].toUpperCase().includes("INTERVALO");
-            const linhaVazia = r.slice(2).every(v => !v || v.trim() === "");
 
-            html += `<tr class="${isInt ? 'intervalo' : ''} ${linhaVazia ? 'linha-vazia' : ''}">
-                        <td class="time-col">${r[1]}</td>`;
+            const isInt =
+                r[1].toUpperCase().includes("INTERVALO");
+
+            const linhaVazia =
+                r.slice(2).every(v => !v || v.trim() === "");
+
+            html += `
+            <tr class="${isInt ? 'intervalo' : ''} ${linhaVazia ? 'linha-vazia' : ''}">
+                <td class="time-col">${r[1]}</td>`;
 
             turmasAtivas.forEach(t => {
-                const idx = dadosGlobais[0].indexOf(t);
-                let val = (r[idx] || "").trim();
+
+                const idx =
+                    dadosGlobais[0].indexOf(t);
+
+                let val =
+                    (r[idx] || "").trim();
 
                 let classesExtras = [];
 
-const valNorm = normalizarTexto(val);
+                const valNorm =
+                    normalizarTexto(val);
 
-regrasDestaque.forEach(regra => {
-    if (regra.match(valNorm)) {
-        classesExtras.push(regra.classe);
-    }
-});
-              
-                // 🔥 manter regras antigas
-               if (
-    val.includes("[+]") ||
-    val.includes("*") ||
-    val.includes("[R]") ||
-    valNorm.includes("INTERVALO")
-) {
-    classesExtras.push("marcacao-extra");
-}
+                regrasDestaque.forEach(regra => {
 
-                html += `<td class="aula-cell ${getCursoInfo(t).cl} ${classesExtras.join(" ")}">
-                            ${val}
-                         </td>`;
+                    if (regra.match(valNorm)) {
+                        classesExtras.push(regra.classe);
+                    }
+
+                });
+
+                if (
+                    val.includes("[+]") ||
+                    val.includes("*") ||
+                    val.includes("[R]") ||
+                    valNorm.includes("INTERVALO")
+                ) {
+                    classesExtras.push("marcacao-extra");
+                }
+
+                html += `
+                <td class="aula-cell ${getCursoInfo(t).cl} ${classesExtras.join(" ")}">
+                    ${val}
+                </td>`;
             });
 
             html += `</tr>`;
@@ -1680,7 +1747,8 @@ regrasDestaque.forEach(regra => {
     });
 
     container.innerHTML = html;
-  criarBotoesDias();
+
+    criarBotoesDias();
 }
 
   const coresPDF = {
