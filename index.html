@@ -1695,15 +1695,18 @@ function renderizarTabela(){
 
 container.innerHTML = html;
 
+const weekContainer =
+    container.closest('.week-container');
+
 if (busca) {
 
-    container.style.display = "inline-block";
-    container.style.width = "auto";
+    weekContainer.style.display = "inline-block";
+    weekContainer.style.width = "auto";
 
 } else {
 
-    container.style.display = "block";
-    container.style.width = "100%";
+    weekContainer.style.display = "";
+    weekContainer.style.width = "";
 
 }
 
