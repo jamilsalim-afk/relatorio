@@ -928,54 +928,25 @@ placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
 <div class="table-responsive" id="tabelaHorario"></div>
 </div>
 
-  </div>
+</div>
 
 <div id="sabados" class="tab-content">
+<div class="header-sticky">
+<div class="controls-card">
+<select id="selectModalidadeSabados" onchange="trocarModalidadeSabados()">
+<option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
+<option value="SUPERIOR">CURSOS SUPERIORES</option></select>
 
-    <div class="header-sticky">
+<input type="text" id="searchSabados" class="search-box"
+placeholder="🔍 Professor ou disciplina..." onkeyup="renderSabados()">
 
-        <div class="controls-card">
+<button class="btn-pdf" onclick="exportarPDFSabados()">📄 Baixe o PDF dos Sábados</button>
+</div>
+</div>
 
-            <select id="selectModalidadeSabados"
-                    onchange="trocarModalidadeSabados()">
-
-                <option value="INTEGRADO">
-                    CURSOS TÉCNICOS INTEGRADOS
-                </option>
-
-                <option value="SUPERIOR">
-                    CURSOS SUPERIORES
-                </option>
-
-            </select>
-
-            <input
-                type="text"
-                id="searchSabados"
-                class="search-box"
-                placeholder="🔍 Professor ou disciplina..."
-                onkeyup="renderSabados()"
-            >
-
-            <button
-                class="btn-pdf"
-                onclick="exportarPDFSabados()"
-            >
-                📄 Baixe o PDF dos Sábados
-            </button>
-
-        </div>
-
-    </div>
-
-    <div class="week-container">
-
-        <div
-            class="table-responsive"
-            id="containerSabados"
-        ></div>
-
-    </div>
+<div class="week-container">
+<div class="table-responsive" id="containerSabados"></div>
+</div>
 
 </div>
 
@@ -1277,117 +1248,7 @@ function isFeriado(d){return FERIADOS.includes(d);}
 
 /* 🔥 NOVA FUNÇÃO (BUSCA COM HIGHLIGHT) */
 function filtrarProfessor(){
-
-    const termo =
-        document.getElementById('searchProf')
-        .value
-        .trim()
-        .toUpperCase();
-
     renderizarTabela();
-
-    if(!termo) return;
-
-    document.querySelectorAll('#tabelaHorario table')
-    .forEach(tabela=>{
-
-        const linhas =
-            tabela.querySelectorAll('tr');
-
-        if(linhas.length < 3){
-            return;
-        }
-
-        const cabecalho = linhas[1];
-
-        const colunasVisiveis = new Set();
-
-        let tabelaTemProfessor = false;
-
-        /* procura professor */
-
-        linhas.forEach((linha, idx)=>{
-
-            if(idx < 2) return;
-
-            linha.querySelectorAll('td').forEach((celula,col)=>{
-
-                if(
-                    celula.innerText
-                    .toUpperCase()
-                    .includes(termo)
-                ){
-                    colunasVisiveis.add(col);
-                    tabelaTemProfessor = true;
-                }
-
-            });
-
-        });
-
-        /* esconde dia inteiro */
-
-        if(!tabelaTemProfessor){
-
-            tabela.style.display = "none";
-            return;
-
-        }
-
-        /* mantém dia */
-
-        tabela.style.display = "";
-
-        /* filtra linhas */
-
-        linhas.forEach((linha, idx)=>{
-
-            if(idx < 2) return;
-
-            let encontrou = false;
-
-            linha.querySelectorAll('td')
-            .forEach(td=>{
-
-                if(
-                    td.innerText
-                    .toUpperCase()
-                    .includes(termo)
-                ){
-                    encontrou = true;
-                }
-
-            });
-
-            linha.style.display =
-                encontrou ? "" : "none";
-
-        });
-
-        /* filtra colunas */
-
-        linhas.forEach((linha, idx)=>{
-
-            const celulas =
-                linha.children;
-
-            for(let c=0;c<celulas.length;c++){
-
-                if(
-                    c===0 ||
-                    colunasVisiveis.has(c)
-                ){
-                    celulas[c].style.display="";
-                }else{
-                    celulas[c].style.display="none";
-                }
-
-            }
-
-        });
-
-    });
-
 }
 
 function parseCSV(text){
