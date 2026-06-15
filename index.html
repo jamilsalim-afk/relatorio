@@ -196,6 +196,12 @@ table{
   table-layout:fixed;
 }
 
+table.tabela-busca{
+  min-width:auto !important;
+  width:auto !important;
+  table-layout:auto !important;
+}
+
 th,
 td{
   border:1px solid var(--border);
@@ -1705,7 +1711,7 @@ function renderizarTabela(){
             return;
         }
 
-        html += `<table>`;
+        html += `<table class="${busca ? 'tabela-busca' : ''}">`;
 
         html += `
         <tr class="day-divider">
