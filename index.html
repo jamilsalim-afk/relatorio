@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 - v2.0
 </div>
 
 </div>
@@ -1457,25 +1457,32 @@ function normalizarDia(texto) {
     return "";
 }
 
-  function montarBaseGeral(integrado, superior) {
+function montarBaseGeral(integrado, superior) {
 
     BASE_GERAL = [
-        ...integrado,
-        ...superior
+        ...(integrado || []),
+        ...(superior || [])
     ];
+
+    // 🔥 REMOVE HEADER OU LINHAS INVÁLIDAS
+    BASE_GERAL = BASE_GERAL.filter(linha => {
+        return linha && linha[0] && linha[0] !== "NOME_EXIBICAO";
+    });
 
     montarIndiceProfessores();
 
-    console.log("BASE CARREGADA:", BASE_GERAL.length);
+    console.log("BASE OK:", BASE_GERAL.length);
 }
 
- function montarIndiceProfessores() {
+function montarIndiceProfessores() {
 
     INDEX_PROFESSOR = {};
 
     BASE_GERAL.forEach(linha => {
 
-        const prof = linha[0]; // 🔥 SEM normalizar aqui
+        const prof = (linha[0] || "").toString().trim();
+
+        if (!prof) return;
 
         if (!INDEX_PROFESSOR[prof]) {
             INDEX_PROFESSOR[prof] = [];
@@ -1492,11 +1499,13 @@ function carregarListaProfessores() {
 
     select.innerHTML = '<option value="">Selecione um professor</option>';
 
-    Object.keys(INDEX_PROFESSOR)
-        .sort((a, b) => a.localeCompare(b, 'pt-BR'))
-        .forEach(nome => {
-            select.innerHTML += `<option value="${nome}">${nome}</option>`;
-        });
+    const nomes = Object.keys(INDEX_PROFESSOR)
+        .filter(n => n && n !== "NOME_EXIBICAO")
+        .sort((a,b) => a.localeCompare(b,'pt-BR'));
+
+    nomes.forEach(nome => {
+        select.innerHTML += `<option value="${nome}">${nome}</option>`;
+    });
 }
 
 function getDadosProfessor(professor, semana) {
