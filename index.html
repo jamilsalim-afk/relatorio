@@ -1547,15 +1547,38 @@ function carregarSemanasProfessor(){
         origem.value;
 }
 
-function montarGradeProfessor(professor, semana) {
+function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
-    const dados = getDadosProfessor(professor, semana);
+    const profSelect = normalizarProfessor(professorSelecionado);
+    const semanaSelect = (semanaSelecionada || "").toString().trim();
 
-    const dias = ["SEGUNDA","TERÇA","QUARTA","QUINTA","SEXTA","SÁBADO"];
+    console.log("PROF SELECT:", profSelect);
+    console.log("SEMANA SELECT:", semanaSelect);
 
-    const horarios = [...new Set(
-        dados.map(l => l[3]).filter(Boolean)
-    )].sort();
+    const filtrados = dados.filter(linha => {
+
+        const prof = normalizarProfessor(linha[0]);
+        const semana = (linha[1] || "").toString().trim();
+
+        return prof === profSelect && semana === semanaSelect;
+    });
+
+    console.log("TOTAL LINHAS:", dados.length);
+    console.log("FILTRADOS:", filtrados.length);
+    console.log("EXEMPLO LINHA:", dados[1]);
+
+    if (filtrados.length === 0) {
+        console.warn("⚠️ Nenhum dado encontrado para esse professor/semana");
+        return {
+            dias: [],
+            horarios: [],
+            grade: {}
+        };
+    }
+
+    const dias = ["SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
+
+    const horarios = [...new Set(filtrados.map(l => l[3]))].sort();
 
     const grade = {};
 
@@ -1564,12 +1587,13 @@ function montarGradeProfessor(professor, semana) {
         dias.forEach(d => grade[h][d] = "");
     });
 
-    dados.forEach(l => {
+    filtrados.forEach(l => {
 
         const dia = normalizarDia(l[2]);
         const hora = l[3];
 
-        if (!grade[hora] || !dia) return;
+        if (!grade[hora]) return;
+        if (!dia) return;
 
         grade[hora][dia] = `${l[4] || ""} - ${l[5] || ""}`;
     });
