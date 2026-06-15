@@ -1311,8 +1311,11 @@ async function carregarProfessores(){
       `https://docs.google.com/spreadsheets/d/${SHEETS.PROFESSORES.id}/export?format=csv&gid=${SHEETS.PROFESSORES.gid}`;
 
     const res = await fetch(url);
+    const text = await res.text();
 
-    const raw = parseCSV(await res.text());
+    const raw = parseCSV(text);
+
+    console.log("PROF RAW:", raw);
 
     dadosProfessores = raw;
 
@@ -1320,6 +1323,8 @@ async function carregarProfessores(){
         .slice(1)
         .map(l => l[0])
         .filter(n => n && n.trim() !== "");
+
+    console.log("LISTA PROFESSORES:", listaProfessores);
 }
   
 async function init(){
@@ -1339,14 +1344,14 @@ async function init(){
 
   processarDados();
 
-  // 🔥 IMPORTANTE: GARANTIR BASE PRONTA
   await carregarIntegrado();
   await carregarSuperior();
 
-  // 🔥 AGORA monta base única e índice
+  // 🔥 FALTAVA AQUI
+  await carregarProfessores();
+
   montarBaseGeral(dadosIntegrado, dadosSuperior);
 
-  // 🔥 SÓ DEPOIS disso UI
   carregarListaProfessores();
   carregarSemanasProfessor();
 
