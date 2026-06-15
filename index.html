@@ -1557,49 +1557,31 @@ function renderProfessor(){
 
 function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
+    console.log("=== DEBUG BRUTO ===");
+    console.log("DADOS COMPLETOS:", dados);
+    console.log("LINHA 0:", dados[0]);
+    console.log("LINHA 1:", dados[1]);
+
     const profNorm = normalizarProfessor(professorSelecionado);
 
-    const filtrados = dados.filter(linha => {
+    const filtrados = dados.filter((linha, i) => {
 
-    const prof = normalizarProfessor(linha[0]);
+        console.log("LINHA", i, linha);
 
-    const semanaLinha = (linha[1] || "")
-        .toString()
-        .toUpperCase()
-        .trim();
+        const prof = normalizarProfessor(linha[0]);
 
-    const semanaSelect = (semanaSelecionada || "")
-        .toString()
-        .toUpperCase()
-        .trim();
+        console.log("PROF EXTRAIDO:", prof, " | ORIGINAL:", linha[0]);
 
-    return prof === profNorm && semanaLinha.includes(semanaSelect);
-});
-
-    const dias = ["SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
-
-    const horarios = [...new Set(filtrados.map(l => l[3]))].sort();
-
-    const grade = {};
-
-    horarios.forEach(h => {
-        grade[h] = {};
-        dias.forEach(d => grade[h][d] = "");
+        return prof === profNorm;
     });
 
-    filtrados.forEach(l => {
+    console.log("FILTRADOS FINAL:", filtrados);
 
-        const dia = normalizarDia(l[2]); // dia
-        const hora = l[3]; // horário
-
-        if (!grade[hora]) return;
-        if (!dia) return;
-
-        grade[hora][dia] =
-            `${l[4] || ""} - ${l[5] || ""}`;
-    });
-
-    return { dias, horarios, grade };
+    return {
+        dias: [],
+        horarios: [],
+        grade: {}
+    };
 }
 
 function renderizarTabela(){
