@@ -1535,8 +1535,6 @@ function renderizarTabela(){
     const dias = semanasAgrupadas[sem].dias;
     const container = document.getElementById('tabelaHorario');
 
-    // 🔥 AVISOS DE SEMANAS ESPECIAIS
-
     const modalidade =
         document.getElementById('selectModalidade').value;
 
@@ -1544,7 +1542,12 @@ function renderizarTabela(){
 
     if (
         modalidade === 'INTEGRADO' &&
-        (sem === '22/06/2026' || sem === '29/06/2026' || sem === '30/11/2026' || sem === '07/12/2026')
+        (
+            sem === '22/06/2026' ||
+            sem === '29/06/2026' ||
+            sem === '30/11/2026' ||
+            sem === '07/12/2026'
+        )
     ) {
         alerta = `
         <div style="
@@ -1564,7 +1567,10 @@ function renderizarTabela(){
 
     if (
         modalidade === 'SUPERIOR' &&
-        (sem === '29/06/2026' || sem === '07/12/2026')
+        (
+            sem === '29/06/2026' ||
+            sem === '07/12/2026'
+        )
     ) {
         alerta = `
         <div style="
@@ -1584,10 +1590,45 @@ function renderizarTabela(){
 
     document.getElementById('alertaSemanaEspecial').innerHTML = alerta;
 
+    const busca =
+        normalizarTexto(
+            document.getElementById('searchProf')?.value || ''
+        );
+
     let turmasAtivas =
-        document.getElementById('selectModalidade').value === "SUPERIOR"
+        modalidade === "SUPERIOR"
             ? getTurmasAtivasNaSemana(dias)
             : [...turmasDaPlanilha];
+
+    // ======================================================
+    // 🔥 FILTRO - OCULTAR TURMAS SEM OCORRÊNCIA
+    // ======================================================
+
+    if (busca) {
+
+        turmasAtivas = turmasAtivas.filter(turma => {
+
+            const idx =
+                dadosGlobais[0].indexOf(turma);
+
+            return Object.values(dias).some(linhas => {
+
+                return linhas.some(r => {
+
+                    const val =
+                        normalizarTexto(
+                            r[idx] || ""
+                        );
+
+                    return val.includes(busca);
+
+                });
+
+            });
+
+        });
+
+    }
 
     const nomes = [
         "DOMINGO",
@@ -1599,43 +1640,6 @@ function renderizarTabela(){
         "SÁBADO"
     ];
 
-    // ======================================================
-    // 🔍 FILTRO DE PROFESSOR/DISCIPLINA
-    // ======================================================
-
-    const busca = normalizarTexto(
-        document.getElementById('searchProf')?.value || ''
-    );
-
-    if (busca.length >= 3) {
-
-        turmasAtivas = turmasAtivas.filter(turma => {
-
-            const idx =
-                dadosGlobais[0].indexOf(turma);
-
-            return Object.values(dias).some(linhas => {
-
-                return linhas.some(r => {
-
-                    const valor =
-                        normalizarTexto(
-                            (r[idx] || '').trim()
-                        );
-
-                    return valor.includes(busca);
-
-                });
-
-            });
-
-        });
-
-    }
-
-    let html = "";
-
-    // 🔥 Regras de destaque
     const regrasDestaque = [
         { match: v => v.includes("RESERVA ENSINO"), classe: "reserva-ensino" },
         { match: v => v.includes("PPS/ATENDIMENTO"), classe: "pps" },
@@ -1645,10 +1649,41 @@ function renderizarTabela(){
         { match: v => v.includes("_REP -"), classe: "reposicao" }
     ];
 
+    let html = "";
+
     Object.keys(dias).forEach(dia => {
 
         const p = dia.split('/');
-        const dObj = new Date(p[2], p[1]-1, p[0]);
+        const dObj = new Date(
+            p[2],
+            p[1] - 1,
+            p[0]
+        );
+
+        // ======================================================
+        // 🔥 FILTRO - OCULTAR HORÁRIOS SEM OCORRÊNCIA
+        // ======================================================
+
+        let linhas = dias[dia];
+
+        if (busca) {
+
+            linhas = linhas.filter(r => {
+
+                return r.some(c =>
+                    normalizarTexto(
+                        String(c || "")
+                    ).includes(busca)
+                );
+
+            });
+
+            // 🔥 OCULTA DIA INTEIRO
+            if (!linhas.length) {
+                return;
+            }
+
+        }
 
         if (isFeriado(dia)) {
 
@@ -1684,38 +1719,47 @@ function renderizarTabela(){
             <th class="time-col">Horário</th>`;
 
         turmasAtivas.forEach(t => {
+
             html += `
-            <th class="${getCursoInfo(t).cl}">
-                ${t}
+            <th
+                class="${getCursoInfo(t).cl}"
+                title="${t}"
+            >
+                ${typeof abreviarTurma === 'function'
+                    ? abreviarTurma(t)
+                    : t}
             </th>`;
         });
 
         html += `</tr>`;
 
-        dias[dia].forEach(r => {
+        linhas.forEach(r => {
+
+            const horario = r[1] || "";
 
             const isInt =
-                r[1].toUpperCase().includes("INTERVALO");
-
-            const linhaVazia =
-                r.slice(2).every(v => !v || v.trim() === "");
+                horario.toUpperCase().includes("INTERVALO");
 
             html += `
-            <tr class="${isInt ? 'intervalo' : ''} ${linhaVazia ? 'linha-vazia' : ''}">
-                <td class="time-col">${r[1]}</td>`;
+            <tr class="${isInt ? 'intervalo' : ''}">
+                <td class="time-col">${horario}</td>`;
 
-            turmasAtivas.forEach(t => {
+            turmasAtivas.forEach(turma => {
 
                 const idx =
-                    dadosGlobais[0].indexOf(t);
+                    dadosGlobais[0].indexOf(turma);
 
                 let val =
                     (r[idx] || "").trim();
 
-                let classesExtras = [];
-
                 const valNorm =
                     normalizarTexto(val);
+
+                let classesExtras = [];
+
+                const contemBusca =
+                    busca &&
+                    valNorm.includes(busca);
 
                 regrasDestaque.forEach(regra => {
 
@@ -1734,17 +1778,51 @@ function renderizarTabela(){
                     classesExtras.push("marcacao-extra");
                 }
 
+                // ======================================================
+                // 🔥 MESMO EFEITO DOS SÁBADOS
+                // ======================================================
+
+                if (busca) {
+
+                    if (contemBusca) {
+                        classesExtras.push("highlight");
+                    } else {
+                        classesExtras.push("opaco");
+                    }
+
+                }
+
                 html += `
-                <td class="aula-cell ${getCursoInfo(t).cl} ${classesExtras.join(" ")}">
+                <td class="
+                    aula-cell
+                    ${getCursoInfo(turma).cl}
+                    ${classesExtras.join(" ")}
+                ">
                     ${val}
                 </td>`;
             });
 
             html += `</tr>`;
+
         });
 
         html += `</table><br>`;
+
     });
+
+    if (!html) {
+
+        html = `
+        <div style="
+            padding:20px;
+            background:white;
+            border-radius:10px;
+            text-align:center;
+            font-weight:600;
+        ">
+            Nenhum resultado encontrado.
+        </div>`;
+    }
 
     container.innerHTML = html;
 
