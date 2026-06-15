@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 - v2.0
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -1311,8 +1311,15 @@ async function carregarProfessores(){
 
     const res = await fetch(url);
 
-    dadosProfessores =
-      parseCSV(await res.text());
+    const raw = parseCSV(await res.text());
+
+    dadosProfessores = raw;
+
+    // 🔥 cria lista limpa de nomes
+    window.listaProfessores = raw
+        .slice(1)
+        .map(l => l[0])
+        .filter(n => n && n.trim() !== "");
 }
   
 async function init(){
@@ -1492,20 +1499,18 @@ function montarIndiceProfessores() {
     });
 }
 
-function carregarListaProfessores() {
+function carregarListaProfessores(){
 
     const select = document.getElementById("selectProfessor");
     if (!select) return;
 
     select.innerHTML = '<option value="">Selecione um professor</option>';
 
-    const nomes = Object.keys(INDEX_PROFESSOR)
-        .filter(n => n && n !== "NOME_EXIBICAO")
-        .sort((a,b) => a.localeCompare(b,'pt-BR'));
-
-    nomes.forEach(nome => {
-        select.innerHTML += `<option value="${nome}">${nome}</option>`;
-    });
+    listaProfessores
+        .sort((a,b) => a.localeCompare(b,'pt-BR'))
+        .forEach(nome => {
+            select.innerHTML += `<option value="${nome}">${nome}</option>`;
+        });
 }
 
 function getDadosProfessor(professor, semana) {
