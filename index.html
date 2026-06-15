@@ -200,7 +200,7 @@ table{
 table.tabela-busca{
   min-width:auto !important;
   width:auto !important;
-  table-layout:auto !important;
+  table-layout:fixed !important;
 }
 
 th,
@@ -1590,9 +1590,10 @@ function renderizarTabela(){
 
             html += `
             <th
-                class="${getCursoInfo(t).cl}"
-                title="${t}"
-            >
+    class="${getCursoInfo(t).cl}"
+    title="${t}"
+    style="width:180px"
+>
                 ${typeof abreviarTurma === 'function'
                     ? abreviarTurma(t)
                     : t}
