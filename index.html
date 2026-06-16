@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 - v
 </div>
 
 </div>
@@ -1608,7 +1608,6 @@ function montarBaseGeral(integrado, superior) {
 
     montarIndiceProfessores();
 }
-
  
 function carregarListaProfessores() {
 
@@ -1644,13 +1643,52 @@ function carregarListaProfessores() {
     );
 }
 
+function traduzirProfessor(nomeCompleto) {
+
+    if (!nomeCompleto) return "";
+
+    const nomeNorm =
+        normalizarProfessor(nomeCompleto);
+
+    for (let i = 1; i < dadosProfessores.length; i++) {
+
+        const nomeExibicao =
+            normalizarProfessor(
+                dadosProfessores[i][0]
+            );
+
+        const variacao =
+            normalizarProfessor(
+                dadosProfessores[i][1]
+            );
+
+        if (nomeExibicao === nomeNorm) {
+            return variacao;
+        }
+    }
+
+    return nomeNorm;
+}
+  
 function getDadosProfessor(professor, semana) {
 
-    const dados = INDEX_PROFESSOR[professor] || [];
+    const profCurto =
+        traduzirProfessor(professor);
 
-    return dados.filter(linha => linha[1] === semana);
+    return (
+        INDEX_PROFESSOR[profCurto] || []
+    ).filter(aula => {
+
+        const data =
+            aula.data;
+
+        const semanaAula =
+            obterInicioSemana(data);
+
+        return semanaAula === semana;
+    });
 }
-
+  
 function carregarSemanasProfessor(){
 
     const origem =
@@ -1721,6 +1759,29 @@ function renderProfessor(){
     }
 
     montarGradeProfessor(dados, professor, semana);
+}
+
+  function obterInicioSemana(dataBR) {
+
+    const [d,m,a] =
+        dataBR.split("/");
+
+    const dt =
+        new Date(a,m-1,d);
+
+    const diaSemana =
+        dt.getDay();
+
+    const ajuste =
+        diaSemana === 0
+            ? -6
+            : 1 - diaSemana;
+
+    dt.setDate(
+        dt.getDate() + ajuste
+    );
+
+    return dt.toLocaleDateString("pt-BR");
 }
 
 function renderizarTabela(){
