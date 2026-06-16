@@ -1561,13 +1561,22 @@ return v && v!=="-" && !r[1].toUpperCase().includes("INTERVALO");
 }
 
 function normalizarProfessor(nome) {
+
     if (!nome) return "";
 
     return nome
         .toString()
         .toUpperCase()
+
+        // remove [R], [EX], [REP], [+] etc
         .replace(/\[.*?\]/g, "")
+
+        // remove *
+        .replace(/\*/g, "")
+
+        // remove espaços duplicados
         .replace(/\s+/g, " ")
+
         .trim();
 }
 
