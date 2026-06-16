@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 - v2.0
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -1004,6 +1004,12 @@ let semanasAgrupadas = [];
 
 let BASE_GERAL = [];
 let INDEX_PROFESSOR = {};
+
+let semanasIntegrado = {};
+let semanasSuperior = {};
+
+let turmasIntegrado = [];
+let turmasSuperior = [];
 
   function deveCompararDia(dataStr){
 
@@ -1433,6 +1439,52 @@ if(semanasAgrupadas[semanaAtual]){
 renderizarTabela();
 }
 
+function processarBaseModalidade(dados) {
+
+    const semanas = {};
+
+    const turmas =
+        dados[0]
+        .slice(2)
+        .filter(t => t);
+
+    let ultima = "";
+
+    for(let i = 1; i < dados.length; i++) {
+
+        let r = [...dados[i]];
+
+        if(r[0]) ultima = r[0];
+
+        r[0] = ultima;
+
+        if(!r[0]) continue;
+
+        const [d,m,a] = r[0].split('/');
+
+        const dt = new Date(a,m-1,d);
+
+        const seg = new Date(
+            dt.setDate(
+                dt.getDate() - dt.getDay() + 1
+            )
+        ).toLocaleDateString('pt-BR');
+
+        if(!semanas[seg])
+            semanas[seg] = { dias:{} };
+
+        if(!semanas[seg].dias[r[0]])
+            semanas[seg].dias[r[0]] = [];
+
+        semanas[seg].dias[r[0]].push(r);
+    }
+
+    return {
+        semanas,
+        turmas
+    };
+}
+  
 function getTurmasAtivasNaSemana(dias){
 return turmasDaPlanilha.filter(t=>{
 const idx=dadosGlobais[0].indexOf(t);
@@ -1472,18 +1524,34 @@ function normalizarDia(texto) {
 function montarBaseGeral(integrado, superior) {
 
     BASE_GERAL = [
-        ...(integrado || []),
-        ...(superior || [])
+        ...integrado,
+        ...superior
     ];
 
-    // 🔥 REMOVE HEADER OU LINHAS INVÁLIDAS
-    BASE_GERAL = BASE_GERAL.filter(linha => {
-        return linha && linha[0] && linha[0] !== "NOME_EXIBICAO";
-    });
+    const procIntegrado =
+        processarBaseModalidade(integrado);
+
+    const procSuperior =
+        processarBaseModalidade(superior);
+
+    semanasIntegrado =
+        procIntegrado.semanas;
+
+    semanasSuperior =
+        procSuperior.semanas;
+
+    turmasIntegrado =
+        procIntegrado.turmas;
+
+    turmasSuperior =
+        procSuperior.turmas;
 
     montarIndiceProfessores();
 
-    console.log("BASE OK:", BASE_GERAL.length);
+    console.log(
+        "BASE OK:",
+        BASE_GERAL.length
+    );
 }
 
 function montarIndiceProfessores() {
@@ -2643,57 +2711,69 @@ function gerarBarraProgresso(valor,total){
 // ======================================================
 function obterSabadosSemana() {
 
-  const resultado = {};
+    const modalidade =
+        document.getElementById("selectModalidadeSabados")?.value ||
+        "INTEGRADO";
 
-  Object.keys(semanasAgrupadas).forEach(semana => {
+    const baseSemanas =
+        modalidade === "SUPERIOR"
+            ? semanasSuperior
+            : semanasIntegrado;
 
-    const dias = semanasAgrupadas[semana]?.dias || {};
+    const resultado = {};
 
-    Object.keys(dias).forEach(dia => {
+    Object.keys(baseSemanas).forEach(semana => {
 
-      const [d, m, a] = dia.split('/');
-      const dataObj = new Date(a, m - 1, d);
+        const dias =
+            baseSemanas[semana]?.dias || {};
 
-      // 🔥 apenas sábado
-      if (dataObj.getDay() !== 6) return;
+        Object.keys(dias).forEach(dia => {
 
-      const linhas = dias[dia];
+            const [d,m,a] = dia.split('/');
 
-      // 🔥 verifica se existe aula real
-      const possuiAula = linhas.some(r => {
+            const dataObj =
+                new Date(a,m-1,d);
 
-        return r.slice(2).some(celula => {
+            // Apenas sábado
+            if(dataObj.getDay() !== 6)
+                return;
 
-          const val = normalizarTexto(celula || "");
+            const linhas = dias[dia];
 
-          // ignora vazios
-          if (!val) return false;
+            const possuiAula = linhas.some(r => {
 
-          // ignora intervalos/marcações
-          if (
-            val.includes("INTERVALO") ||
-            val.includes("[+]") ||
-            val.includes("[R]") ||
-            val === "*"
-          ) {
-            return false;
-          }
+                return r.slice(2).some(celula => {
 
-          return true;
+                    const val =
+                        normalizarTexto(celula || "");
+
+                    if(!val)
+                        return false;
+
+                    if(
+                        val.includes("INTERVALO") ||
+                        val.includes("[+]") ||
+                        val.includes("[R]") ||
+                        val === "*"
+                    ){
+                        return false;
+                    }
+
+                    return true;
+
+                });
+
+            });
+
+            if(possuiAula){
+                resultado[dia] = linhas;
+            }
+
         });
-
-      });
-
-      // 🔥 só adiciona se realmente houver aula
-      if (possuiAula) {
-        resultado[dia] = linhas;
-      }
 
     });
 
-  });
-
-  return resultado;
+    return resultado;
 }
 
   // ======================================================
@@ -2758,15 +2838,12 @@ function renderSabados() {
     document.getElementById("selectModalidadeSabados")?.value ||
     "INTEGRADO";
 
-  // 🔥 troca modalidade REAL do sistema
-  document.getElementById("selectModalidade").value = modalidade;
-
   const sabados = obterSabadosSemana();
 
   let turmasAtivas =
-  modalidade === "SUPERIOR"
-    ? getTurmasAtivasNaSemana(sabados)
-    : turmasDaPlanilha;
+    modalidade === "SUPERIOR"
+        ? turmasSuperior
+        : turmasIntegrado;
 
 
 // ======================================================
@@ -3159,15 +3236,6 @@ function exportarPDFSabados() {
 // 🔥 TROCAR MODALIDADE SÁBADOS
 // ======================================================
 async function trocarModalidadeSabados() {
-
-  const modalidade =
-    document.getElementById("selectModalidadeSabados").value;
-
-  // sincroniza select principal
-  document.getElementById("selectModalidade").value = modalidade;
-
-  // recarrega planilha correta
-  await init();
 
   // renderiza sábados
   renderSabados();
