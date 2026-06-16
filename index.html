@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 - v
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -1710,55 +1710,156 @@ function carregarSemanasProfessor(){
 
 function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
-    if (!Array.isArray(dados)) {
-        console.error("DADOS INVÁLIDOS:", dados);
-        return { dias: [], horarios: [], grade: {} };
-    }
+    const aulas =
+        getDadosProfessor(
+            professorSelecionado,
+            semanaSelecionada
+        );
 
-    console.log("PROF:", professorSelecionado);
-    console.log("SEMANA:", semanaSelecionada);
+    console.log("AULAS ENCONTRADAS:", aulas.length);
 
-    const filtrados = dados.filter(linha => {
+    const dias = [
+        "SEGUNDA",
+        "TERÇA",
+        "QUARTA",
+        "QUINTA",
+        "SEXTA",
+        "SÁBADO"
+    ];
 
-        const prof = normalizarProfessor(linha[0]);
-        const semana = (linha[1] || "").toString().trim();
+    const horarios = [
+        "07:30 - 08:20",
+        "08:20 - 09:10",
+        "09:25 - 10:15",
+        "10:15 - 11:05",
+        "11:05 - 11:55",
+        "13:30 - 14:20",
+        "14:20 - 15:10",
+        "15:25 - 16:15",
+        "16:15 - 17:05",
+        "19:00 - 19:50",
+        "19:50 - 20:40",
+        "20:55 - 21:45",
+        "21:45 - 22:35"
+    ];
 
-        return bateProfessor(professorSelecionado, linha[0])
-            && semana === semanaSelecionada;
+    const grade = {};
+
+    horarios.forEach(h => {
+
+        grade[h] = {};
+
+        dias.forEach(d => {
+            grade[h][d] = "";
+        });
     });
 
-    console.log("FILTRADOS:", filtrados.length);
+    aulas.forEach(aula => {
+
+        const [d,m,a] = aula.data.split("/");
+
+        const dt =
+            new Date(a, m - 1, d);
+
+        const diaSemana =
+            [
+                "DOMINGO",
+                "SEGUNDA",
+                "TERÇA",
+                "QUARTA",
+                "QUINTA",
+                "SEXTA",
+                "SÁBADO"
+            ][dt.getDay()];
+
+        if (!grade[aula.horario]) return;
+
+        grade[aula.horario][diaSemana] =
+            `<b>${aula.turma}</b><br>${aula.disciplina}`;
+    });
 
     return {
-        dias: [],
-        horarios: [],
-        grade: {}
+        dias,
+        horarios,
+        grade
     };
 }
 
 function renderProfessor(){
 
-    const semanaEl = document.getElementById("selectSemanaProfessor");
+    const semanaEl =
+        document.getElementById("selectSemanaProfessor");
 
-    // 🔥 bloqueia execução prematura
-    if (semanaEl && semanaEl.dataset.ready !== "true") {
-        console.warn("Render bloqueado: sistema ainda inicializando");
+    if (
+        semanaEl &&
+        semanaEl.dataset.ready !== "true"
+    ){
         return;
     }
 
-    const professor = document.getElementById("selectProfessor")?.value;
-    const semana = semanaEl?.value;
+    const professor =
+        document.getElementById("selectProfessor")?.value;
+
+    const semana =
+        semanaEl?.value;
 
     if (!professor || !semana) return;
 
-    const dados = BASE_GERAL;
+    const container =
+        document.getElementById("tabelaProfessor");
 
-    if (!Array.isArray(dados)) {
-        console.error("BASE_GERAL inválida ainda");
-        return;
-    }
+    const { dias, horarios, grade } =
+        montarGradeProfessor(
+            BASE_GERAL,
+            professor,
+            semana
+        );
 
-    montarGradeProfessor(dados, professor, semana);
+    let html = `
+        <table border="1"
+               cellspacing="0"
+               cellpadding="6"
+               style="width:100%;border-collapse:collapse">
+
+            <thead>
+                <tr>
+                    <th>Horário</th>
+    `;
+
+    dias.forEach(d => {
+        html += `<th>${d}</th>`;
+    });
+
+    html += `
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    horarios.forEach(h => {
+
+        html += `<tr>`;
+
+        html += `<td><b>${h}</b></td>`;
+
+        dias.forEach(d => {
+
+            html += `
+                <td>
+                    ${grade[h][d] || ""}
+                </td>
+            `;
+        });
+
+        html += `</tr>`;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    `;
+
+    container.innerHTML = html;
 }
 
   function obterInicioSemana(dataBR) {
