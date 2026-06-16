@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 - v
 </div>
 
 </div>
@@ -1022,11 +1022,17 @@ let turmasSuperior = [];
         return;
     }
 
-    for (let linha = 1; linha < BASE_GERAL.length; linha++) {
+let ultimaData = "";
 
-        const r = BASE_GERAL[linha];
+for (let linha = 1; linha < BASE_GERAL.length; linha++) {
 
-        const data = r[0] || "";
+    const r = BASE_GERAL[linha];
+
+    if (r[0]) {
+        ultimaData = r[0];
+    }
+
+    const data = ultimaData;
         const horario = r[1] || "";
 
         if (!horario) continue;
