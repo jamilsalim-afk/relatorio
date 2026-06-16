@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 - v
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -1625,28 +1625,28 @@ function carregarListaProfessores() {
     select.innerHTML =
         '<option value="">Selecione um professor</option>';
 
-    const lista =
-        Object.keys(INDEX_PROFESSOR)
-            .sort((a,b)=>a.localeCompare(b,'pt-BR'));
+    dadosProfessores
+        .slice(1)
+        .sort((a,b)=>
+            (a[0] || "")
+                .localeCompare(
+                    b[0] || "",
+                    'pt-BR'
+                )
+        )
+        .forEach(linha => {
 
-    console.log("TOTAL PROFESSORES:", lista.length);
-    console.log("PRIMEIROS:", lista.slice(0,10));
+            const nomeCompleto =
+                (linha[0] || "").trim();
 
-    lista.forEach(nome => {
+            if (!nomeCompleto) return;
 
-        const opt =
-            document.createElement("option");
-
-        opt.value = nome;
-        opt.textContent = nome;
-
-        select.appendChild(opt);
-    });
-
-    console.log(
-        "OPTIONS CRIADAS:",
-        select.options.length
-    );
+            select.innerHTML += `
+                <option value="${nomeCompleto}">
+                    ${nomeCompleto}
+                </option>
+            `;
+        });
 }
 
 function traduzirProfessor(nomeCompleto) {
@@ -1734,21 +1734,37 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
     ];
 
     const horarios = [
-        "07:30 - 08:20",
-        "08:20 - 09:10",
-        "09:30 - 10:20",
-        "10:20 - 11:10",
-        "11:10 - 12:00",
-        "13:50 - 14:40",
-        "14:40 - 15:30",
-        "15:50 - 16:40",
-        "16:40 - 17:30",
-        "17:30 - 18:20",
-        "19:00 - 19:50",
-        "19:50 - 20:40",
-        "20:50 - 21:40",
-        "21:40 - 22:30"
-    ];
+
+    "07:30 - 08:20",
+    "08:20 - 09:10",
+
+    "__INTERVALO_1__",
+
+    "09:30 - 10:20",
+    "10:20 - 11:10",
+    "11:10 - 12:00",
+
+    "__ALMOCO__",
+
+    "13:50 - 14:40",
+    "14:40 - 15:30",
+
+    "__INTERVALO_2__",
+
+    "15:50 - 16:40",
+    "16:40 - 17:30",
+    "17:30 - 18:20",
+
+    "__JANTAR__",
+
+    "19:00 - 19:50",
+    "19:50 - 20:40",
+
+    "__INTERVALO_3__",
+
+    "20:50 - 21:40",
+    "21:40 - 22:30"
+];
 
     const grade = {};
 
@@ -1822,20 +1838,168 @@ function renderProfessor(){
             semana
         );
 
-    let html = `
-        <table border="1"
-               cellspacing="0"
-               cellpadding="6"
-               style="width:100%;border-collapse:collapse">
+  const aulas =
+    getDadosProfessor(
+        professor,
+        semana
+    );
 
-            <thead>
-                <tr>
-                    <th>Horário</th>
-    `;
+const totalAulas =
+    aulas.length;
+
+const totalTurmas =
+    new Set(
+        aulas.map(a => a.turma)
+    ).size;
+
+const totalDias =
+    new Set(
+        aulas.map(a => a.data)
+    ).size;
+
+   let html = `
+
+<div style="
+display:flex;
+gap:15px;
+margin-bottom:15px;
+flex-wrap:wrap;
+">
+
+<div style="
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,.15);
+min-width:140px;
+text-align:center;
+">
+<div style="font-size:12px;color:#666">
+TOTAL DE AULAS
+</div>
+<div style="font-size:28px;font-weight:bold;color:#2e7d32">
+${totalAulas}
+</div>
+</div>
+
+<div style="
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,.15);
+min-width:140px;
+text-align:center;
+">
+<div style="font-size:12px;color:#666">
+TURMAS
+</div>
+<div style="font-size:28px;font-weight:bold;color:#1565c0">
+${totalTurmas}
+</div>
+</div>
+
+<div style="
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,.15);
+min-width:140px;
+text-align:center;
+">
+<div style="font-size:12px;color:#666">
+DIAS COM AULA
+</div>
+<div style="font-size:28px;font-weight:bold;color:#ef6c00">
+${totalDias}
+</div>
+</div>
+
+</div>
+
+<table border="1"
+cellspacing="0"
+cellpadding="6"
+style="width:100%;border-collapse:collapse">
+`;
 
     dias.forEach(d => {
         html += `<th>${d}</th>`;
     });
+
+  if (h === "__INTERVALO_1__") {
+
+    html += `
+    <tr style="
+        background:#f5f5f5;
+        font-weight:bold;
+        text-align:center;
+    ">
+        <td>09:10 - 09:30</td>
+        <td colspan="6">INTERVALO</td>
+    </tr>
+    `;
+    return;
+}
+
+if (h === "__INTERVALO_2__") {
+
+    html += `
+    <tr style="
+        background:#f5f5f5;
+        font-weight:bold;
+        text-align:center;
+    ">
+        <td>15:30 - 15:50</td>
+        <td colspan="6">INTERVALO</td>
+    </tr>
+    `;
+    return;
+}
+
+if (h === "__INTERVALO_3__") {
+
+    html += `
+    <tr style="
+        background:#f5f5f5;
+        font-weight:bold;
+        text-align:center;
+    ">
+        <td>20:40 - 20:50</td>
+        <td colspan="6">INTERVALO</td>
+    </tr>
+    `;
+    return;
+}
+
+if (h === "__ALMOCO__") {
+
+    html += `
+    <tr style="
+        background:#fff3cd;
+        font-weight:bold;
+        text-align:center;
+    ">
+        <td>12:00 - 13:50</td>
+        <td colspan="6">ALMOÇO</td>
+    </tr>
+    `;
+    return;
+}
+
+if (h === "__JANTAR__") {
+
+    html += `
+    <tr style="
+        background:#ffe0b2;
+        font-weight:bold;
+        text-align:center;
+    ">
+        <td>18:20 - 19:00</td>
+        <td colspan="6">JANTAR</td>
+    </tr>
+    `;
+    return;
+}
 
     html += `
                 </tr>
@@ -1861,6 +2025,54 @@ function renderProfessor(){
         html += `</tr>`;
     });
 
+  const aulasPorDia = {
+    "SEGUNDA":0,
+    "TERÇA":0,
+    "QUARTA":0,
+    "QUINTA":0,
+    "SEXTA":0,
+    "SÁBADO":0
+};
+
+aulas.forEach(aula => {
+
+    const [d,m,a] =
+        aula.data.split("/");
+
+    const dt =
+        new Date(a,m-1,d);
+
+    const dia =
+        [
+            "DOMINGO",
+            "SEGUNDA",
+            "TERÇA",
+            "QUARTA",
+            "QUINTA",
+            "SEXTA",
+            "SÁBADO"
+        ][dt.getDay()];
+
+    if (aulasPorDia[dia] !== undefined) {
+        aulasPorDia[dia]++;
+    }
+});
+
+html += `
+<tr style="
+background:#e8f5e9;
+font-weight:bold;
+">
+<td>AULAS/DIA</td>
+<td>${aulasPorDia["SEGUNDA"]}</td>
+<td>${aulasPorDia["TERÇA"]}</td>
+<td>${aulasPorDia["QUARTA"]}</td>
+<td>${aulasPorDia["QUINTA"]}</td>
+<td>${aulasPorDia["SEXTA"]}</td>
+<td>${aulasPorDia["SÁBADO"]}</td>
+</tr>
+`;
+  
     html += `
             </tbody>
         </table>
