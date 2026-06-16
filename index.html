@@ -1011,6 +1011,71 @@ let semanasSuperior = {};
 let turmasIntegrado = [];
 let turmasSuperior = [];
 
+  function montarIndiceProfessores() {
+
+    INDEX_PROFESSOR = {};
+
+    const cabecalho = BASE_GERAL[0];
+
+    if (!cabecalho) {
+        console.log("BASE_GERAL vazia");
+        return;
+    }
+
+    for (let linha = 1; linha < BASE_GERAL.length; linha++) {
+
+        const r = BASE_GERAL[linha];
+
+        const data = r[0] || "";
+        const horario = r[1] || "";
+
+        if (!horario) continue;
+
+        for (let col = 2; col < cabecalho.length; col++) {
+
+            const turma = cabecalho[col];
+            const celula = (r[col] || "").trim();
+
+            if (!celula) continue;
+
+            if (!celula.includes(" - ")) continue;
+
+            const partes = celula.split(" - ");
+
+            const professor =
+                partes[partes.length - 1].trim();
+
+            const disciplina =
+                partes.slice(0, -1).join(" - ").trim();
+
+            const profNorm =
+                normalizarProfessor(professor);
+
+            if (!INDEX_PROFESSOR[profNorm]) {
+                INDEX_PROFESSOR[profNorm] = [];
+            }
+
+            INDEX_PROFESSOR[profNorm].push({
+                data,
+                horario,
+                turma,
+                disciplina,
+                professor
+            });
+        }
+    }
+
+    console.log(
+        "PROFESSORES INDEXADOS:",
+        Object.keys(INDEX_PROFESSOR).length
+    );
+
+    console.log(
+        "EXEMPLO:",
+        Object.keys(INDEX_PROFESSOR).slice(0,20)
+    );
+}
+  
   function deveCompararDia(dataStr){
 
   const [d,m,a] = dataStr.split('/');
@@ -1528,50 +1593,12 @@ function montarBaseGeral(integrado, superior) {
         ...superior
     ];
 
-    const procIntegrado =
-        processarBaseModalidade(integrado);
-
-    const procSuperior =
-        processarBaseModalidade(superior);
-
-    semanasIntegrado =
-        procIntegrado.semanas;
-
-    semanasSuperior =
-        procSuperior.semanas;
-
-    turmasIntegrado =
-        procIntegrado.turmas;
-
-    turmasSuperior =
-        procSuperior.turmas;
+    console.log("BASE CARREGADA:", BASE_GERAL.length);
 
     montarIndiceProfessores();
-
-    console.log(
-        "BASE OK:",
-        BASE_GERAL.length
-    );
 }
 
-function montarIndiceProfessores() {
-
-    INDEX_PROFESSOR = {};
-
-    BASE_GERAL.forEach(linha => {
-
-        const prof = (linha[0] || "").toString().trim();
-
-        if (!prof) return;
-
-        if (!INDEX_PROFESSOR[prof]) {
-            INDEX_PROFESSOR[prof] = [];
-        }
-
-        INDEX_PROFESSOR[prof].push(linha);
-    });
-}
-
+ 
 function carregarListaProfessores(){
 
     const select = document.getElementById("selectProfessor");
