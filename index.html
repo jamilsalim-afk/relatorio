@@ -1838,186 +1838,233 @@ function renderProfessor(){
             semana
         );
 
-  const aulas =
-    getDadosProfessor(
-        professor,
-        semana
-    );
+    const aulas =
+        getDadosProfessor(
+            professor,
+            semana
+        );
 
-const totalAulas =
-    aulas.length;
+    const totalAulas =
+        aulas.length;
 
-const totalTurmas =
-    new Set(
-        aulas.map(a => a.turma)
-    ).size;
+    const totalTurmas =
+        new Set(
+            aulas.map(a => a.turma)
+        ).size;
 
-const totalDias =
-    new Set(
-        aulas.map(a => a.data)
-    ).size;
+    const totalDias =
+        new Set(
+            aulas.map(a => a.data)
+        ).size;
 
-   let html = `
+    let html = `
 
-<div style="
-display:flex;
-gap:15px;
-margin-bottom:15px;
-flex-wrap:wrap;
-">
+    <div style="
+        display:flex;
+        gap:15px;
+        margin-bottom:15px;
+        flex-wrap:wrap;
+    ">
 
-<div style="
-background:white;
-padding:15px;
-border-radius:10px;
-box-shadow:0 2px 6px rgba(0,0,0,.15);
-min-width:140px;
-text-align:center;
-">
-<div style="font-size:12px;color:#666">
-TOTAL DE AULAS
-</div>
-<div style="font-size:28px;font-weight:bold;color:#2e7d32">
-${totalAulas}
-</div>
-</div>
+        <div style="
+            background:white;
+            padding:15px;
+            border-radius:10px;
+            box-shadow:0 2px 6px rgba(0,0,0,.15);
+            min-width:160px;
+            text-align:center;
+        ">
+            <div style="font-size:12px;color:#666">
+                TOTAL DE AULAS
+            </div>
+            <div style="
+                font-size:30px;
+                font-weight:bold;
+                color:#2e7d32;
+            ">
+                ${totalAulas}
+            </div>
+        </div>
 
-<div style="
-background:white;
-padding:15px;
-border-radius:10px;
-box-shadow:0 2px 6px rgba(0,0,0,.15);
-min-width:140px;
-text-align:center;
-">
-<div style="font-size:12px;color:#666">
-TURMAS
-</div>
-<div style="font-size:28px;font-weight:bold;color:#1565c0">
-${totalTurmas}
-</div>
-</div>
+        <div style="
+            background:white;
+            padding:15px;
+            border-radius:10px;
+            box-shadow:0 2px 6px rgba(0,0,0,.15);
+            min-width:160px;
+            text-align:center;
+        ">
+            <div style="font-size:12px;color:#666">
+                TURMAS
+            </div>
+            <div style="
+                font-size:30px;
+                font-weight:bold;
+                color:#1565c0;
+            ">
+                ${totalTurmas}
+            </div>
+        </div>
 
-<div style="
-background:white;
-padding:15px;
-border-radius:10px;
-box-shadow:0 2px 6px rgba(0,0,0,.15);
-min-width:140px;
-text-align:center;
-">
-<div style="font-size:12px;color:#666">
-DIAS COM AULA
-</div>
-<div style="font-size:28px;font-weight:bold;color:#ef6c00">
-${totalDias}
-</div>
-</div>
+        <div style="
+            background:white;
+            padding:15px;
+            border-radius:10px;
+            box-shadow:0 2px 6px rgba(0,0,0,.15);
+            min-width:160px;
+            text-align:center;
+        ">
+            <div style="font-size:12px;color:#666">
+                DIAS COM AULA
+            </div>
+            <div style="
+                font-size:30px;
+                font-weight:bold;
+                color:#ef6c00;
+            ">
+                ${totalDias}
+            </div>
+        </div>
 
-</div>
+    </div>
 
-<table border="1"
-cellspacing="0"
-cellpadding="6"
-style="width:100%;border-collapse:collapse">
-`;
+    <table style="
+        width:100%;
+        border-collapse:collapse;
+        background:white;
+        font-size:12px;
+    ">
+
+    <thead>
+
+    <tr style="
+        background:#15803d;
+        color:white;
+    ">
+        <th style="padding:8px;border:1px solid #ccc">
+            HORÁRIO
+        </th>
+    `;
 
     dias.forEach(d => {
-        html += `<th>${d}</th>`;
+
+        html += `
+            <th style="
+                padding:8px;
+                border:1px solid #ccc;
+            ">
+                ${d}
+            </th>
+        `;
     });
 
-  if (h === "__INTERVALO_1__") {
-
     html += `
-    <tr style="
-        background:#f5f5f5;
-        font-weight:bold;
-        text-align:center;
-    ">
-        <td>09:10 - 09:30</td>
-        <td colspan="6">INTERVALO</td>
-    </tr>
-    `;
-    return;
-}
-
-if (h === "__INTERVALO_2__") {
-
-    html += `
-    <tr style="
-        background:#f5f5f5;
-        font-weight:bold;
-        text-align:center;
-    ">
-        <td>15:30 - 15:50</td>
-        <td colspan="6">INTERVALO</td>
-    </tr>
-    `;
-    return;
-}
-
-if (h === "__INTERVALO_3__") {
-
-    html += `
-    <tr style="
-        background:#f5f5f5;
-        font-weight:bold;
-        text-align:center;
-    ">
-        <td>20:40 - 20:50</td>
-        <td colspan="6">INTERVALO</td>
-    </tr>
-    `;
-    return;
-}
-
-if (h === "__ALMOCO__") {
-
-    html += `
-    <tr style="
-        background:#fff3cd;
-        font-weight:bold;
-        text-align:center;
-    ">
-        <td>12:00 - 13:50</td>
-        <td colspan="6">ALMOÇO</td>
-    </tr>
-    `;
-    return;
-}
-
-if (h === "__JANTAR__") {
-
-    html += `
-    <tr style="
-        background:#ffe0b2;
-        font-weight:bold;
-        text-align:center;
-    ">
-        <td>18:20 - 19:00</td>
-        <td colspan="6">JANTAR</td>
-    </tr>
-    `;
-    return;
-}
-
-    html += `
-                </tr>
-            </thead>
-            <tbody>
+        </tr>
+        </thead>
+        <tbody>
     `;
 
     horarios.forEach(h => {
 
+        if (h === "__INTERVALO_1__") {
+
+            html += `
+            <tr style="
+                background:#f1f5f9;
+                font-weight:bold;
+                text-align:center;
+            ">
+                <td>09:10 - 09:30</td>
+                <td colspan="6">INTERVALO</td>
+            </tr>
+            `;
+            return;
+        }
+
+        if (h === "__INTERVALO_2__") {
+
+            html += `
+            <tr style="
+                background:#f1f5f9;
+                font-weight:bold;
+                text-align:center;
+            ">
+                <td>15:30 - 15:50</td>
+                <td colspan="6">INTERVALO</td>
+            </tr>
+            `;
+            return;
+        }
+
+        if (h === "__INTERVALO_3__") {
+
+            html += `
+            <tr style="
+                background:#f1f5f9;
+                font-weight:bold;
+                text-align:center;
+            ">
+                <td>20:40 - 20:50</td>
+                <td colspan="6">INTERVALO</td>
+            </tr>
+            `;
+            return;
+        }
+
+        if (h === "__ALMOCO__") {
+
+            html += `
+            <tr style="
+                background:#fff8e1;
+                font-weight:bold;
+                text-align:center;
+            ">
+                <td>12:00 - 13:50</td>
+                <td colspan="6">ALMOÇO</td>
+            </tr>
+            `;
+            return;
+        }
+
+        if (h === "__JANTAR__") {
+
+            html += `
+            <tr style="
+                background:#ffe0b2;
+                font-weight:bold;
+                text-align:center;
+            ">
+                <td>18:20 - 19:00</td>
+                <td colspan="6">JANTAR</td>
+            </tr>
+            `;
+            return;
+        }
+
         html += `<tr>`;
 
-        html += `<td><b>${h}</b></td>`;
+        html += `
+            <td style="
+                border:1px solid #ccc;
+                padding:6px;
+                font-weight:bold;
+                text-align:center;
+                background:#fafafa;
+            ">
+                ${h}
+            </td>
+        `;
 
         dias.forEach(d => {
 
             html += `
-                <td>
-                    ${grade[h][d] || ""}
+                <td style="
+                    border:1px solid #ccc;
+                    padding:6px;
+                    vertical-align:top;
+                    min-height:50px;
+                ">
+                    ${grade[h]?.[d] || ""}
                 </td>
             `;
         });
@@ -2025,56 +2072,57 @@ if (h === "__JANTAR__") {
         html += `</tr>`;
     });
 
-  const aulasPorDia = {
-    "SEGUNDA":0,
-    "TERÇA":0,
-    "QUARTA":0,
-    "QUINTA":0,
-    "SEXTA":0,
-    "SÁBADO":0
-};
+    const aulasPorDia = {
+        "SEGUNDA":0,
+        "TERÇA":0,
+        "QUARTA":0,
+        "QUINTA":0,
+        "SEXTA":0,
+        "SÁBADO":0
+    };
 
-aulas.forEach(aula => {
+    aulas.forEach(aula => {
 
-    const [d,m,a] =
-        aula.data.split("/");
+        const [d,m,a] =
+            aula.data.split("/");
 
-    const dt =
-        new Date(a,m-1,d);
+        const dt =
+            new Date(a,m-1,d);
 
-    const dia =
-        [
-            "DOMINGO",
-            "SEGUNDA",
-            "TERÇA",
-            "QUARTA",
-            "QUINTA",
-            "SEXTA",
-            "SÁBADO"
-        ][dt.getDay()];
+        const dia =
+            [
+                "DOMINGO",
+                "SEGUNDA",
+                "TERÇA",
+                "QUARTA",
+                "QUINTA",
+                "SEXTA",
+                "SÁBADO"
+            ][dt.getDay()];
 
-    if (aulasPorDia[dia] !== undefined) {
-        aulasPorDia[dia]++;
-    }
-});
+        if(aulasPorDia[dia] !== undefined){
+            aulasPorDia[dia]++;
+        }
+    });
 
-html += `
-<tr style="
-background:#e8f5e9;
-font-weight:bold;
-">
-<td>AULAS/DIA</td>
-<td>${aulasPorDia["SEGUNDA"]}</td>
-<td>${aulasPorDia["TERÇA"]}</td>
-<td>${aulasPorDia["QUARTA"]}</td>
-<td>${aulasPorDia["QUINTA"]}</td>
-<td>${aulasPorDia["SEXTA"]}</td>
-<td>${aulasPorDia["SÁBADO"]}</td>
-</tr>
-`;
-  
     html += `
-            </tbody>
+    <tr style="
+        background:#e8f5e9;
+        font-weight:bold;
+        text-align:center;
+    ">
+        <td>AULAS / DIA</td>
+        <td>${aulasPorDia["SEGUNDA"]}</td>
+        <td>${aulasPorDia["TERÇA"]}</td>
+        <td>${aulasPorDia["QUARTA"]}</td>
+        <td>${aulasPorDia["QUINTA"]}</td>
+        <td>${aulasPorDia["SEXTA"]}</td>
+        <td>${aulasPorDia["SÁBADO"]}</td>
+    </tr>
+    `;
+
+    html += `
+        </tbody>
         </table>
     `;
 
