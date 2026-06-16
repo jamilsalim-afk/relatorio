@@ -1797,8 +1797,20 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
         if (!grade[aula.horario]) return;
 
-        grade[aula.horario][diaSemana] =
-            `<b>${aula.turma}</b><br>${aula.disciplina}`;
+        if (!grade[aula.horario][diaSemana]) {
+    grade[aula.horario][diaSemana] = [];
+}
+
+grade[aula.horario][diaSemana].push(`
+    <div style="
+        margin-bottom:4px;
+        padding:3px;
+        border-left:3px solid #15803d;
+    ">
+        <b>${aula.turma}</b><br>
+        ${aula.disciplina}
+    </div>
+`);
     });
 
     return {
