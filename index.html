@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 - v2
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -1042,14 +1042,16 @@ let turmasSuperior = [];
 
             const partes = celula.split(" - ");
 
-            const professor =
-                partes[partes.length - 1].trim();
+            const professorOriginal =
+    partes[partes.length - 1].trim();
+
+const professor =
+    normalizarProfessor(professorOriginal);
 
             const disciplina =
                 partes.slice(0, -1).join(" - ").trim();
 
-            const profNorm =
-                normalizarProfessor(professor);
+            const profNorm = professor;
 
             if (!INDEX_PROFESSOR[profNorm]) {
                 INDEX_PROFESSOR[profNorm] = [];
