@@ -2214,8 +2214,31 @@ function exportarFichaProfessorPDF() {
             semana
         );
 
-    const totalAulas =
-        aulas.length;
+    const totalAulasSegSex = aulas.filter(a => {
+
+    const [dia, mes, ano] = a.data.split("/");
+
+    const dt =
+        new Date(ano, mes - 1, dia);
+
+    return dt.getDay() >= 1 &&
+           dt.getDay() <= 5;
+
+}).length;
+
+const totalAulasSab = aulas.filter(a => {
+
+    const [dia, mes, ano] = a.data.split("/");
+
+    const dt =
+        new Date(ano, mes - 1, dia);
+
+    return dt.getDay() === 6;
+
+}).length;
+
+const totalAulas =
+    totalAulasSegSex + totalAulasSab;
 
     const totalTurmas =
         new Set(
@@ -2273,7 +2296,7 @@ function exportarFichaProfessorPDF() {
 
     pdf.setDrawColor(180);
 
-    pdf.roundedRect(15, 33, 55, 14, 2, 2);
+    pdf.roundedRect(15, 33, 55, 22, 2, 2);
     pdf.roundedRect(78, 33, 55, 14, 2, 2);
     pdf.roundedRect(141, 33, 55, 14, 2, 2);
 
@@ -2300,15 +2323,31 @@ function exportarFichaProfessorPDF() {
         { align: "center" }
     );
 
-    pdf.setFontSize(16);
-    pdf.setFont(undefined, "bold");
+  pdf.setFontSize(14);
+pdf.setFont(undefined, "bold");
+  
+pdf.text(
+    String(totalAulas),
+    42.5,
+    42,
+    { align: "center" }
+);
 
-    pdf.text(
-        String(totalAulas),
-        42.5,
-        45,
-        { align: "center" }
-    );
+pdf.setFontSize(7);
+
+pdf.text(
+    `Seg-Sex: ${totalAulasSegSex}`,
+    42.5,
+    48,
+    { align: "center" }
+);
+
+pdf.text(
+    `Sáb: ${totalAulasSab}`,
+    42.5,
+    52,
+    { align: "center" }
+);
 
     pdf.text(
         String(totalTurmas),
@@ -2437,7 +2476,7 @@ function exportarFichaProfessorPDF() {
 
         body,
 
-        startY: 52,
+        startY: 60,
 
         theme: "grid",
 
@@ -2456,12 +2495,36 @@ function exportarFichaProfessorPDF() {
 
         columnStyles: {
 
-            0: {
-                cellWidth: 18,
-                halign: "center"
-            }
+    0: {
+        cellWidth: 18,
+        halign: 'center'
+    },
 
-        },
+    1: {
+        cellWidth: 28
+    },
+
+    2: {
+        cellWidth: 28
+    },
+
+    3: {
+        cellWidth: 28
+    },
+
+    4: {
+        cellWidth: 28
+    },
+
+    5: {
+        cellWidth: 28
+    },
+
+    6: {
+        cellWidth: 28
+    }
+
+},
 
         didParseCell: (data) => {
 
