@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 - v
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -1011,77 +1011,37 @@ let semanasSuperior = {};
 let turmasIntegrado = [];
 let turmasSuperior = [];
 
-  function montarIndiceProfessores() {
+function montarIndiceProfessores() {
 
     INDEX_PROFESSOR = {};
 
-    const cabecalho = BASE_GERAL[0];
+    BASE_GERAL.forEach(item => {
 
-    if (!cabecalho) {
-        console.log("BASE_GERAL vazia");
-        return;
-    }
+        const valor = item.valor || "";
 
-let ultimaData = "";
+        if (!valor.includes(" - ")) return;
 
-for (let linha = 1; linha < BASE_GERAL.length; linha++) {
+        const [disciplina, professor] =
+            valor.split(" - ").map(v => v.trim());
 
-    const r = BASE_GERAL[linha];
+        if (!professor) return;
 
-    if (r[0]) {
-        ultimaData = r[0];
-    }
+        const profNorm = normalizarProfessor(professor);
 
-    const data = ultimaData;
-        const horario = r[1] || "";
-
-        if (!horario) continue;
-
-        for (let col = 2; col < cabecalho.length; col++) {
-
-            const turma = cabecalho[col];
-            const celula = (r[col] || "").trim();
-
-            if (!celula) continue;
-
-            if (!celula.includes(" - ")) continue;
-
-            const partes = celula.split(" - ");
-
-            const professorOriginal =
-    partes[partes.length - 1].trim();
-
-const professor =
-    normalizarProfessor(professorOriginal);
-
-            const disciplina =
-                partes.slice(0, -1).join(" - ").trim();
-
-            const profNorm = professor;
-
-            if (!INDEX_PROFESSOR[profNorm]) {
-                INDEX_PROFESSOR[profNorm] = [];
-            }
-
-            INDEX_PROFESSOR[profNorm].push({
-                data,
-                horario,
-                turma,
-                disciplina,
-                professor
-            });
+        if (!INDEX_PROFESSOR[profNorm]) {
+            INDEX_PROFESSOR[profNorm] = [];
         }
-    }
 
-    console.log(
-        "PROFESSORES INDEXADOS:",
-        Object.keys(INDEX_PROFESSOR).length
-    );
+        INDEX_PROFESSOR[profNorm].push({
+            data: item.data,
+            horario: item.horario,
+            turma: item.turma,
+            disciplina,
+            modalidade: item.modalidade
+        });
+    });
 
-    console.log(
-        "EXEMPLO:",
-        Object.keys(INDEX_PROFESSOR).slice(0,20)
-    );
+    console.log("PROF INDEX OK:", Object.keys(INDEX_PROFESSOR).length);
 }
   
   function deveCompararDia(dataStr){
