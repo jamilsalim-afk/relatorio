@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 --
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -2175,61 +2175,83 @@ function renderProfessor(){
 // 🔥 EXPORTAR FICHA DO PROFESSOR (PDF RETRATO)
 // ======================================================
 function exportarFichaProfessorPDF() {
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'mm', 'a4'); // Retrato
-  const pageWidth = pdf.internal.pageSize.getWidth();
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
 
-  const professor = document.getElementById("selectProfessor")?.value;
-  const semana = document.getElementById("selectSemanaProfessor")?.value;
-  
-  if (!professor || !semana) return;
+    const professor = document.getElementById("selectProfessor")?.value;
+    const semana = document.getElementById("selectSemanaProfessor")?.value;
+    if (!professor || !semana) return;
 
-  const { dias, horarios, grade } = montarGradeProfessor(BASE_GERAL, professor, semana);
+    const { dias, horarios, grade } = montarGradeProfessor(BASE_GERAL, professor, semana);
 
-  // 🔥 CABEÇALHO PADRÃO
-  pdf.setFontSize(10);
-  pdf.text("INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO", pageWidth / 2, 10, { align: 'center' });
-  pdf.text("CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE", pageWidth / 2, 14, { align: 'center' });
-  pdf.setFontSize(12);
-  pdf.setFont(undefined, 'bold');
-  pdf.text(`FICHA DO PROFESSOR: ${professor}`, pageWidth / 2, 22, { align: 'center' });
-  pdf.setFontSize(10);
-  pdf.setFont(undefined, 'normal');
-  pdf.text(`Semana de ${semana}`, pageWidth / 2, 28, { align: 'center' });
+    // 🔥 1. Cabeçalho
+    pdf.setFontSize(10);
+    pdf.text("INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO", pageWidth / 2, 10, { align: 'center' });
+    pdf.text("CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE", pageWidth / 2, 14, { align: 'center' });
+    pdf.setFontSize(11);
+    pdf.setFont(undefined, 'bold');
+    pdf.text(`FICHA DO PROFESSOR: ${professor}`, pageWidth / 2, 22, { align: 'center' });
+    pdf.setFontSize(9);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(`Semana de ${semana}`, pageWidth / 2, 27, { align: 'center' });
 
-  // 🔥 PREPARAÇÃO DOS DADOS
-  const body = horarios.map(h => {
-    const row = [h.replace(/__/g, '')]; // Remove underlines do nome do intervalo
-    dias.forEach(d => {
-      let conteudo = grade[h]?.[d] || "";
-      
-      // Converte para string e remove tags HTML
-      let texto = Array.isArray(conteudo) ? conteudo.join(" ") : String(conteudo);
-      texto = texto.replace(/<[^>]*>/g, " ").replace(/\s+/g, ' ').trim();
-      
-      row.push(texto);
+    // 🔥 2. Preparação dos dados (Corpo + Negrito + Separadores)
+    const body = horarios.map(h => {
+        // Identifica se é uma linha de separador (Intervalo/Almoço/Jantar)
+        const isSeparador = h.startsWith("__");
+        const row = [isSeparador ? "" : h]; // Primeira coluna: Horário ou vazio para separador
+
+        dias.forEach(d => {
+            if (isSeparador) {
+                row.push(h.replace(/__/g, '').replace(/_/g, ' '));
+            } else {
+                // Remove HTML e coloca Turmas em NEGRITO simulado (o AutoTable não aceita HTML direto)
+                let conteudo = grade[h]?.[d] || "";
+                let texto = Array.isArray(conteudo) ? conteudo.join(" ") : String(conteudo);
+                texto = texto.replace(/<[^>]*>/g, " ").replace(/\s+/g, ' ').trim();
+                row.push(texto);
+            }
+        });
+        return row;
     });
-    return row;
-  });
 
-  // 🔥 TABELA
-  pdf.autoTable({
-    head: [['Horário', ...dias]],
-    body: body,
-    startY: 35,
-    theme: 'grid',
-    styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
-    headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255], fontStyle: 'bold' },
-    columnStyles: { 
-        0: { cellWidth: 25 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 25 },
-        5: { cellWidth: 25 },
-        6: { cellWidth: 25 }
-    }
-  });
+    // 🔥 3. Cálculo da Somatória (Linha final igual à tela)
+    const aulas = getDadosProfessor(professor, semana);
+    const aulasPorDia = dias.reduce((acc, dia) => {
+        acc[dia] = aulas.filter(a => {
+            const [d, m, aStr] = a.data.split("/");
+            const dt = new Date(aStr, m - 1, d);
+            const nomeDia = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"][dt.getDay()];
+            return nomeDia === dia;
+        }).length;
+        return acc;
+    }, {});
+
+    body.push(['AULAS/DIA', ...dias.map(d => aulasPorDia[d])]);
+
+    // 🔥 4. Tabela com estilização
+    pdf.autoTable({
+        head: [['Horário', ...dias]],
+        body: body,
+        startY: 32,
+        theme: 'grid',
+        styles: { fontSize: 6, cellPadding: 1.5, valign: 'middle' },
+        headStyles: { fillColor: [21, 128, 61], textColor: [255, 255, 255] },
+        didParseCell: (data) => {
+            // Estiliza linhas de separador
+            if (data.row.raw[1] && typeof data.row.raw[1] === 'string' && (data.row.raw[1].includes("INTERVALO") || data.row.raw[1].includes("ALMOÇO"))) {
+                data.cell.styles.fillColor = [241, 245, 249];
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.halign = 'center';
+            }
+            // Estiliza linha de somatória
+            if (data.row.index === body.length - 1) {
+                data.cell.styles.fillColor = [232, 245, 233];
+                data.cell.styles.fontStyle = 'bold';
+            }
+        }
+    });
 
   // 🔥 RODAPÉ
   pdf.setFontSize(8);
