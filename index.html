@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 --
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -3359,29 +3359,20 @@ function renderSabados() {
 // ======================================================
 
 if (busca) {
-
   turmasAtivas = turmasAtivas.filter(turma => {
-
-    const idx =
-      dadosGlobais[0].indexOf(turma);
+    // ALTERE PARA:
+    const dadosReferencia = (modalidade === "SUPERIOR" ? dadosSuperior : dadosIntegrado);
+    const idx = dadosReferencia[0].indexOf(turma);
 
     return Object.values(sabados).some(linhas => {
-
       return linhas.some(r => {
-
-        const val =
-          normalizarTexto(r[idx] || "");
-
+        const val = normalizarTexto(r[idx] || "");
         return val.includes(busca);
-
       });
-
     });
-
   });
-
 }
-
+  
   let html = "";
 
   const regrasDestaque = [
@@ -3452,7 +3443,8 @@ if (busca) {
 
       turmasAtivas.forEach(turma => {
 
-        const idx = dadosGlobais[0].indexOf(turma);
+        const dadosReferencia = (modalidade === "SUPERIOR" ? dadosSuperior : dadosIntegrado);
+        const idx = dadosReferencia[0].indexOf(turma);
 
         let val = (r[idx] || "").trim();
 
