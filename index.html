@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 - v
 </div>
 
 </div>
@@ -1605,14 +1605,50 @@ function normalizarDia(texto) {
 
 function montarBaseGeral(integrado, superior) {
 
-    BASE_GERAL = [
-        ...integrado,
-        ...superior
-    ];
+    const base = [];
 
-    console.log("BASE CARREGADA:", BASE_GERAL.length);
+    function normalizarPlanilha(dados, tipo) {
+
+        const header = dados[0];
+
+        for (let i = 1; i < dados.length; i++) {
+
+            const linha = dados[i];
+
+            if (!linha || !linha.length) continue;
+
+            const data = linha[0];
+            const horario = linha[1];
+
+            if (!data || !horario) continue;
+
+            for (let c = 2; c < linha.length; c++) {
+
+                const valor = linha[c];
+
+                if (!valor || valor.trim() === "") continue;
+
+                const turma = header[c];
+
+                base.push({
+                    data,
+                    horario,
+                    turma,
+                    valor,
+                    modalidade: tipo
+                });
+            }
+        }
+    }
+
+    normalizarPlanilha(integrado, "INTEGRADO");
+    normalizarPlanilha(superior, "SUPERIOR");
+
+    BASE_GERAL = base;
 
     montarIndiceProfessores();
+
+    console.log("BASE FINAL:", BASE_GERAL.length);
 }
  
 function carregarListaProfessores() {
