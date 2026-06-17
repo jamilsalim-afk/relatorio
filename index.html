@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 --
 </div>
 
 </div>
@@ -3342,16 +3342,29 @@ function renderSabados() {
     );
 
   // 🔥 sincroniza modalidade principal
-  const modalidade =
-    document.getElementById("selectModalidadeSabados")?.value ||
-    "INTEGRADO";
-
+  const modalidade = document.getElementById("selectModalidadeSabados")?.value || "INTEGRADO";
   const sabados = obterSabadosSemana();
+  const dadosReferencia = (modalidade === "SUPERIOR" ? dadosSuperior : dadosIntegrado);
+  
+  // 1. Obtém todas as turmas possíveis da modalidade
+  const todasTurmas = (modalidade === "SUPERIOR" ? turmasSuperior : turmasIntegrado);
 
-  let turmasAtivas =
-    modalidade === "SUPERIOR"
-        ? turmasSuperior
-        : turmasIntegrado;
+  // 2. 🔥 FILTRO: Mantém apenas turmas que possuem aulas nos sábados encontrados
+  let turmasAtivas = todasTurmas.filter(turma => {
+    const idx = dadosReferencia[0].indexOf(turma);
+    // Verifica se, entre todos os sábados com aula, esta turma tem algum valor válido
+    return Object.values(sabados).some(linhas => {
+      return linhas.some(r => {
+        const val = normalizarTexto(r[idx] || "");
+        // Considera "aula" se houver valor e não for marcador de intervalo/extra
+        return val !== "" && 
+               !val.includes("INTERVALO") && 
+               !val.includes("[+]") && 
+               !val.includes("[R]") && 
+               val !== "*";
+      });
+    });
+  });
 
 
 // ======================================================
