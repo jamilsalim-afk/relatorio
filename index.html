@@ -2186,103 +2186,53 @@ color:var(--text);
 // 🔥 EXPORTAR FICHA DO PROFESSOR (PDF RETRATO)
 // ======================================================
 function exportarFichaProfessorPDF() {
-
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
-
-    const pageWidth =
-        pdf.internal.pageSize.getWidth();
-
-    const professor =
-        document.getElementById("selectProfessor")?.value;
-
-    const semana =
-        document.getElementById("selectSemanaProfessor")?.value;
-
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const professor = document.getElementById("selectProfessor")?.value;
+    const semana = document.getElementById("selectSemanaProfessor")?.value;
     if (!professor || !semana) return;
-
-    const { dias, horarios, grade } =
-        montarGradeProfessor(
-            BASE_GERAL,
-            professor,
-            semana
-        );
-
-    const aulas =
-        getDadosProfessor(
-            professor,
-            semana
-        );
-
+    const { dias, horarios, grade } = montarGradeProfessor(BASE_GERAL, professor, semana);
+    const aulas = getDadosProfessor(professor, semana);
     const totalAulasSegSex = aulas.filter(a => {
-
-    const [dia, mes, ano] = a.data.split("/");
-
-    const dt =
-        new Date(ano, mes - 1, dia);
-
-    return dt.getDay() >= 1 &&
-           dt.getDay() <= 5;
-
-}).length;
-
-const totalAulasSab = aulas.filter(a => {
-
-    const [dia, mes, ano] = a.data.split("/");
-
-    const dt =
-        new Date(ano, mes - 1, dia);
-
-    return dt.getDay() === 6;
-
-}).length;
-
-const totalAulas =
-    totalAulasSegSex + totalAulasSab;
-
-    const totalTurmas =
-        new Set(
-            aulas.map(a => a.turma)
-        ).size;
-
-    const totalDias =
-        new Set(
-            aulas.map(a => a.data)
-        ).size;
-
+            const [dia, mes, ano] = a.data.split("/");
+            const dt = new Date(ano, mes - 1, dia);
+            return (dt.getDay() >= 1 && dt.getDay() <= 5);
+        }).length;
+    const totalAulasSab = aulas.filter(a => {
+            const [dia, mes, ano] = a.data.split("/");
+            const dt = new Date(ano, mes - 1, dia);
+            return dt.getDay() === 6;
+        }).length;
+    const totalAulas = totalAulasSegSex + totalAulasSab;
+    const totalTurmas = new Set(aulas.map(a => a.turma)).size;
+    const totalDias = new Set(aulas.map(a => a.data)).size;
     // =====================================
     // CABEÇALHO
     // =====================================
-
     pdf.setFontSize(10);
-
     pdf.text(
         "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
         pageWidth / 2,
         10,
         { align: "center" }
     );
-
     pdf.text(
         "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
         pageWidth / 2,
         14,
         { align: "center" }
     );
-
     pdf.setFontSize(11);
     pdf.setFont(undefined, "bold");
-
     pdf.text(
         `FICHA DO PROFESSOR: ${professor}`,
         pageWidth / 2,
         22,
         { align: "center" }
     );
-
     pdf.setFontSize(9);
     pdf.setFont(undefined, "normal");
-
     pdf.text(
         `Semana de ${semana}`,
         pageWidth / 2,
@@ -2293,84 +2243,62 @@ const totalAulas =
     // =====================================
     // ESTATÍSTICAS
     // =====================================
-
     pdf.setDrawColor(180);
-
-    pdf.roundedRect(15, 33, 55, 22, 2, 2);
-    pdf.roundedRect(78, 33, 55, 14, 2, 2);
-    pdf.roundedRect(141, 33, 55, 14, 2, 2);
-
+    pdf.roundedRect(10, 33, 60, 22, 2, 2);
+    pdf.roundedRect(75, 33, 60, 22, 2, 2);
+    pdf.roundedRect(140, 33, 60, 22, 2, 2);
     pdf.setFontSize(8);
-
     pdf.text(
         "TOTAL DE AULAS",
-        42.5,
+        40,
         38,
         { align: "center" }
     );
-
     pdf.text(
         "TURMAS",
-        105.5,
+        105,
         38,
         { align: "center" }
     );
-
     pdf.text(
         "DIAS COM AULA",
-        168.5,
+        170,
         38,
         { align: "center" }
     );
+    pdf.setFontSize(18);
+    pdf.setFont(undefined, "bold");
 
-  pdf.setFontSize(14);
-pdf.setFont(undefined, "bold");
-  
-pdf.text(
-    String(totalAulas),
-    42.5,
-    42,
-    { align: "center" }
-);
-
-pdf.setFontSize(7);
-
-pdf.text(
-    `Seg-Sex: ${totalAulasSegSex}`,
-    42.5,
-    48,
-    { align: "center" }
-);
-
-pdf.text(
-    `Sáb: ${totalAulasSab}`,
-    42.5,
-    52,
-    { align: "center" }
-);
-
+    pdf.text(
+        String(totalAulas),
+        40,
+        46,
+        { align: "center" }
+    );
     pdf.text(
         String(totalTurmas),
-        105.5,
-        45,
+        105,
+        46,
         { align: "center" }
     );
-
     pdf.text(
         String(totalDias),
-        168.5,
-        45,
+        170,
+        46,
         { align: "center" }
     );
-
+    pdf.setFontSize(7);
     pdf.setFont(undefined, "normal");
-
+    pdf.text(
+        `Seg-Sex: ${totalAulasSegSex} | Sáb: ${totalAulasSab}`,
+        40,
+        52,
+        { align: "center" }
+    );
     // =====================================
     // CORPO DA TABELA
     // =====================================
-
     const body = horarios.map(h => {
-
         const separadores = {
             "__INTERVALO_1__": "INTERVALO",
             "__INTERVALO_2__": "INTERVALO",
@@ -2380,7 +2308,6 @@ pdf.text(
         };
 
         if (separadores[h]) {
-
             return [
                 separadores[h],
                 {
@@ -2393,54 +2320,31 @@ pdf.text(
                     }
                 }
             ];
-
         }
-
         const row = [h];
-
         dias.forEach(d => {
-
-            let conteudo =
-                grade[h]?.[d] || [];
-
+            let conteudo = grade[h]?.[d] || [];
             let texto =
                 Array.isArray(conteudo)
                     ? conteudo.join(" ")
                     : String(conteudo);
-
             texto = texto
                 .replace(/<[^>]*>/g, " ")
                 .replace(/\s+/g, " ")
                 .trim();
-
             row.push(texto);
-
         });
-
         return row;
-
     });
 
     // =====================================
-    // TOTAL POR DIA
+    // AULAS POR DIA
     // =====================================
-
     const aulasPorDia = dias.map(d => {
-
         return aulas.filter(a => {
-
-            const [dia, mes, ano] =
-                a.data.split("/");
-
-            const dt =
-                new Date(
-                    ano,
-                    mes - 1,
-                    dia
-                );
-
-            const nomeDia =
-                [
+            const [dia, mes, ano] = a.data.split("/");
+            const dt = new Date(ano, mes - 1, dia);
+            const nomeDia = [
                     "DOMINGO",
                     "SEGUNDA",
                     "TERÇA",
@@ -2449,124 +2353,74 @@ pdf.text(
                     "SEXTA",
                     "SÁBADO"
                 ][dt.getDay()];
-
             return nomeDia === d;
-
         }).length;
-
     });
-
     body.push([
         "AULAS/DIA",
         ...aulasPorDia
     ]);
-
     // =====================================
     // TABELA
     // =====================================
-
     pdf.autoTable({
-
         head: [
             [
                 "Horário",
                 ...dias
             ]
         ],
-
         body,
-
-        startY: 60,
-
+        startY: 62,
         theme: "grid",
-
         styles: {
             fontSize: 6,
             cellPadding: 1,
             valign: "middle",
-            halign: "center"
+            halign: "center",
+            overflow: "linebreak"
         },
-
         headStyles: {
             fillColor: [21, 128, 61],
             textColor: [255, 255, 255],
             halign: "center"
         },
-
         columnStyles: {
-
-    0: {
-        cellWidth: 18,
-        halign: 'center'
-    },
-
-    1: {
-        cellWidth: 28
-    },
-
-    2: {
-        cellWidth: 28
-    },
-
-    3: {
-        cellWidth: 28
-    },
-
-    4: {
-        cellWidth: 28
-    },
-
-    5: {
-        cellWidth: 28
-    },
-
-    6: {
-        cellWidth: 28
-    }
-
-},
+            0: {
+                cellWidth: 18,
+                halign: "center"
+            }
+        },
 
         didParseCell: (data) => {
-
             if (
                 data.row.index ===
                 body.length - 1
             ) {
-
                 data.cell.styles.fillColor =
                     [232, 245, 233];
-
                 data.cell.styles.fontStyle =
                     "bold";
-
             }
-
         }
-
     });
 
     // =====================================
     // RODAPÉ
     // =====================================
-
     pdf.setFontSize(8);
-
     pdf.text(
         "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
         pageWidth / 2,
         285,
         { align: "center" }
     );
-
     // =====================================
     // SALVAR
     // =====================================
-
     const nomeArquivo =
         `${professor.replace(/\s+/g, '_')}_Semana_de_${semana.replace(/\//g, '-')}.pdf`;
-
     pdf.save(nomeArquivo);
-
 }
 
   function obterInicioSemana(dataBR) {
