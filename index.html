@@ -2207,6 +2207,27 @@ function exportarFichaProfessorPDF() {
     pdf.setFont(undefined, 'normal');
     pdf.text(`Semana de ${semana}`, pageWidth / 2, 27, { align: 'center' });
 
+  pdf.setDrawColor(180);
+
+pdf.roundedRect(15, 33, 55, 14, 2, 2);
+pdf.roundedRect(78, 33, 55, 14, 2, 2);
+pdf.roundedRect(141, 33, 55, 14, 2, 2);
+
+pdf.setFontSize(8);
+
+pdf.text("TOTAL DE AULAS", 42.5, 38, { align: "center" });
+pdf.text("TURMAS", 105.5, 38, { align: "center" });
+pdf.text("DIAS COM AULA", 168.5, 38, { align: "center" });
+
+pdf.setFontSize(16);
+pdf.setFont(undefined, "bold");
+
+pdf.text(String(totalAulas), 42.5, 45, { align: "center" });
+pdf.text(String(totalTurmas), 105.5, 45, { align: "center" });
+pdf.text(String(totalDias), 168.5, 45, { align: "center" });
+
+pdf.setFont(undefined, "normal");
+
     // Preparação do Body espelhando o HTML
     const body = horarios.map(h => {
         // Mapeamento dos labels de separador exatamente como no HTML
@@ -2235,6 +2256,17 @@ function exportarFichaProfessorPDF() {
 
     // Somatória
     const aulas = getDadosProfessor(professor, semana);
+  const totalAulas = aulas.length;
+
+const totalTurmas =
+    new Set(
+        aulas.map(a => a.turma)
+    ).size;
+
+const totalDias =
+    new Set(
+        aulas.map(a => a.data)
+    ).size;
     const aulasPorDia = dias.map(d => aulas.filter(a => {
         const [dia, mes, ano] = a.data.split("/");
         const dt = new Date(ano, mes - 1, dia);
@@ -2247,9 +2279,9 @@ function exportarFichaProfessorPDF() {
     pdf.autoTable({
         head: [['Horário', ...dias]],
         body: body,
-        startY: 32,
+        startY: 52,
         theme: 'grid',
-        styles: { fontSize: 6, cellPadding: 1, valign: 'middle' },
+        styles: { fontSize: 6, cellPadding: 1, valign: 'middle', halign: 'center' },
         headStyles: { fillColor: [21, 128, 61], textColor: [255, 255, 255] },
         didParseCell: (data) => {
             if (data.row.index === body.length - 1) { // Estilo linha total
