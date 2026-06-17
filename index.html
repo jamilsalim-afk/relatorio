@@ -3774,6 +3774,7 @@ window.onload = async () => {
     document.getElementById("btnTema").innerHTML = "🌙";
   }
 
+  // EVENTO DO BOTÃO DE TEMA
   document.getElementById("btnTema").addEventListener("click", () => {
 
     const temaAtual =
@@ -3782,17 +3783,13 @@ window.onload = async () => {
     if (temaAtual === "dark") {
 
       document.documentElement.removeAttribute("data-theme");
-
       localStorage.setItem("tema", "light");
-
       document.getElementById("btnTema").innerHTML = "🌙";
 
     } else {
 
       document.documentElement.setAttribute("data-theme", "dark");
-
       localStorage.setItem("tema", "dark");
-
       document.getElementById("btnTema").innerHTML = "☀️";
 
     }
