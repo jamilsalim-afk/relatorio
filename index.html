@@ -3766,24 +3766,42 @@ window.onload = async () => {
 
   const btnTema = document.getElementById("btnTema");
 
-  console.log("BOTÃO ENCONTRADO:", btnTema);
+  // Carrega tema salvo
+  const temaSalvo = localStorage.getItem("tema");
 
-  if (btnTema) {
+  if (temaSalvo === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    btnTema.innerHTML = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    btnTema.innerHTML = "🌙";
+  }
 
-    btnTema.addEventListener("click", () => {
+  // Evento do botão
+  btnTema.addEventListener("click", () => {
 
-      console.log("BOTÃO CLICADO");
+    const modoEscuro =
+      document.documentElement.getAttribute("data-theme") === "dark";
+
+    if (modoEscuro) {
+
+      document.documentElement.removeAttribute("data-theme");
+
+      localStorage.setItem("tema", "light");
+
+      btnTema.innerHTML = "🌙";
+
+    } else {
 
       document.documentElement.setAttribute("data-theme", "dark");
 
-      console.log(
-        "TEMA ATUAL:",
-        document.documentElement.getAttribute("data-theme")
-      );
+      localStorage.setItem("tema", "dark");
 
-    });
+      btnTema.innerHTML = "☀️";
 
-  }
+    }
+
+  });
 
   await init();
 
