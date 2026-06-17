@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 --
 </div>
 
 </div>
@@ -1323,30 +1323,33 @@ return r;
 }
 
 async function carregarIntegrado(){
-
-  const url =
+  const url = 
     `https://docs.google.com/spreadsheets/d/${SHEETS.INTEGRADO.id}/export?format=csv&gid=${SHEETS.INTEGRADO.gid}`;
 
   const res = await fetch(url);
+  dadosIntegrado = parseCSV(await res.text());
 
-  dadosIntegrado =
-    parseCSV(await res.text());
+  // 🔥 ADICIONE ESTA PARTE:
+  const processado = processarBaseModalidade(dadosIntegrado);
+  semanasIntegrado = processado.semanas;
+  turmasIntegrado = processado.turmas;
 }
 
 async function carregarSuperior(){
-
-  const url =
+  const url = 
     `https://docs.google.com/spreadsheets/d/${SHEETS.SUPERIOR.id}/export?format=csv&gid=${SHEETS.SUPERIOR.gid}`;
 
   const res = await fetch(url);
+  dadosSuperior = parseCSV(await res.text());
 
-  dadosSuperior =
-    parseCSV(await res.text());
+  // 🔥 ADICIONE ESTA PARTE:
+  const processado = processarBaseModalidade(dadosSuperior);
+  semanasSuperior = processado.semanas;
+  turmasSuperior = processado.turmas;
 }
 
 async function carregarProfessores(){
-
-    const url =
+    const url = 
       `https://docs.google.com/spreadsheets/d/${SHEETS.PROFESSORES.id}/export?format=csv&gid=${SHEETS.PROFESSORES.gid}`;
 
     const res = await fetch(url);
