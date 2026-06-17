@@ -1731,37 +1731,40 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 
     const horarios = [
 
-    "07:30 - 08:20",
-    "08:20 - 09:10",
+        "07:30 - 08:20",
+        "08:20 - 09:10",
 
-    "__INTERVALO_1__",
+        "__INTERVALO_1__",
 
-    "09:30 - 10:20",
-    "10:20 - 11:10",
-    "11:10 - 12:00",
+        "09:30 - 10:20",
+        "10:20 - 11:10",
+        "11:10 - 12:00",
 
-    "__ALMOCO__",
+        "__ALMOCO__",
 
-    "13:50 - 14:40",
-    "14:40 - 15:30",
+        "13:50 - 14:40",
+        "14:40 - 15:30",
 
-    "__INTERVALO_2__",
+        "__INTERVALO_2__",
 
-    "15:50 - 16:40",
-    "16:40 - 17:30",
-    "17:30 - 18:20",
+        "15:50 - 16:40",
+        "16:40 - 17:30",
+        "17:30 - 18:20",
 
-    "__JANTAR__",
+        "__JANTAR__",
 
-    "19:00 - 19:50",
-    "19:50 - 20:40",
+        "19:00 - 19:50",
+        "19:50 - 20:40",
 
-    "__INTERVALO_3__",
+        "__INTERVALO_3__",
 
-    "20:50 - 21:40",
-    "21:40 - 22:30"
-];
+        "20:50 - 21:40",
+        "21:40 - 22:30"
+    ];
 
+    // ==============================
+    // 🔥 GRADE BASE (TUDO ARRAY)
+    // ==============================
     const grade = {};
 
     horarios.forEach(h => {
@@ -1769,16 +1772,18 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
         grade[h] = {};
 
         dias.forEach(d => {
-            grade[h][d] = "";
+            grade[h][d] = [];
         });
     });
 
+    // ==============================
+    // 🔥 PREENCHIMENTO
+    // ==============================
     aulas.forEach(aula => {
 
-        const [d,m,a] = aula.data.split("/");
+        const [d, m, a] = aula.data.split("/");
 
-        const dt =
-            new Date(a, m - 1, d);
+        const dt = new Date(a, m - 1, d);
 
         const diaSemana =
             [
@@ -1791,22 +1796,32 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
                 "SÁBADO"
             ][dt.getDay()];
 
-        if (!grade[aula.horario]) return;
+        // normaliza horário (evita erro de espaço)
+        const horario = horarios.find(h =>
+            h.trim() === (aula.horario || "").trim()
+        );
 
-        if (!grade[aula.horario][diaSemana]) {
-    grade[aula.horario][diaSemana] = [];
-}
+        if (!horario) return;
 
-grade[aula.horario][diaSemana].push(`
-    <div style="
-        margin-bottom:4px;
-        padding:3px;
-        border-left:3px solid #15803d;
-    ">
-        <b>${aula.turma}</b><br>
-        ${aula.disciplina}
-    </div>
-`);
+        if (!grade[horario]) return;
+
+        if (!grade[horario][diaSemana]) {
+            grade[horario][diaSemana] = [];
+        }
+
+        const turma = aula.turma || "";
+        const disciplina = aula.disciplina || "";
+
+        grade[horario][diaSemana].push(`
+            <div style="
+                margin-bottom:4px;
+                padding:3px;
+                border-left:3px solid #15803d;
+            ">
+                <b>${turma}</b><br>
+                ${disciplina}
+            </div>
+        `);
     });
 
     return {
