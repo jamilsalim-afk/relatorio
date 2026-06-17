@@ -2988,13 +2988,24 @@ window.addEventListener("beforeunload", () => {
   document.getElementById("btnTema").addEventListener("click", () => {
 
   const html = document.documentElement;
+  const btn = document.getElementById("btnTema");
 
   if (html.getAttribute("data-theme") === "dark") {
+
     html.removeAttribute("data-theme");
-    document.getElementById("btnTema").innerHTML = "🌙";
+
+    localStorage.setItem("tema", "light");
+
+    btn.innerHTML = "🌙";
+
   } else {
+
     html.setAttribute("data-theme", "dark");
-    document.getElementById("btnTema").innerHTML = "☀️";
+
+    localStorage.setItem("tema", "dark");
+
+    btn.innerHTML = "☀️";
+
   }
 
 });
@@ -3764,18 +3775,16 @@ async function trocarModalidadeSabados() {
   
 window.onload = async () => {
 
-  const btnTema = document.getElementById("btnTema");
-
-  // Carrega tema salvo
   const temaSalvo = localStorage.getItem("tema");
+const btnTema = document.getElementById("btnTema");
 
-  if (temaSalvo === "dark") {
-    document.documentElement.setAttribute("data-theme", "dark");
-    btnTema.innerHTML = "☀️";
-  } else {
-    document.documentElement.removeAttribute("data-theme");
-    btnTema.innerHTML = "🌙";
-  }
+if (temaSalvo === "dark") {
+  document.documentElement.setAttribute("data-theme", "dark");
+  btnTema.innerHTML = "☀️";
+} else {
+  document.documentElement.removeAttribute("data-theme");
+  btnTema.innerHTML = "🌙";
+}
 
   // Evento do botão
   btnTema.addEventListener("click", () => {
