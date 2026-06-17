@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 --
 </div>
 
 </div>
@@ -2171,9 +2171,12 @@ function renderProfessor(){
     container.innerHTML = html;
 }
 
-  function exportarFichaProfessorPDF() {
+// ======================================================
+// 🔥 EXPORTAR FICHA DO PROFESSOR (PDF RETRATO)
+// ======================================================
+function exportarFichaProfessorPDF() {
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'mm', 'a4'); // 🔥 Formato Retrato
+  const pdf = new jsPDF('p', 'mm', 'a4'); // Retrato
   const pageWidth = pdf.internal.pageSize.getWidth();
 
   const professor = document.getElementById("selectProfessor")?.value;
@@ -2183,40 +2186,56 @@ function renderProfessor(){
 
   const { dias, horarios, grade } = montarGradeProfessor(BASE_GERAL, professor, semana);
 
-  // 🔥 Cabeçalho Padrão
+  // 🔥 CABEÇALHO PADRÃO
   pdf.setFontSize(10);
-  pdf.text("INSTITUTO FEDERAL DE RONDÔNIA - IFRO", pageWidth / 2, 10, { align: 'center' });
-  pdf.text("CAMPUS CACOAL - DAPE", pageWidth / 2, 14, { align: 'center' });
+  pdf.text("INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO", pageWidth / 2, 10, { align: 'center' });
+  pdf.text("CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE", pageWidth / 2, 14, { align: 'center' });
   pdf.setFontSize(12);
+  pdf.setFont(undefined, 'bold');
   pdf.text(`FICHA DO PROFESSOR: ${professor}`, pageWidth / 2, 22, { align: 'center' });
+  pdf.setFontSize(10);
+  pdf.setFont(undefined, 'normal');
   pdf.text(`Semana de ${semana}`, pageWidth / 2, 28, { align: 'center' });
 
-  // Preparação dos dados para o autoTable
+  // 🔥 PREPARAÇÃO DOS DADOS
   const body = horarios.map(h => {
-    const row = [h];
+    const row = [h.replace(/__/g, '')]; // Remove underlines do nome do intervalo
     dias.forEach(d => {
-      // Limpa as tags HTML do conteúdo da grade para o PDF
-      const texto = (grade[h]?.[d] || "").replace(/<[^>]*>/g, " ").trim();
+      let conteudo = grade[h]?.[d] || "";
+      
+      // Converte para string e remove tags HTML
+      let texto = Array.isArray(conteudo) ? conteudo.join(" ") : String(conteudo);
+      texto = texto.replace(/<[^>]*>/g, " ").replace(/\s+/g, ' ').trim();
+      
       row.push(texto);
     });
     return row;
   });
 
+  // 🔥 TABELA
   pdf.autoTable({
     head: [['Horário', ...dias]],
     body: body,
     startY: 35,
     theme: 'grid',
     styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
-    headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255] },
-    columnStyles: { 0: { cellWidth: 25 } }
+    headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255], fontStyle: 'bold' },
+    columnStyles: { 
+        0: { cellWidth: 25 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 25 }
+    }
   });
 
-  // 🔥 Rodapé Padrão
+  // 🔥 RODAPÉ
   pdf.setFontSize(8);
-  pdf.text("IFRO - Campus Cacoal | dape.cacoal@ifro.edu.br", pageWidth / 2, 285, { align: 'center' });
+  pdf.text("IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br", pageWidth / 2, 285, { align: 'center' });
 
-  // 🔥 Nome do arquivo dinâmico
+  // 🔥 NOME DO ARQUIVO DINÂMICO
   const nomeArquivo = `${professor.replace(/\s+/g, '_')}_Semana_de_${semana.replace(/\//g, '-')}.pdf`;
   pdf.save(nomeArquivo);
 }
