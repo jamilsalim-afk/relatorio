@@ -2277,19 +2277,52 @@ const totalDias =
     body.push(['AULAS/DIA', ...aulasPorDia]);
 
     pdf.autoTable({
-        head: [['Horário', ...dias]],
-        body: body,
-        startY: 52,
-        theme: 'grid',
-        styles: { fontSize: 6, cellPadding: 1, valign: 'middle', halign: 'center' },
-        headStyles: { fillColor: [21, 128, 61], textColor: [255, 255, 255] },
-        didParseCell: (data) => {
-            if (data.row.index === body.length - 1) { // Estilo linha total
-                data.cell.styles.fillColor = [232, 245, 233];
-                data.cell.styles.fontStyle = 'bold';
-            }
+    head: [['Horário', ...dias]],
+    body: body,
+    startY: 52,
+    theme: 'grid',
+
+    styles: {
+        fontSize: 6,
+        cellPadding: 1,
+        valign: 'middle',
+        halign: 'center'
+    },
+
+    headStyles: {
+        fillColor: [21, 128, 61],
+        textColor: [255, 255, 255],
+        halign: 'center'
+    },
+
+    columnStyles: {
+
+        0: {
+            cellWidth: 22,
+            halign: 'center'
+        },
+
+        1: { cellWidth: 28 },
+        2: { cellWidth: 28 },
+        3: { cellWidth: 28 },
+        4: { cellWidth: 28 },
+        5: { cellWidth: 28 },
+        6: { cellWidth: 28 }
+
+    },
+
+    didParseCell: (data) => {
+
+        if (data.row.index === body.length - 1) {
+
+            data.cell.styles.fillColor = [232, 245, 233];
+            data.cell.styles.fontStyle = 'bold';
+
         }
-    });
+
+    }
+
+});
 
   // 🔥 RODAPÉ
   pdf.setFontSize(8);
