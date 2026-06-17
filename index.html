@@ -2985,31 +2985,6 @@ window.addEventListener("beforeunload", () => {
   salvarSnapshotAtual();
 });
 
-  document.getElementById("btnTema").addEventListener("click", () => {
-
-  const html = document.documentElement;
-  const btn = document.getElementById("btnTema");
-
-  if (html.getAttribute("data-theme") === "dark") {
-
-    html.removeAttribute("data-theme");
-
-    localStorage.setItem("tema", "light");
-
-    btn.innerHTML = "🌙";
-
-  } else {
-
-    html.setAttribute("data-theme", "dark");
-
-    localStorage.setItem("tema", "dark");
-
-    btn.innerHTML = "☀️";
-
-  }
-
-});
-
 function abrirAba(id, botao){
 
   document.querySelectorAll('.tab-content')
@@ -3775,37 +3750,32 @@ async function trocarModalidadeSabados() {
   
 window.onload = async () => {
 
+  const btnTema = document.getElementById("btnTema");
+
   const temaSalvo = localStorage.getItem("tema");
-const btnTema = document.getElementById("btnTema");
 
-if (temaSalvo === "dark") {
-  document.documentElement.setAttribute("data-theme", "dark");
-  btnTema.innerHTML = "☀️";
-} else {
-  document.documentElement.removeAttribute("data-theme");
-  btnTema.innerHTML = "🌙";
-}
+  if (temaSalvo === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    btnTema.innerHTML = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    btnTema.innerHTML = "🌙";
+  }
 
-  // Evento do botão
   btnTema.addEventListener("click", () => {
 
-    const modoEscuro =
-      document.documentElement.getAttribute("data-theme") === "dark";
+    const html = document.documentElement;
 
-    if (modoEscuro) {
+    if (html.getAttribute("data-theme") === "dark") {
 
-      document.documentElement.removeAttribute("data-theme");
-
+      html.removeAttribute("data-theme");
       localStorage.setItem("tema", "light");
-
       btnTema.innerHTML = "🌙";
 
     } else {
 
-      document.documentElement.setAttribute("data-theme", "dark");
-
+      html.setAttribute("data-theme", "dark");
       localStorage.setItem("tema", "dark");
-
       btnTema.innerHTML = "☀️";
 
     }
