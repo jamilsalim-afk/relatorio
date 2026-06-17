@@ -1909,14 +1909,15 @@ function renderProfessor(){
     ">
 
         <div style="
-            background:white;
+            background:var(--surface);
+color:var(--text);
             padding:15px;
             border-radius:10px;
             box-shadow:0 2px 6px rgba(0,0,0,.15);
             min-width:160px;
             text-align:center;
         ">
-            <div style="font-size:12px;color:#666">
+            <div style="font-size:12px;color:var(--text-soft)">
                 TOTAL DE AULAS
             </div>
             <div style="
@@ -1929,14 +1930,15 @@ function renderProfessor(){
         </div>
 
         <div style="
-            background:white;
+            background:var(--surface);
+color:var(--text);
             padding:15px;
             border-radius:10px;
             box-shadow:0 2px 6px rgba(0,0,0,.15);
             min-width:160px;
             text-align:center;
         ">
-            <div style="font-size:12px;color:#666">
+            <div style="font-size:12px;color:var(--text-soft)">
                 TURMAS
             </div>
             <div style="
@@ -1949,14 +1951,15 @@ function renderProfessor(){
         </div>
 
         <div style="
-            background:white;
+            background:var(--surface);
+color:var(--text);
             padding:15px;
             border-radius:10px;
             box-shadow:0 2px 6px rgba(0,0,0,.15);
             min-width:160px;
             text-align:center;
         ">
-            <div style="font-size:12px;color:#666">
+            <div style="font-size:12px;color:var(--text-soft)">
                 DIAS COM AULA
             </div>
             <div style="
@@ -1971,11 +1974,12 @@ function renderProfessor(){
     </div>
 
     <table style="
-        width:100%;
-        border-collapse:collapse;
-        background:white;
-        font-size:12px;
-    ">
+    width:100%;
+    border-collapse:collapse;
+    background:var(--surface);
+    color:var(--text);
+    font-size:12px;
+">
 
     <thead>
 
@@ -2012,7 +2016,8 @@ function renderProfessor(){
 
             html += `
             <tr style="
-                background:#f1f5f9;
+                background:var(--intervalo);
+color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -2027,7 +2032,8 @@ function renderProfessor(){
 
             html += `
             <tr style="
-                background:#f1f5f9;
+                background:var(--intervalo);
+color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -2042,7 +2048,8 @@ function renderProfessor(){
 
             html += `
             <tr style="
-                background:#f1f5f9;
+                background:var(--intervalo);
+color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -2057,7 +2064,8 @@ function renderProfessor(){
 
             html += `
             <tr style="
-                background:#fff8e1;
+                background:var(--caed);
+color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -2072,7 +2080,8 @@ function renderProfessor(){
 
             html += `
             <tr style="
-                background:#ffe0b2;
+                background:var(--caed);
+color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -2091,7 +2100,8 @@ function renderProfessor(){
                 padding:6px;
                 font-weight:bold;
                 text-align:center;
-                background:#fafafa;
+                background:var(--time-bg);
+color:var(--text);
             ">
                 ${h}
             </td>
