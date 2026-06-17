@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
+HORÁRIOS SEMANAIS - 2026 --
 </div>
 
 </div>
@@ -1322,27 +1322,42 @@ return r;
 });
 }
 
+  function aplicarPreenchimentoParaBaixo(data) {
+    // Começa de 1 para pular o cabeçalho
+    let ultimaData = "";
+    let ultimoHorario = "";
+
+    for (let i = 1; i < data.length; i++) {
+        let row = data[i];
+        // Coluna 0 = Data, Coluna 1 = Horário (ajuste se a ordem for diferente no seu CSV)
+        if (row[0] && row[0].trim() !== "") ultimaData = row[0];
+        else row[0] = ultimaData;
+
+        if (row[1] && row[1].trim() !== "") ultimoHorario = row[1];
+        else row[1] = ultimoHorario;
+    }
+    return data;
+}
+
 async function carregarIntegrado(){
-  const url = 
-    `https://docs.google.com/spreadsheets/d/${SHEETS.INTEGRADO.id}/export?format=csv&gid=${SHEETS.INTEGRADO.gid}`;
-
+  const url = `https://docs.google.com/spreadsheets/d/${SHEETS.INTEGRADO.id}/export?format=csv&gid=${SHEETS.INTEGRADO.gid}`;
   const res = await fetch(url);
-  dadosIntegrado = parseCSV(await res.text());
+  
+  // 🔥 Aplica o preenchimento aqui
+  dadosIntegrado = aplicarPreenchimentoParaBaixo(parseCSV(await res.text()));
 
-  // 🔥 ADICIONE ESTA PARTE:
   const processado = processarBaseModalidade(dadosIntegrado);
   semanasIntegrado = processado.semanas;
   turmasIntegrado = processado.turmas;
 }
 
 async function carregarSuperior(){
-  const url = 
-    `https://docs.google.com/spreadsheets/d/${SHEETS.SUPERIOR.id}/export?format=csv&gid=${SHEETS.SUPERIOR.gid}`;
-
+  const url = `https://docs.google.com/spreadsheets/d/${SHEETS.SUPERIOR.id}/export?format=csv&gid=${SHEETS.SUPERIOR.gid}`;
   const res = await fetch(url);
-  dadosSuperior = parseCSV(await res.text());
+  
+  // 🔥 Aplica o preenchimento aqui
+  dadosSuperior = aplicarPreenchimentoParaBaixo(parseCSV(await res.text()));
 
-  // 🔥 ADICIONE ESTA PARTE:
   const processado = processarBaseModalidade(dadosSuperior);
   semanasSuperior = processado.semanas;
   turmasSuperior = processado.turmas;
