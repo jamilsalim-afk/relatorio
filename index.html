@@ -812,7 +812,7 @@ DEPARTAMENTO DE APOIO AO ENSINO
 </div>
 
 <div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026 --
+HORÁRIOS SEMANAIS - 2026
 </div>
 
 </div>
@@ -3773,6 +3773,31 @@ window.onload = async () => {
     document.documentElement.removeAttribute("data-theme");
     document.getElementById("btnTema").innerHTML = "🌙";
   }
+
+  document.getElementById("btnTema").addEventListener("click", () => {
+
+    const temaAtual =
+      document.documentElement.getAttribute("data-theme");
+
+    if (temaAtual === "dark") {
+
+      document.documentElement.removeAttribute("data-theme");
+
+      localStorage.setItem("tema", "light");
+
+      document.getElementById("btnTema").innerHTML = "🌙";
+
+    } else {
+
+      document.documentElement.setAttribute("data-theme", "dark");
+
+      localStorage.setItem("tema", "dark");
+
+      document.getElementById("btnTema").innerHTML = "☀️";
+
+    }
+
+  });
 
   await init();
 
