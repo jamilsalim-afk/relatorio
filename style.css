@@ -824,3 +824,133 @@ body {
 #tabelaEstatistica tr:hover {
     background: #f3f4f6;
 }
+
+/* ==========================================
+   ESTATÍSTICAS
+========================================== */
+
+.estatistica-header{
+
+    text-align:center;
+    padding:20px;
+
+}
+
+.estatistica-header h1{
+
+    font-size:32px;
+    color:#2e7d32;
+    margin-bottom:5px;
+
+}
+
+.estatistica-header p{
+
+    color:#666;
+    font-size:15px;
+
+}
+
+.estatistica-cards{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(auto-fit,minmax(180px,1fr));
+
+    gap:15px;
+
+    margin:20px;
+
+}
+
+.estat-card{
+
+    background:white;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    text-align:center;
+
+    box-shadow:
+      0 3px 12px rgba(0,0,0,.08);
+
+}
+
+.estat-card span{
+
+    display:block;
+
+    font-size:32px;
+
+    font-weight:bold;
+
+    color:#2e7d32;
+
+}
+
+.estat-card small{
+
+    font-size:14px;
+
+    color:#666;
+
+}
+
+#tabelaRelatorioEstatistica{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+#tabelaRelatorioEstatistica thead th{
+
+    background:#2e7d32;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    padding:12px;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:5;
+
+}
+
+#tabelaRelatorioEstatistica tbody td{
+
+    padding:10px;
+
+    font-size:14px;
+
+}
+
+#tabelaRelatorioEstatistica tbody tr:nth-child(even){
+
+    background:#f5fdf6;
+
+}
+
+#tabelaRelatorioEstatistica tbody tr:hover{
+
+    background:#e8f5e9;
+
+}
+
+.coluna-periodo{
+
+    font-weight:bold;
+
+    color:#2e7d32;
+
+}
