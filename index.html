@@ -1073,10 +1073,53 @@ function formatarData(date) {
   
 function atualizarRelatorio() {
 
-    const filtro = document.getElementById("selectModalidadeEstatistica").value;
-    const busca = document.getElementById("inputBuscaEstatistica").value;
+    const filtro =
+        document.getElementById(
+            "selectModalidadeEstatistica"
+        ).value;
 
-    montarRelatorioDisciplinas(filtro, busca);
+    const busca =
+        document.getElementById(
+            "inputBuscaEstatistica"
+        ).value;
+
+    const dados =
+        montarRelatorioDisciplinas(
+            filtro,
+            busca
+        );
+
+    document.getElementById(
+        "estatTotalDisciplinas"
+    ).innerText =
+        new Set(
+            dados.map(
+                d => d.disciplina
+            )
+        ).size;
+
+    document.getElementById(
+        "estatTotalProfessores"
+    ).innerText =
+        new Set(
+            dados.map(
+                d => d.professor
+            )
+        ).size;
+
+    document.getElementById(
+        "estatTotalTurmas"
+    ).innerText =
+        new Set(
+            dados.map(
+                d => d.turma
+            )
+        ).size;
+
+    document.getElementById(
+        "estatTotalRegistros"
+    ).innerText =
+        dados.length;
 }
 
 function exportarRelatorioPDF() {
