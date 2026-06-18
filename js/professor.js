@@ -1,3 +1,94 @@
+function montarIndiceProfessores() {
+
+    INDEX_PROFESSOR = {};
+    INDEX_TURMA = {};
+
+    BASE_GERAL.forEach(item => {
+
+        const valor =
+            item.valor || "";
+
+        if (!valor.includes(" - "))
+            return;
+
+        const [
+            disciplina,
+            professor
+        ] =
+            valor
+                .split(" - ")
+                .map(v => v.trim());
+
+        if (!professor)
+            return;
+
+        const profNorm =
+            normalizarProfessor(
+                professor
+            );
+
+        // ====================================
+        // ÍNDICE DE PROFESSORES
+        // ====================================
+
+        if (!INDEX_PROFESSOR[profNorm]) {
+
+            INDEX_PROFESSOR[profNorm] = [];
+
+        }
+
+        const registro = {
+
+            data: item.data,
+            horario: item.horario,
+            turma: item.turma,
+            disciplina,
+            professor,
+            modalidade: item.modalidade
+
+        };
+
+        INDEX_PROFESSOR[profNorm].push(
+            registro
+        );
+
+        // ====================================
+        // ÍNDICE DE TURMAS
+        // ====================================
+
+        const turma =
+            item.turma || "";
+
+        if (!turma)
+            return;
+
+        if (!INDEX_TURMA[turma]) {
+
+            INDEX_TURMA[turma] = [];
+
+        }
+
+        INDEX_TURMA[turma].push(
+            registro
+        );
+
+    });
+
+    console.log(
+        "PROF INDEX OK:",
+        Object.keys(
+            INDEX_PROFESSOR
+        ).length
+    );
+
+    console.log(
+        "TURMA INDEX OK:",
+        Object.keys(
+            INDEX_TURMA
+        ).length
+    );
+}
+
 function normalizarProfessor(nome) {
 
     if (!nome) return "";
