@@ -71,6 +71,7 @@ montarBaseGeral(
     dadosSuperior
 );
 montarRelatorioBase();
+montarCacheRelatorioDisciplinas();
 
 // PROFESSORES
 carregarListaProfessores();
