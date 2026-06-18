@@ -24,6 +24,8 @@ let semanasSuperior = {};
 let turmasIntegrado = [];
 let turmasSuperior = [];
 
+let timerBuscaEstatistica = null;
+
 const FERIADOS=[
 "01/01/2026","16/02/2026","17/02/2026","18/02/2026","03/04/2026","20/04/2026","21/04/2026","01/05/2026",
 "04/06/2026","05/06/2026","07/09/2026","12/10/2026","02/11/2026",
