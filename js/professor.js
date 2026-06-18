@@ -169,6 +169,31 @@ function traduzirProfessor(nomeCompleto) {
 
     return nomeNorm;
 }
+
+function obterNomeCompletoProfessor(nome) {
+
+    if (!nome) return "";
+
+    const nomeNorm =
+        normalizarProfessor(nome);
+
+    for (let i = 1; i < dadosProfessores.length; i++) {
+
+        const nomeCompleto =
+            (dadosProfessores[i][0] || "").trim();
+
+        const nomeCurto =
+            normalizarProfessor(
+                dadosProfessores[i][1]
+            );
+
+        if (nomeCurto === nomeNorm) {
+            return nomeCompleto;
+        }
+    }
+
+    return nome;
+}
   
 function getDadosProfessor(professor, semana) {
 
