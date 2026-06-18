@@ -916,3 +916,14 @@ body {
     max-width: 100%;
 }
 
+#tabelaRelatorioEstatistica{
+    width:100%;
+    table-layout:fixed;
+}
+
+#tabelaRelatorioEstatistica th,
+#tabelaRelatorioEstatistica td{
+    white-space:normal;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+}
