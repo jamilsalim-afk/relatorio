@@ -17,6 +17,7 @@ let semanasAgrupadas = [];
 let BASE_GERAL = [];
 let INDEX_PROFESSOR = {};
 let INDEX_TURMA = {};
+let RELATORIO_DISCIPLINAS = [];
 
 let semanasIntegrado = {};
 let semanasSuperior = {};
