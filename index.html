@@ -1003,6 +1003,97 @@ function montarRelatorioBase() {
     );
 }
 
+  function montarCacheRelatorioDisciplinas() {
+
+    const mapa = new Map();
+
+    BASE_GERAL.forEach(a => {
+
+        const valor = (a.valor || "").trim();
+
+        if (!valor.includes(" - "))
+            return;
+
+        let [disciplina, professor] =
+            valor.split(" - ");
+
+        if (!disciplina || !professor)
+            return;
+
+        disciplina = disciplina.trim();
+
+        professor = professor
+            .replace(/\[.*?\]/g, "")
+            .replace(/\*/g, "")
+            .trim();
+
+        professor =
+            traduzirProfessor(professor);
+
+        const data =
+            parseDataBR(a.data);
+
+        const chave =
+            `${disciplina}__${professor}__${a.turma}`;
+
+        if (!mapa.has(chave)) {
+
+            mapa.set(chave, {
+
+                disciplina,
+                professor,
+                turma: a.turma || "",
+                modalidade: a.modalidade || "",
+
+                inicio: data,
+                fim: data
+
+            });
+
+        } else {
+
+            const atual =
+                mapa.get(chave);
+
+            if (data) {
+
+                if (!atual.inicio || data < atual.inicio)
+                    atual.inicio = data;
+
+                if (!atual.fim || data > atual.fim)
+                    atual.fim = data;
+
+            }
+
+            if (
+                atual.modalidade !== a.modalidade
+            ) {
+
+                atual.modalidade = "TODOS";
+
+            }
+
+        }
+
+    });
+
+    RELATORIO_DISCIPLINAS =
+        Array.from(mapa.values());
+
+    RELATORIO_DISCIPLINAS.sort(
+        (a, b) =>
+            a.disciplina.localeCompare(
+                b.disciplina,
+                "pt-BR"
+            )
+    );
+
+    console.log(
+        "CACHE RELATÓRIO:",
+        RELATORIO_DISCIPLINAS.length
+    );
+}
+
 function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "") {
 
     const tabela = document.getElementById("tabelaEstatistica");
