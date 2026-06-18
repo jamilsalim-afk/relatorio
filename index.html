@@ -919,6 +919,90 @@ function abrirAba(id, botao){
   }
 }
 
+function montarRelatorioBase() {
+
+    const mapa = {};
+
+    BASE_GERAL.forEach(aula => {
+
+        const valor = aula.valor || "";
+
+        if (!valor.includes(" - "))
+            return;
+
+        const partes = valor.split(" - ");
+
+        if (partes.length < 2)
+            return;
+
+        const disciplina =
+            partes[0].trim();
+
+        const professor =
+            traduzirProfessor(
+                partes[1].trim()
+            );
+
+        const turma =
+            aula.turma || "";
+
+        const chave =
+            `${disciplina}|${professor}|${turma}|${aula.modalidade}`;
+
+        if (!mapa[chave]) {
+
+            mapa[chave] = {
+
+                disciplina,
+                professor,
+                turma,
+                modalidade: aula.modalidade,
+                datas: []
+
+            };
+        }
+
+        mapa[chave].datas.push(
+            aula.data
+        );
+    });
+
+    RELATORIO_DISCIPLINAS =
+        Object.values(mapa)
+        .map(item => {
+
+            const datas =
+                ordenarDatasBR(
+                    [...new Set(item.datas)]
+                );
+
+            return {
+
+                disciplina:
+                    item.disciplina,
+
+                professor:
+                    item.professor,
+
+                turma:
+                    item.turma,
+
+                modalidade:
+                    item.modalidade,
+
+                periodo:
+                    `${datas[0]} até ${datas[datas.length - 1]}`
+
+            };
+
+        });
+
+    console.log(
+        "RELATÓRIO CACHE:",
+        RELATORIO_DISCIPLINAS.length
+    );
+}
+
 function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "") {
 
     const tabela = document.getElementById("tabelaEstatistica");
