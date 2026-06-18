@@ -180,10 +180,10 @@
   <div class="controls-card">
 
     <select id="selectModalidadeEstatistica" onchange="atualizarRelatorio()">
-      <option value="TODOS">TODOS</option>
-      <option value="INTEGRADO">INTEGRADO</option>
-      <option value="SUPERIOR">SUPERIOR</option>
-    </select>
+  <option value="TODOS">INTEGRADO + SUPERIOR</option>
+  <option value="INTEGRADO">INTEGRADO</option>
+  <option value="SUPERIOR">SUPERIOR</option>
+</select>
 
     <input type="text"
   id="inputBuscaEstatistica"
@@ -201,13 +201,14 @@
 <div class="table-responsive">
   <table>
     <thead>
-      <tr>
-        <th>Disciplina</th>
-        <th>Professor</th>
-        <th>Turma</th>
-      </tr>
-    </thead>
-    <tbody id="tabelaEstatistica"></tbody>
+  <tr>
+    <th>Disciplina</th>
+    <th>Professor</th>
+    <th>Turma</th>
+    <th>Período</th>
+  </tr>
+</thead>
+<tbody id="tabelaEstatistica"></tbody>
   </table>
 </div>
 
@@ -875,11 +876,11 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     // =====================================
     // NORMALIZA FILTRO
     // =====================================
-    filtroModalidade = (filtroModalidade || "TODOS")
-        .toString()
-        .trim()
-        .toUpperCase();
+    filtroModalidade = (filtroModalidade || "TODOS").toUpperCase();
 
+    // =====================================
+    // FILTRO CORRETO (3 OPÇÕES)
+    // =====================================
     if (filtroModalidade !== "TODOS") {
         dados = dados.filter(a =>
             (a.modalidade || "").toUpperCase() === filtroModalidade
@@ -887,7 +888,7 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     }
 
     // =====================================
-    // AGRUPAMENTO COM PERÍODO
+    // AGRUPAMENTO + PERÍODO FIXO
     // =====================================
     const mapa = new Map();
 
@@ -902,6 +903,7 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
         if (!disciplina || !professor) return;
 
         disciplina = disciplina.trim();
+
         professor = professor
             .replace(/\[.*?\]/g, "")
             .replace(/\*/g, "")
@@ -912,9 +914,9 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
 
         const turma = (a.turma || "").trim();
 
-        const chave = `${disciplina}__${professor}__${turma}`;
+        const data = parseDataBR(a.data);
 
-        const data = a.data ? parseDataBR(a.data) : null;
+        const chave = `${disciplina}__${professor}__${turma}`;
 
         if (!mapa.has(chave)) {
 
@@ -922,8 +924,8 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
                 disciplina,
                 professor,
                 turma,
-                dataInicio: data,
-                dataFim: data
+                inicio: data,
+                fim: data
             });
 
         } else {
@@ -931,14 +933,8 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
             const item = mapa.get(chave);
 
             if (data) {
-
-                if (!item.dataInicio || data < item.dataInicio) {
-                    item.dataInicio = data;
-                }
-
-                if (!item.dataFim || data > item.dataFim) {
-                    item.dataFim = data;
-                }
+                if (!item.inicio || data < item.inicio) item.inicio = data;
+                if (!item.fim || data > item.fim) item.fim = data;
             }
         }
     });
@@ -960,22 +956,22 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     }
 
     // =====================================
-    // ORDENAÇÃO
+    // ORDENAR
     // =====================================
     relatorio.sort((a, b) =>
         a.disciplina.localeCompare(b.disciplina, "pt-BR")
     );
 
     // =====================================
-    // RENDER
+    // RENDER COM COLUNA FIXA
     // =====================================
     tabela.innerHTML = "";
 
     relatorio.forEach(item => {
 
         const periodo =
-            item.dataInicio && item.dataFim
-                ? `${formatarData(item.dataInicio)} → ${formatarData(item.dataFim)}`
+            item.inicio && item.fim
+                ? `${formatarData(item.inicio)} → ${formatarData(item.fim)}`
                 : "-";
 
         const tr = document.createElement("tr");
@@ -994,22 +990,18 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
 }
 
 function parseDataBR(str) {
-
     if (!str) return null;
-
-    const [d, m, a] = str.split("/");
-
-    return new Date(a, m - 1, d);
+    const [d, m, a] = str.split('/');
+    const dt = new Date(a, m - 1, d);
+    dt.setHours(0, 0, 0, 0);
+    return dt;
 }
 
 function formatarData(date) {
-
     if (!date) return "-";
-
     const d = String(date.getDate()).padStart(2, "0");
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const a = date.getFullYear();
-
     return `${d}/${m}/${a}`;
 }
   
