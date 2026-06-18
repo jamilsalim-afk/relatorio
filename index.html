@@ -873,14 +873,21 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     let dados = [...BASE_GERAL];
 
     // =====================================
-    // FILTRO MODALIDADE
+    // NORMALIZA FILTRO
     // =====================================
+    filtroModalidade = (filtroModalidade || "TODOS")
+        .toString()
+        .trim()
+        .toUpperCase();
+
     if (filtroModalidade !== "TODOS") {
-        dados = dados.filter(a => a.modalidade === filtroModalidade);
+        dados = dados.filter(a =>
+            (a.modalidade || "").toUpperCase() === filtroModalidade
+        );
     }
 
     // =====================================
-    // LIMPEZA + EXTRAÇÃO SEGURA
+    // AGRUPAMENTO COM PERÍODO
     // =====================================
     const mapa = new Map();
 
@@ -888,7 +895,6 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
 
         const valor = (a.valor || "").trim();
 
-        // ❌ IGNORA tudo que não segue padrão correto
         if (!valor.includes(" - ")) return;
 
         let [disciplina, professor] = valor.split(" - ");
@@ -896,35 +902,44 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
         if (!disciplina || !professor) return;
 
         disciplina = disciplina.trim();
-        professor = professor.trim();
-
-        // =====================================
-        // REMOVE MARCADORES DO PROFESSOR
-        // =====================================
         professor = professor
-            .replace(/\[.*?\]/g, "")   // [R], [EX], etc
-            .replace(/\*/g, "")        // *
-            .replace(/\s+/g, " ")      // espaços duplicados
+            .replace(/\[.*?\]/g, "")
+            .replace(/\*/g, "")
+            .replace(/\s+/g, " ")
             .trim();
 
-        // =====================================
-        // NORMALIZA PROFESSOR (nome completo)
-        // =====================================
         professor = traduzirProfessor(professor);
 
         const turma = (a.turma || "").trim();
 
-        // =====================================
-        // CHAVE ÚNICA (REMOVE DUPLICADOS)
-        // =====================================
         const chave = `${disciplina}__${professor}__${turma}`;
 
+        const data = a.data ? parseDataBR(a.data) : null;
+
         if (!mapa.has(chave)) {
+
             mapa.set(chave, {
                 disciplina,
                 professor,
-                turma
+                turma,
+                dataInicio: data,
+                dataFim: data
             });
+
+        } else {
+
+            const item = mapa.get(chave);
+
+            if (data) {
+
+                if (!item.dataInicio || data < item.dataInicio) {
+                    item.dataInicio = data;
+                }
+
+                if (!item.dataFim || data > item.dataFim) {
+                    item.dataFim = data;
+                }
+            }
         }
     });
 
@@ -952,26 +967,24 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     );
 
     // =====================================
-    // RENDER (LETRA MAIOR AQUI)
+    // RENDER
     // =====================================
     tabela.innerHTML = "";
 
     relatorio.forEach(item => {
 
+        const periodo =
+            item.dataInicio && item.dataFim
+                ? `${formatarData(item.dataInicio)} → ${formatarData(item.dataFim)}`
+                : "-";
+
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-            <td style="font-size:15px; padding:6px;">
-                ${item.disciplina}
-            </td>
-
-            <td style="font-size:15px; padding:6px;">
-                ${item.professor}
-            </td>
-
-            <td style="font-size:15px; padding:6px;">
-                ${item.turma}
-            </td>
+            <td style="font-size:15px">${item.disciplina}</td>
+            <td style="font-size:15px">${item.professor}</td>
+            <td style="font-size:15px">${item.turma}</td>
+            <td style="font-size:13px; color:#555">${periodo}</td>
         `;
 
         tabela.appendChild(tr);
