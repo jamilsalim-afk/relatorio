@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
 <meta charset="UTF-8">
 <title>Consulta de Horários Semanais - IFRO</title>
@@ -12,6 +13,9 @@
 
 <body>
 
+<div class="app-container">
+
+<!-- ================= HEADER ================= -->
 <header class="header">
   <div class="header-inner">
 
@@ -19,7 +23,6 @@
       <div class="brand-title">
         IFRO - Campus Cacoal
       </div>
-
       <div class="brand-subtitle">
         Sistema de Horários Acadêmicos • 2026
       </div>
@@ -30,6 +33,7 @@
   </div>
 </header>
 
+<!-- ================= NAV ================= -->
 <nav class="tabs">
   <button class="tab active" onclick="abrirAba('dashboard',this)">📊 Dashboard</button>
   <button class="tab" onclick="abrirAba('horarios',this)">📅 Horários</button>
@@ -39,148 +43,153 @@
   <button class="tab" onclick="abrirAba('estatisticas',this)">📈 Estatísticas</button>
 </nav>
 
-<div id="dashboard" class="tab-content active">
-    <div id="dashboardContent"></div>
-</div>
+<!-- ================= CONTENT ================= -->
+<main class="content">
 
-</div>
+<!-- DASHBOARD -->
+<section id="dashboard" class="tab-content active">
+  <div id="dashboardContent"></div>
+</section>
 
-</div>
+<!-- HORÁRIOS -->
+<section id="horarios" class="tab-content">
 
-<div id="horarios" class="tab-content">
-<div class="header-sticky">
-<div class="controls-card">
-<select id="selectModalidade" onchange="trocarModalidade()">
-<option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
-<option value="SUPERIOR">CURSOS SUPERIORES</option>
-</select>
+  <div class="header-sticky">
+    <div class="controls-card">
 
-<select id="selectSemana" onchange="trocarSemana()"></select>
+      <select id="selectModalidade" onchange="trocarModalidade()">
+        <option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
+        <option value="SUPERIOR">CURSOS SUPERIORES</option>
+      </select>
 
-<input type="text" id="searchProf" class="search-box"
-placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
+      <select id="selectSemana" onchange="trocarSemana()"></select>
 
-<button class="btn-pdf" onclick="exportarPDF()">📄 Baixe o PDF da Semana</button>
-</div>
-</div>
+      <input type="text" id="searchProf"
+        class="search-box"
+        placeholder="🔍 Buscar Professor..."
+        onkeyup="filtrarProfessor()">
 
-<div class="week-container">
+      <button class="btn-pdf" onclick="exportarPDF()">
+        📄 Baixar PDF
+      </button>
 
-<!-- 🔥 AVISO DE SEMANA ESPECIAL -->
-<div id="alertaSemanaEspecial"></div>
-
-<!-- 🔥 BOTÕES NOVOS -->
-<div id="botoesRelatorio"></div>
-
-<div id="painelAlteracoes" style="
-  display:none;
-  background:white;
-  border-left:6px solid #d32f2f;
-  padding:15px;
-  margin:10px;
-  border-radius:8px;
-  max-height:300px;
-  overflow-y:auto;
-  box-shadow:0 2px 10px rgba(0,0,0,0.2);
-">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <strong>⚠️ Alterações Detectadas</strong>
-    <button onclick="fecharPainel()" style="
-      background:#d32f2f;color:white;border:none;
-      padding:5px 10px;border-radius:5px;cursor:pointer;">
-      ✖
-    </button>
+    </div>
   </div>
 
-  <pre id="conteudoAlteracoes" style="
-    white-space:pre-wrap;
-    font-size:12px;
-    margin-top:10px;
-  "></pre>
+  <div class="week-container">
 
-  <button onclick="copiarAlteracoes()" style="
-    margin-top:10px;
-    padding:8px;
-    background:#2e7d32;
-    color:white;
-    border:none;
-    border-radius:5px;
-    cursor:pointer;">
-    📋 Copiar
-  </button>
-</div>
-  
-<div class="table-responsive" id="tabelaHorario"></div>
-</div>
+    <div id="alertaSemanaEspecial"></div>
+    <div id="botoesRelatorio"></div>
 
-</div>
+    <div id="painelAlteracoes" class="painel-alerta">
+      <div class="painel-header">
+        <strong>⚠️ Alterações Detectadas</strong>
+        <button onclick="fecharPainel()">✖</button>
+      </div>
 
-<div id="sabados" class="tab-content">
-<div class="header-sticky">
-<div class="controls-card">
-<select id="selectModalidadeSabados" onchange="trocarModalidadeSabados()">
-<option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
-<option value="SUPERIOR">CURSOS SUPERIORES</option></select>
+      <pre id="conteudoAlteracoes"></pre>
 
-<input type="text" id="searchSabados" class="search-box"
-placeholder="🔍 Professor ou disciplina..." onkeyup="renderSabados()">
+      <button onclick="copiarAlteracoes()">📋 Copiar</button>
+    </div>
 
-<button class="btn-pdf" onclick="exportarPDFSabados()">📄 Baixe o PDF dos Sábados</button>
-</div>
-</div>
+    <div class="table-responsive" id="tabelaHorario"></div>
 
-<div class="week-container">
-<div class="table-responsive" id="containerSabados"></div>
-</div>
+  </div>
 
-</div>
+</section>
 
-<div id="professores" class="tab-content">
+<!-- SÁBADOS -->
+<section id="sabados" class="tab-content">
 
-<div class="header-sticky">
-<div class="controls-card">
-<select id="selectProfessor" onchange="renderProfessor()">
-<option value="">Selecione um professor</option>
-</select>
-<select id="selectSemanaProfessor" onchange="renderProfessor()">
-</select>
+  <div class="header-sticky">
+    <div class="controls-card">
 
-<button class="btn-pdf" onclick="exportarFichaProfessorPDF()">📄 Baixe a Ficha Semanal</button>
-</div>
-</div>
-<div class="week-container">
-<div class="table-responsive" id="tabelaProfessor">
-</div>
-</div>
-</div>
+      <select id="selectModalidadeSabados" onchange="trocarModalidadeSabados()">
+        <option value="INTEGRADO">CURSOS INTEGRADOS</option>
+        <option value="SUPERIOR">CURSOS SUPERIORES</option>
+      </select>
 
-<div id="turmas" class="tab-content">
-<div class="header-sticky">
-<div class="controls-card">
-<select id="selectTurma" onchange="renderTurma()">
-<option value="">Selecione uma Turma</option>
-</select>
-<select id="selectSemanaTurma" onchange="renderTurma()">
-</select>
-<button class="btn-pdf" onclick="exportarFichaTurmaPDF()">📄 Baixe a Ficha Semanal</button>
-</div>
-</div>
-<div class="week-container">
-<div class="table-responsive" id="tabelaTurma">
-</div>
-</div>
-</div>
+      <input type="text" id="searchSabados"
+        class="search-box"
+        placeholder="🔍 Buscar..."
+        onkeyup="renderSabados()">
 
-<div id="estatisticas" class="tab-content">
-<div style="padding:30px">
-🚧 Em construção
-</div>
-</div>
+      <button class="btn-pdf" onclick="exportarPDFSabados()">
+        📄 PDF Sábados
+      </button>
+
+    </div>
+  </div>
+
+  <div class="week-container">
+    <div class="table-responsive" id="containerSabados"></div>
+  </div>
+
+</section>
+
+<!-- PROFESSORES -->
+<section id="professores" class="tab-content">
+
+  <div class="header-sticky">
+    <div class="controls-card">
+
+      <select id="selectProfessor" onchange="renderProfessor()"></select>
+
+      <select id="selectSemanaProfessor" onchange="renderProfessor()"></select>
+
+      <button class="btn-pdf" onclick="exportarFichaProfessorPDF()">
+        📄 Ficha Professor
+      </button>
+
+    </div>
+  </div>
+
+  <div class="week-container">
+    <div class="table-responsive" id="tabelaProfessor"></div>
+  </div>
+
+</section>
+
+<!-- TURMAS -->
+<section id="turmas" class="tab-content">
+
+  <div class="header-sticky">
+    <div class="controls-card">
+
+      <select id="selectTurma" onchange="renderTurma()"></select>
+
+      <select id="selectSemanaTurma" onchange="renderTurma()"></select>
+
+      <button class="btn-pdf" onclick="exportarFichaTurmaPDF()">
+        📄 Ficha Turma
+      </button>
+
+    </div>
+  </div>
+
+  <div class="week-container">
+    <div class="table-responsive" id="tabelaTurma"></div>
+  </div>
+
+</section>
+
+<!-- ESTATÍSTICAS -->
+<section id="estatisticas" class="tab-content">
+  <div class="empty-state">
+    🚧 Em construção
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
 <footer class="ifro-footer">
-IFRO - Campus Cacoal<br>
-BR 364, Km 228, Lote 2-A - Zona Rural<br>
-☎ (69) 3443-2445 | ✉ dape.cacoal@ifro.edu.br
+  IFRO - Campus Cacoal<br>
+  BR 364, Km 228 - Zona Rural<br>
+  ☎ (69) 3443-2445 | ✉ dape.cacoal@ifro.edu.br
 </footer>
+
+</div>
 
 <script>
 
