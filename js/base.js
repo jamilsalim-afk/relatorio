@@ -70,6 +70,7 @@ montarBaseGeral(
     dadosIntegrado,
     dadosSuperior
 );
+montarRelatorioBase();
 
 // PROFESSORES
 carregarListaProfessores();
