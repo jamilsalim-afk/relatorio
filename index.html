@@ -173,12 +173,39 @@
 
 </section>
 
-<!-- ESTATÍSTICAS -->
-<section id="estatisticas" class="tab-content">
-  <div class="empty-state">
-    🚧 Em construção
+<div class="header-sticky">
+  <div class="controls-card">
+
+    <select id="selectModalidadeEstatistica" onchange="atualizarRelatorio()">
+      <option value="TODOS">TODOS</option>
+      <option value="INTEGRADO">INTEGRADO</option>
+      <option value="SUPERIOR">SUPERIOR</option>
+    </select>
+
+    <input type="text"
+      id="inputBuscaEstatistica"
+      placeholder="🔍 Disciplina, professor ou turma"
+      oninput="atualizarRelatorio()">
+
+    <button onclick="exportarRelatorioPDF()" class="btn-pdf">
+      📄 Exportar PDF
+    </button>
+
   </div>
-</section>
+</div>
+
+<div class="table-responsive">
+  <table>
+    <thead>
+      <tr>
+        <th>Disciplina</th>
+        <th>Professor</th>
+        <th>Turma</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaEstatistica"></tbody>
+  </table>
+</div>
 
 </main>
 
@@ -833,6 +860,112 @@ function abrirAba(id, botao){
   }
 }
 
+function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "") {
+
+    const tabela = document.getElementById("tabelaEstatistica");
+
+    let dados = [...BASE_GERAL];
+
+    // =========================
+    // FILTRO MODALIDADE
+    // =========================
+    if (filtroModalidade !== "TODOS") {
+        dados = dados.filter(a => a.modalidade === filtroModalidade);
+    }
+
+    // =========================
+    // BUSCA
+    // =========================
+    if (termoBusca && termoBusca.trim() !== "") {
+
+        const termo = normalizarTexto(termoBusca);
+
+        dados = dados.filter(a =>
+            normalizarTexto(a.valor || "").includes(termo) ||
+            normalizarTexto(a.turma || "").includes(termo)
+        );
+    }
+
+    // =========================
+    // MAPEAMENTO PARA DISCIPLINA
+    // =========================
+    const relatorio = dados.map(a => {
+
+        const partes = (a.valor || "").split(" - ");
+
+        return {
+            disciplina: partes[0] || "",
+            professor: partes[1] || "",
+            turma: a.turma || ""
+        };
+    });
+
+    // =========================
+    // ORDENAÇÃO
+    // =========================
+    relatorio.sort((a, b) =>
+        a.disciplina.localeCompare(b.disciplina, "pt-BR")
+    );
+
+    // =========================
+    // RENDER
+    // =========================
+    tabela.innerHTML = "";
+
+    relatorio.forEach(item => {
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${item.disciplina}</td>
+            <td>${item.professor}</td>
+            <td>${item.turma}</td>
+        `;
+
+        tabela.appendChild(tr);
+    });
+
+    return relatorio;
+}
+
+function atualizarRelatorio() {
+
+    const filtro = document.getElementById("selectModalidadeEstatistica").value;
+    const busca = document.getElementById("inputBuscaEstatistica").value;
+
+    montarRelatorioDisciplinas(filtro, busca);
+}
+
+function exportarRelatorioPDF() {
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+
+    const linhas = [];
+
+    document.querySelectorAll("#tabelaEstatistica tr").forEach(tr => {
+
+        const linha = [];
+
+        tr.querySelectorAll("td").forEach(td => {
+            linha.push(td.innerText);
+        });
+
+        if (linha.length) linhas.push(linha);
+    });
+
+    doc.autoTable({
+        head: [["Disciplina", "Professor", "Turma"]],
+        body: linhas,
+        styles: {
+            fontSize: 9,
+            cellPadding: 2
+        }
+    });
+
+    doc.save("relatorio-disciplinas.pdf");
+}
+  
 window.onload = async () => {
 
   const btnTema = document.getElementById("btnTema");
