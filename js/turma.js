@@ -1,3 +1,32 @@
+  function carregarSelectTurmas() {
+
+    const select =
+        document.getElementById(
+            "selectTurma"
+        );
+
+    if (!select)
+        return;
+
+    select.innerHTML =
+        `<option value="">
+            Selecione uma Turma
+        </option>`;
+
+    Object.keys(INDEX_TURMA)
+        .sort()
+        .forEach(turma => {
+
+            select.innerHTML += `
+                <option value="${turma}">
+                    ${turma}
+                </option>
+            `;
+
+        });
+
+}
+
 function carregarListaTurmas() {
 
     const select =
