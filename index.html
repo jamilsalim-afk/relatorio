@@ -3070,6 +3070,269 @@ function carregarListaTurmas() {
     container.innerHTML = html;
 }
 
+function exportarFichaTurmaPDF() {
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth =  pdf.internal.pageSize.getWidth();
+    const turma = document.getElementById("selectTurma")?.value;
+    const semana = document.getElementById("selectSemanaTurma")?.value;
+    if (!turma || !semana) return;
+    const { dias, horarios, grade } =
+        montarGradeTurma(
+            BASE_GERAL,
+            turma,
+            semana
+        );
+
+    const aulas = getDadosTurma(turma, semana);
+    const totalAulasSegSex = aulas.filter(a => {
+        const [dia, mes, ano] = a.data.split("/");
+        const dt = new Date(ano, mes - 1, dia);
+
+        return (dt.getDay() >= 1 && dt.getDay() <= 5);
+    }).length;
+    const totalAulasSab = aulas.filter(a => {
+        const [dia, mes, ano] = a.data.split("/");
+        const dt = new Date(ano, mes - 1, dia);
+        return dt.getDay() === 6;
+    }).length;
+    const totalAulas = totalAulasSegSex + totalAulasSab;
+    const totalProfessores = new Set(aulas.map(a => a.professor)).size;
+    const totalDias = new Set(aulas.map(a => a.data)).size;
+
+    // =====================================
+    // CABEÇALHO
+    // =====================================
+
+    pdf.setFontSize(10);
+    pdf.text(
+        "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
+        pageWidth / 2, 10,
+      { align: "center" }
+    );
+    pdf.text(
+        "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
+        pageWidth / 2, 14,
+        { align: "center" }
+    );
+    pdf.setFontSize(11);
+    pdf.setFont(undefined, "bold");
+    pdf.text(
+        `FICHA DA TURMA: ${turma}`,
+        pageWidth / 2, 22,
+        { align: "center" }
+    );
+    pdf.setFontSize(9);
+    pdf.setFont(undefined, "normal");
+    pdf.text(
+        `Semana de ${semana}`,
+        pageWidth / 2, 27,
+        { align: "center" }
+    );
+
+    // =====================================
+    // CARDS
+    // =====================================
+
+    pdf.setDrawColor(180);
+    pdf.roundedRect(15, 33, 55, 22, 2, 2);
+    pdf.roundedRect(78, 33, 55, 22, 2, 2);
+    pdf.roundedRect(141, 33, 55, 22, 2, 2);
+    pdf.setFontSize(8);
+    pdf.text("TOTAL DE AULAS",
+        42.5, 38,
+        { align: "center" }
+    );
+
+    pdf.text("PROFESSORES",
+        105.5, 38,
+        { align: "center" }
+    );
+
+    pdf.text("DIAS COM AULA",
+        168.5, 38,
+        { align: "center" }
+    );
+
+    pdf.setFontSize(16);
+    pdf.setFont(undefined, "bold");
+
+    pdf.text(String(totalAulas),
+        42.5, 44,
+        { align: "center" }
+    );
+
+    pdf.text(String(totalProfessores),
+        105.5, 44,
+        { align: "center" }
+    );
+
+    pdf.text(String(totalDias),
+        168.5, 44,
+        { align: "center" }
+    );
+
+    pdf.setFontSize(7);
+    pdf.text(`Seg-Sex: ${totalAulasSegSex}`,
+        42.5, 49,
+        { align: "center" }
+    );
+
+    pdf.text(`Sáb: ${totalAulasSab}`,
+        42.5, 53,
+        { align: "center" }
+    );
+
+    pdf.setFont(undefined, "normal");
+
+    // =====================================
+    // CORPO
+    // =====================================
+    const body = horarios.map(h => {
+        const separadores = {
+
+            "__INTERVALO_1__":
+                "INTERVALO",
+            "__INTERVALO_2__":
+                "INTERVALO",
+            "__INTERVALO_3__":
+                "INTERVALO",
+            "__ALMOCO__":
+                "ALMOÇO",
+            "__JANTAR__":
+                "JANTAR"
+        };
+
+        if (separadores[h]) {
+            return [
+                separadores[h],
+                {
+                    content:
+                        separadores[h],
+                    colSpan: 6,
+                    styles: {halign:"center",
+                    fontStyle:"bold",
+                    fillColor:[241,245,249]
+                    }
+                }
+            ];
+        }
+
+        const row = [h];
+
+        dias.forEach(d => {
+            let conteudo =
+                grade[h]?.[d] || [];
+            let texto =
+                Array.isArray(conteudo)
+                    ? conteudo.join(" ")
+                    : String(conteudo);
+            texto = texto
+                .replace(/<[^>]*>/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+            row.push(texto);
+        });
+        return row;
+    });
+
+    // =====================================
+    // AULAS POR DIA
+    // =====================================
+
+    const aulasPorDia = dias.map(d => {
+            return aulas.filter(a => {
+                const [dia, mes, ano] = a.data.split("/");
+                const dt = new Date(ano, mes - 1, dia);
+                const nomeDia =
+                    [
+                        "DOMINGO",
+                        "SEGUNDA",
+                        "TERÇA",
+                        "QUARTA",
+                        "QUINTA",
+                        "SEXTA",
+                        "SÁBADO"
+                    ][dt.getDay()];
+                return nomeDia === d;
+            }).length;
+        });
+
+    body.push([
+        "AULAS/DIA",
+        ...aulasPorDia
+    ]);
+
+    // =====================================
+    // TABELA
+    // =====================================
+    pdf.autoTable({
+        head: [["Horário",...dias]
+        ],
+
+        body,
+        startY: 60,
+        theme: "grid",
+        styles: {
+            fontSize: 6,
+            cellPadding: 1,
+            valign: "middle",
+            halign: "center"
+        },
+
+        headStyles: {
+            fillColor: [21,128,61],
+            textColor: [255,255,255]
+        },
+
+        columnStyles: {
+            0: {cellWidth: 18},
+            1: {cellWidth: 28},
+            2: {cellWidth: 28},
+            3: {cellWidth: 28},
+            4: {cellWidth: 28},
+            5: {cellWidth: 28},
+            6: {cellWidth: 28}
+        },
+
+        didParseCell: (data) => {
+
+            if (
+                data.row.index ===
+                body.length - 1
+            ) {
+
+                data.cell.styles.fillColor =
+                    [232,245,233];
+
+                data.cell.styles.fontStyle =
+                    "bold";
+            }
+        }
+    });
+
+    // =====================================
+    // RODAPÉ
+    // =====================================
+    pdf.setFontSize(8);
+    pdf.text(
+        "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
+        pageWidth / 2,
+        285,
+        { align: "center" }
+    );
+
+    // =====================================
+    // SALVAR
+    // =====================================
+
+    const nomeArquivo =
+        `${turma.replace(/\s+/g, '_')}_Semana_de_${semana.replace(/\//g, '-')}.pdf`;
+    pdf.save(nomeArquivo);
+
+}
+  
   function obterInicioSemana(dataBR) {
 
     const [d,m,a] =
