@@ -174,7 +174,7 @@
 </section>
 
 <!-- ESTATISTICAS -->
-<section id="Estatísticas" class="tab-content">
+<section id="Estatisticas" class="tab-content">
 
 <div class="header-sticky">
   <div class="controls-card">
@@ -885,9 +885,10 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
         const termo = normalizarTexto(termoBusca);
 
         dados = dados.filter(a =>
-            normalizarTexto(a.valor || "").includes(termo) ||
-            normalizarTexto(a.turma || "").includes(termo)
-        );
+    normalizarTexto(a.disciplina || "").includes(termo) ||
+    normalizarTexto(a.professor || "").includes(termo) ||
+    normalizarTexto(a.turma || "").includes(termo)
+);
     }
 
     // =========================
@@ -895,14 +896,12 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     // =========================
     const relatorio = dados.map(a => {
 
-        const partes = (a.valor || "").split(" - ");
-
-        return {
-            disciplina: partes[0] || "",
-            professor: partes[1] || "",
-            turma: a.turma || ""
-        };
-    });
+    return {
+        disciplina: a.disciplina || (a.valor ? a.valor.split(" - ")[0] : ""),
+        professor: a.professor || (a.valor ? a.valor.split(" - ")[1] : ""),
+        turma: a.turma || ""
+    };
+});
 
     // =========================
     // ORDENAÇÃO
@@ -945,18 +944,16 @@ function exportarRelatorioPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
 
-    const linhas = [];
+    const filtro = document.getElementById("selectModalidadeEstatistica").value;
+    const busca = document.getElementById("inputBuscaEstatistica").value;
 
-    document.querySelectorAll("#tabelaEstatistica tr").forEach(tr => {
+    const dados = montarRelatorioDisciplinas(filtro, busca);
 
-        const linha = [];
-
-        tr.querySelectorAll("td").forEach(td => {
-            linha.push(td.innerText);
-        });
-
-        if (linha.length) linhas.push(linha);
-    });
+    const linhas = dados.map(a => [
+        a.disciplina,
+        a.professor,
+        a.turma
+    ]);
 
     doc.autoTable({
         head: [["Disciplina", "Professor", "Turma"]],
