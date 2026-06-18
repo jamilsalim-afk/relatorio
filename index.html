@@ -155,11 +155,8 @@
 
   <div class="header-sticky">
     <div class="controls-card">
-
       <select id="selectTurma" onchange="renderTurma()"></select>
-
       <select id="selectSemanaTurma" onchange="renderTurma()"></select>
-
       <button class="btn-pdf" onclick="exportarFichaTurmaPDF()">
         📄 Ficha Turma
       </button>
@@ -175,25 +172,18 @@
 
 <!-- ESTATISTICAS -->
 <div id="estatisticas" class="tab-content">
-
 <div class="estatistica-header">
-
     <h1>📈 Relatório de Disciplinas</h1>
-
     <p>
         Visão consolidada das disciplinas,
         professores e turmas do IFRO Campus Cacoal
     </p>
-
 </div>
-
 <div class="estatistica-cards">
-
     <div class="estat-card">
         <span id="estatTotalDisciplinas">0</span>
         <small>Disciplinas</small>
     </div>
-
     <div class="estat-card">
         <span id="estatTotalProfessores">0</span>
         <small>Professores</small>
@@ -213,12 +203,11 @@
 
 <div class="header-sticky">
     <div class="controls-card">
-
         <select
             id="selectModalidadeEstatistica"
             onchange="atualizarRelatorio()">
 
-            <option value="TODOS">
+            <option value=>
                 Selecione a modalidade desejada
             </option>
           
