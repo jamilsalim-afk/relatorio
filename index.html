@@ -938,23 +938,28 @@ function montarRelatorioBase() {
         const disciplina =
             partes[0].trim();
 
-        const professor =
+        const professorCurto =
             traduzirProfessor(
                 partes[1].trim()
+            );
+
+        const professorCompleto =
+            obterNomeCompletoProfessor(
+                professorCurto
             );
 
         const turma =
             aula.turma || "";
 
         const chave =
-            `${disciplina}|${professor}|${turma}|${aula.modalidade}`;
+            `${disciplina}|${professorCompleto}|${turma}|${aula.modalidade}`;
 
         if (!mapa[chave]) {
 
             mapa[chave] = {
 
                 disciplina,
-                professor,
+                professor: professorCompleto,
                 turma,
                 modalidade: aula.modalidade,
                 datas: []
