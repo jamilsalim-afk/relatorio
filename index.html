@@ -174,46 +174,104 @@
 </section>
 
 <!-- ESTATISTICAS -->
-<section id="estatisticas" class="tab-content">
+<div id="estatisticas" class="tab-content">
+
+<div class="estatistica-header">
+
+    <h1>📈 Relatório de Disciplinas</h1>
+
+    <p>
+        Visão consolidada das disciplinas,
+        professores e turmas do IFRO Campus Cacoal
+    </p>
+
+</div>
+
+<div class="estatistica-cards">
+
+    <div class="estat-card">
+        <span id="estatTotalDisciplinas">0</span>
+        <small>Disciplinas</small>
+    </div>
+
+    <div class="estat-card">
+        <span id="estatTotalProfessores">0</span>
+        <small>Professores</small>
+    </div>
+
+    <div class="estat-card">
+        <span id="estatTotalTurmas">0</span>
+        <small>Turmas</small>
+    </div>
+
+    <div class="estat-card">
+        <span id="estatTotalRegistros">0</span>
+        <small>Registros</small>
+    </div>
+
+</div>
 
 <div class="header-sticky">
-  <div class="controls-card">
+    <div class="controls-card">
 
-    <select id="selectModalidadeEstatistica" onchange="atualizarRelatorio()">
-  <option value=>Selecione a Opção Desejada</option>
-  <option value="TODOS">INTEGRADO + SUPERIOR</option>
-  <option value="INTEGRADO">INTEGRADO</option>
-  <option value="SUPERIOR">SUPERIOR</option>
-</select>
+        <select
+            id="selectModalidadeEstatistica"
+            onchange="atualizarRelatorio()">
 
-    <input type="text"
-  id="inputBuscaEstatistica"
-  class="search-box"
-  placeholder="🔍 Disciplina, professor ou turma"
-  oninput="atualizarRelatorio()">
+            <option value="TODOS">
+                INTEGRADO + SUPERIOR
+            </option>
 
-    <button onclick="exportarRelatorioPDF()" class="btn-pdf">
-      📄 Exportar PDF
-    </button>
+            <option value="INTEGRADO">
+                SOMENTE INTEGRADO
+            </option>
 
-  </div>
+            <option value="SUPERIOR">
+                SOMENTE SUPERIOR
+            </option>
+
+        </select>
+
+        <input
+            type="text"
+            id="inputBuscaEstatistica"
+            class="search-box"
+            placeholder="🔍 Disciplina, professor ou turma"
+            oninput="atualizarRelatorio()">
+
+        <button
+            onclick="exportarRelatorioPDF()"
+            class="btn-pdf">
+
+            📄 Exportar PDF
+
+        </button>
+
+    </div>
 </div>
 
 <div class="table-responsive">
-  <table>
-    <thead>
-  <tr>
-    <th>Disciplina</th>
-    <th>Professor</th>
-    <th>Turma</th>
-    <th>Período</th>
-  </tr>
+
+<table id="tabelaRelatorioEstatistica">
+
+<thead>
+
+<tr>
+<th>Disciplina</th>
+<th>Professor</th>
+<th>Turma</th>
+<th>Período</th>
+</tr>
+
 </thead>
+
 <tbody id="tabelaEstatistica"></tbody>
-  </table>
+
+</table>
+
 </div>
 
-</section>
+</div>
 
 </main>
 
