@@ -1024,7 +1024,11 @@ function atualizarRelatorio() {
 function exportarRelatorioPDF() {
 
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('l', 'mm', 'a4');
+
+    // =====================================
+    // A4 RETRATO (CORREÇÃO PRINCIPAL)
+    // =====================================
+    const pdf = new jsPDF('p', 'mm', 'a4');
 
     const filtro = document.getElementById("selectModalidadeEstatistica")?.value || "TODOS";
     const busca = document.getElementById("inputBuscaEstatistica")?.value || "";
@@ -1042,9 +1046,10 @@ function exportarRelatorioPDF() {
     ]);
 
     const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
     // =====================================
-    // CABEÇALHO IFRO (PADRÃO SISTEMA)
+    // CABEÇALHO
     // =====================================
     function cabecalho() {
 
@@ -1072,13 +1077,20 @@ function exportarRelatorioPDF() {
         );
     }
 
+    // =====================================
+    // TABELA
+    // =====================================
     pdf.autoTable({
         head: [["Disciplina", "Professor", "Turma", "Período"]],
         body: linhas,
+
         startY: 22,
         theme: "grid",
 
-        margin: { top: 25, bottom: 20 },
+        margin: {
+            top: 25,
+            bottom: 20
+        },
 
         styles: {
             fontSize: 7,
@@ -1090,15 +1102,15 @@ function exportarRelatorioPDF() {
 
         headStyles: {
             fillColor: [46, 125, 50],
-            textColor: [0, 0, 0],
+            textColor: 0,
             fontStyle: "bold"
         },
 
         columnStyles: {
-            0: { cellWidth: 70, halign: "left" },
-            1: { cellWidth: 80, halign: "left" },
-            2: { cellWidth: 40, halign: "center" },
-            3: { cellWidth: 60, halign: "center" }
+            0: { cellWidth: 55, halign: "left" },   // disciplina
+            1: { cellWidth: 60, halign: "left" },   // professor
+            2: { cellWidth: 35, halign: "center" },  // turma
+            3: { cellWidth: 40, halign: "center" }   // período
         },
 
         didDrawPage: function () {
@@ -1107,7 +1119,7 @@ function exportarRelatorioPDF() {
     });
 
     // =====================================
-    // RODAPÉ (SEU PADRÃO EXATO)
+    // RODAPÉ (AGORA FUNCIONANDO CORRETAMENTE)
     // =====================================
     const pageCount = pdf.getNumberOfPages();
 
@@ -1117,12 +1129,10 @@ function exportarRelatorioPDF() {
 
         pdf.setFontSize(8);
 
-        const pageWidth = pdf.internal.pageSize.getWidth();
-
         pdf.text(
             "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
             pageWidth / 2,
-            285,
+            pageHeight - 10, // 🔥 CORREÇÃO IMPORTANTE
             { align: "center" }
         );
     }
