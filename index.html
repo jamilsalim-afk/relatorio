@@ -1045,22 +1045,19 @@ function exportarRelatorioPDF() {
 
         pdf.text(
             "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
-            pageWidth / 2,
-            8,
+            pageWidth / 2, 8,
             { align: 'center' }
         );
 
         pdf.text(
             "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
-            pageWidth / 2,
-            12,
+            pageWidth / 2, 12,
             { align: 'center' }
         );
 
         pdf.text(
             `RELATÓRIO DE DISCIPLINAS - ${filtro}`,
-            pageWidth / 2,
-            16,
+            pageWidth / 2, 16,
             { align: 'center' }
         );
     }
@@ -1071,7 +1068,7 @@ function exportarRelatorioPDF() {
     pdf.autoTable({
         head: [["Disciplina", "Professor", "Turma", "Período"]],
         body: linhas,
-        startY: 22,
+        startY: 25,
         theme: 'grid',
 
         styles: {
@@ -1088,8 +1085,8 @@ function exportarRelatorioPDF() {
         },
 
         columnStyles: {
-            0: { halign: 'left' },
-            1: { halign: 'left' },
+            0: { halign: 'center' },
+            1: { halign: 'center' },
             2: { halign: 'center' },
             3: { halign: 'center' }
         },
