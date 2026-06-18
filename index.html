@@ -12,65 +12,32 @@
 
 <body>
 
-<body>
+<header class="header">
+  <div class="header-inner">
 
-<div class="ifro-header">
-<div class="ifro-header-content">
+    <div class="brand">
+      <div class="brand-title">
+        IFRO - Campus Cacoal
+      </div>
 
-<div class="ifro-linha1">
-INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO
-</div>
+      <div class="brand-subtitle">
+        Sistema de Horários Acadêmicos • 2026
+      </div>
+    </div>
 
-<div class="ifro-linha2">
-CAMPUS CACOAL
-</div>
+    <button id="btnTema" class="theme-btn">🌙</button>
 
-<div class="ifro-linha3">
-DEPARTAMENTO DE APOIO AO ENSINO
-</div>
+  </div>
+</header>
 
-<div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
-</div>
-
-</div>
-</div>
-
-<div class="tabs-container">
-
-<button class="tab-btn active"
-onclick="abrirAba('dashboard',this)">
-📊 Dashboard
-</button>
-
-<button class="tab-btn"
-onclick="abrirAba('horarios',this)">
-📅 Horários
-</button>
-
-<button class="tab-btn"
-onclick="abrirAba('sabados',this)">
-📚 Sábados Letivos
-</button>
-
-<button class="tab-btn"
-onclick="abrirAba('professores',this)">
-👨‍🏫 Professores
-</button>
-
-<button class="tab-btn"
-onclick="abrirAba('turmas',this)">
-🏫 Turmas
-</button>
-
-<button class="tab-btn"
-onclick="abrirAba('estatisticas',this)">
-📈 Estatísticas
-</button>
-
-<button id="btnTema">🌙</button>
-
-</div>
+<nav class="tabs">
+  <button class="tab active" onclick="abrirAba('dashboard',this)">📊 Dashboard</button>
+  <button class="tab" onclick="abrirAba('horarios',this)">📅 Horários</button>
+  <button class="tab" onclick="abrirAba('sabados',this)">📚 Sábados</button>
+  <button class="tab" onclick="abrirAba('professores',this)">👨‍🏫 Professores</button>
+  <button class="tab" onclick="abrirAba('turmas',this)">🏫 Turmas</button>
+  <button class="tab" onclick="abrirAba('estatisticas',this)">📈 Estatísticas</button>
+</nav>
 
 <div id="dashboard" class="tab-content active">
     <div id="dashboardContent"></div>
