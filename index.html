@@ -873,25 +873,50 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     let dados = [...BASE_GERAL];
 
     // =====================================
-    // FILTRO POR MODALIDADE
+    // FILTRO MODALIDADE
     // =====================================
     if (filtroModalidade !== "TODOS") {
         dados = dados.filter(a => a.modalidade === filtroModalidade);
     }
 
     // =====================================
-    // TRANSFORMA EM DISCIPLINA / PROF / TURMA
+    // LIMPEZA + EXTRAÇÃO SEGURA
     // =====================================
     const mapa = new Map();
 
     dados.forEach(a => {
 
-        const partes = (a.valor || "").split(" - ");
+        const valor = (a.valor || "").trim();
 
-        const disciplina = (partes[0] || "").trim();
-        const professor = (partes[1] || "").trim();
+        // ❌ IGNORA tudo que não segue padrão correto
+        if (!valor.includes(" - ")) return;
+
+        let [disciplina, professor] = valor.split(" - ");
+
+        if (!disciplina || !professor) return;
+
+        disciplina = disciplina.trim();
+        professor = professor.trim();
+
+        // =====================================
+        // REMOVE MARCADORES DO PROFESSOR
+        // =====================================
+        professor = professor
+            .replace(/\[.*?\]/g, "")   // [R], [EX], etc
+            .replace(/\*/g, "")        // *
+            .replace(/\s+/g, " ")      // espaços duplicados
+            .trim();
+
+        // =====================================
+        // NORMALIZA PROFESSOR (nome completo)
+        // =====================================
+        professor = traduzirProfessor(professor);
+
         const turma = (a.turma || "").trim();
 
+        // =====================================
+        // CHAVE ÚNICA (REMOVE DUPLICADOS)
+        // =====================================
         const chave = `${disciplina}__${professor}__${turma}`;
 
         if (!mapa.has(chave)) {
@@ -927,7 +952,7 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     );
 
     // =====================================
-    // RENDER TABELA
+    // RENDER (LETRA MAIOR AQUI)
     // =====================================
     tabela.innerHTML = "";
 
@@ -936,9 +961,17 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-            <td>${item.disciplina}</td>
-            <td>${item.professor}</td>
-            <td>${item.turma}</td>
+            <td style="font-size:15px; padding:6px;">
+                ${item.disciplina}
+            </td>
+
+            <td style="font-size:15px; padding:6px;">
+                ${item.professor}
+            </td>
+
+            <td style="font-size:15px; padding:6px;">
+                ${item.turma}
+            </td>
         `;
 
         tabela.appendChild(tr);
