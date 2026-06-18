@@ -1,3 +1,23 @@
+function normalizarProfessor(nome) {
+
+    if (!nome) return "";
+
+    return nome
+        .toString()
+        .toUpperCase()
+
+        // remove [R], [EX], [REP], [+] etc
+        .replace(/\[.*?\]/g, "")
+
+        // remove *
+        .replace(/\*/g, "")
+
+        // remove espaços duplicados
+        .replace(/\s+/g, " ")
+
+        .trim();
+}
+
 function carregarListaProfessores() {
 
     const select =
