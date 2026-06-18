@@ -1297,8 +1297,8 @@ function exportarRelatorioPDF() {
         item.professor || "",
         item.turma || "",
         item.inicio && item.fim
-            ? `${formatarData(item.inicio)} → ${formatarData(item.fim)}`
-            : "-"
+    ? `${formatarData(item.inicio)} até ${formatarData(item.fim)}`
+    : "-"
     ]);
 
     const pageWidth = pdf.internal.pageSize.getWidth();
