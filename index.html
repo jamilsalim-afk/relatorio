@@ -1028,12 +1028,14 @@ function montarRelatorioBase() {
         disciplina = disciplina.trim();
 
         professor = professor
-            .replace(/\[.*?\]/g, "")
-            .replace(/\*/g, "")
-            .trim();
+    .replace(/\[.*?\]/g, "")
+    .replace(/\*/g, "")
+    .trim();
 
-        professor =
-            traduzirProfessor(professor);
+professor =
+    obterNomeCompletoProfessor(
+        professor
+    );
 
         const data =
             parseDataBR(a.data);
