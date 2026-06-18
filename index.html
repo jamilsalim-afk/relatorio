@@ -875,12 +875,7 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     let dados = [...BASE_GERAL];
 
     // =====================================
-    // NORMALIZA FILTRO
-    // =====================================
-    filtroModalidade = (filtroModalidade || "TODOS").toUpperCase();
-
-    // =====================================
-    // FILTRO CORRETO (3 OPÇÕES)
+    // FILTRO MODALIDADE
     // =====================================
     if (filtroModalidade !== "TODOS") {
         dados = dados.filter(a =>
@@ -889,9 +884,22 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     }
 
     // =====================================
-    // AGRUPAMENTO + PERÍODO FIXO
+    // BUSCA
     // =====================================
-    const mapa = new Map();
+    if (termoBusca && termoBusca.trim() !== "") {
+
+        const termo = normalizarTexto(termoBusca);
+
+        dados = dados.filter(a =>
+            normalizarTexto(a.valor || "").includes(termo) ||
+            normalizarTexto(a.turma || "").includes(termo)
+        );
+    }
+
+    // =====================================
+    // TRANSFORMAÇÃO EM DISCIPLINA/PROFESSOR/TURMA
+    // =====================================
+    const relatorio = [];
 
     dados.forEach(a => {
 
@@ -905,89 +913,88 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
 
         disciplina = disciplina.trim();
 
+        // limpa professor
         professor = professor
             .replace(/\[.*?\]/g, "")
             .replace(/\*/g, "")
-            .replace(/\s+/g, " ")
             .trim();
 
+        // professor completo
         professor = traduzirProfessor(professor);
 
-        const turma = (a.turma || "").trim();
+        relatorio.push({
+            disciplina,
+            professor,
+            turma: a.turma || "",
+            data: a.data || ""
+        });
+    });
 
-        const data = parseDataBR(a.data);
+    // =====================================
+    // AGRUPAMENTO POR DISCIPLINA + PROFESSOR + TURMA
+    // =====================================
+    const mapa = new Map();
 
-        const chave = `${disciplina}__${professor}__${turma}`;
+    relatorio.forEach(item => {
+
+        const data = parseDataBR(item.data);
+        const chave = `${item.disciplina}__${item.professor}__${item.turma}`;
 
         if (!mapa.has(chave)) {
 
             mapa.set(chave, {
-                disciplina,
-                professor,
-                turma,
+                disciplina: item.disciplina,
+                professor: item.professor,
+                turma: item.turma,
                 inicio: data,
                 fim: data
             });
 
         } else {
 
-            const item = mapa.get(chave);
+            const atual = mapa.get(chave);
 
             if (data) {
-                if (!item.inicio || data < item.inicio) item.inicio = data;
-                if (!item.fim || data > item.fim) item.fim = data;
+                if (!atual.inicio || data < atual.inicio) atual.inicio = data;
+                if (!atual.fim || data > atual.fim) atual.fim = data;
             }
         }
     });
 
-    let relatorio = Array.from(mapa.values());
+    let final = Array.from(mapa.values());
 
     // =====================================
-    // BUSCA
+    // ORDENAÇÃO
     // =====================================
-    if (termoBusca && termoBusca.trim() !== "") {
-
-        const termo = normalizarTexto(termoBusca);
-
-        relatorio = relatorio.filter(r =>
-            normalizarTexto(r.disciplina).includes(termo) ||
-            normalizarTexto(r.professor).includes(termo) ||
-            normalizarTexto(r.turma).includes(termo)
-        );
-    }
-
-    // =====================================
-    // ORDENAR
-    // =====================================
-    relatorio.sort((a, b) =>
+    final.sort((a, b) =>
         a.disciplina.localeCompare(b.disciplina, "pt-BR")
     );
 
     // =====================================
-    // RENDER COM COLUNA FIXA
+    // RENDER TABELA
     // =====================================
     tabela.innerHTML = "";
 
-    relatorio.forEach(item => {
+    final.forEach(item => {
+
+        const tr = document.createElement("tr");
 
         const periodo =
             item.inicio && item.fim
                 ? `${formatarData(item.inicio)} → ${formatarData(item.fim)}`
                 : "-";
 
-        const tr = document.createElement("tr");
-
         tr.innerHTML = `
-            <td style="font-size:15px">${item.disciplina}</td>
-            <td style="font-size:15px">${item.professor}</td>
-            <td style="font-size:15px">${item.turma}</td>
-            <td style="font-size:13px; color:#555">${periodo}</td>
+            <td>${item.disciplina}</td>
+            <td>${item.professor}</td>
+            <td>${item.turma}</td>
+            <td>${periodo}</td>
         `;
 
         tabela.appendChild(tr);
     });
 
-    return relatorio;
+    return final;
 }
 
 function parseDataBR(str) {
@@ -1017,7 +1024,7 @@ function atualizarRelatorio() {
 function exportarRelatorioPDF() {
 
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdf = new jsPDF('l', 'mm', 'a4');
 
     const filtro = document.getElementById("selectModalidadeEstatistica")?.value || "TODOS";
     const busca = document.getElementById("inputBuscaEstatistica")?.value || "";
@@ -1025,6 +1032,7 @@ function exportarRelatorioPDF() {
     const dados = montarRelatorioDisciplinas(filtro, busca);
 
     const linhas = dados.map(item => [
+
         item.disciplina || "",
         item.professor || "",
         item.turma || "",
@@ -1036,70 +1044,72 @@ function exportarRelatorioPDF() {
     const pageWidth = pdf.internal.pageSize.getWidth();
 
     // =====================================
-    // CABEÇALHO (PADRÃO IFRO)
+    // CABEÇALHO IFRO (PADRÃO SISTEMA)
     // =====================================
-    function desenharCabecalho() {
+    function cabecalho() {
 
         pdf.setFontSize(9);
-        pdf.setFont(undefined, 'normal');
 
         pdf.text(
             "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
-            pageWidth / 2, 8,
-            { align: 'center' }
+            pageWidth / 2,
+            8,
+            { align: "center" }
         );
 
         pdf.text(
             "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
-            pageWidth / 2, 12,
-            { align: 'center' }
+            pageWidth / 2,
+            12,
+            { align: "center" }
         );
 
         pdf.text(
             `RELATÓRIO DE DISCIPLINAS - ${filtro}`,
-            pageWidth / 2, 16,
-            { align: 'center' }
+            pageWidth / 2,
+            16,
+            { align: "center" }
         );
     }
 
-    // =====================================
-    // TABELA
-    // =====================================
     pdf.autoTable({
         head: [["Disciplina", "Professor", "Turma", "Período"]],
         body: linhas,
-        startY: 25,
-        theme: 'grid',
+        startY: 22,
+        theme: "grid",
+
+        margin: { top: 25, bottom: 20 },
 
         styles: {
             fontSize: 7,
-            halign: 'center',
-            valign: 'middle',
-            cellPadding: 1.5
+            halign: "center",
+            valign: "middle",
+            cellPadding: 1.5,
+            overflow: "linebreak"
         },
 
         headStyles: {
             fillColor: [46, 125, 50],
             textColor: [0, 0, 0],
-            fontStyle: 'bold'
+            fontStyle: "bold"
         },
 
         columnStyles: {
-            0: { halign: 'center' },
-            1: { halign: 'center' },
-            2: { halign: 'center' },
-            3: { halign: 'center' }
+            0: { cellWidth: 70, halign: "left" },
+            1: { cellWidth: 80, halign: "left" },
+            2: { cellWidth: 40, halign: "center" },
+            3: { cellWidth: 60, halign: "center" }
         },
 
         didDrawPage: function () {
-            desenharCabecalho();
+            cabecalho();
         }
     });
 
     // =====================================
     // RODAPÉ (SEU PADRÃO EXATO)
     // =====================================
-    const pageCount = pdf.internal.getNumberOfPages();
+    const pageCount = pdf.getNumberOfPages();
 
     for (let i = 1; i <= pageCount; i++) {
 
