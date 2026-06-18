@@ -1094,116 +1094,93 @@ function montarRelatorioBase() {
     );
 }
 
-function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "") {
+function montarRelatorioDisciplinas(
+    filtroModalidade = "TODOS",
+    termoBusca = ""
+) {
 
-    const tabela = document.getElementById("tabelaEstatistica");
-
-    let dados = [...BASE_GERAL];
-
-    // =====================================
-    // FILTRO MODALIDADE
-    // =====================================
-    if (filtroModalidade !== "TODOS") {
-        dados = dados.filter(a =>
-            (a.modalidade || "").toUpperCase() === filtroModalidade
+    const tabela =
+        document.getElementById(
+            "tabelaEstatistica"
         );
-    }
 
-    // =====================================
-    // BUSCA
-    // =====================================
-    if (termoBusca && termoBusca.trim() !== "") {
+    let dados =
+        [...RELATORIO_DISCIPLINAS];
 
-        const termo = normalizarTexto(termoBusca);
+    // ==========================
+    // MODALIDADE
+    // ==========================
 
-        dados = dados.filter(a =>
-            normalizarTexto(a.valor || "").includes(termo) ||
-            normalizarTexto(a.turma || "").includes(termo)
-        );
-    }
+    if (
+        filtroModalidade &&
+        filtroModalidade !== "TODOS"
+    ) {
 
-    // =====================================
-    // TRANSFORMAÇÃO EM DISCIPLINA/PROFESSOR/TURMA
-    // =====================================
-    const relatorio = [];
+        dados = dados.filter(item => {
 
-    dados.forEach(a => {
+            if (
+                item.modalidade === "TODOS"
+            )
+                return true;
 
-        const valor = (a.valor || "").trim();
+            return (
+                item.modalidade ===
+                filtroModalidade
+            );
 
-        if (!valor.includes(" - ")) return;
-
-        let [disciplina, professor] = valor.split(" - ");
-
-        if (!disciplina || !professor) return;
-
-        disciplina = disciplina.trim();
-
-        // limpa professor
-        professor = professor
-            .replace(/\[.*?\]/g, "")
-            .replace(/\*/g, "")
-            .trim();
-
-        // professor completo
-        professor = traduzirProfessor(professor);
-
-        relatorio.push({
-            disciplina,
-            professor,
-            turma: a.turma || "",
-            data: a.data || ""
         });
-    });
 
-    // =====================================
-    // AGRUPAMENTO POR DISCIPLINA + PROFESSOR + TURMA
-    // =====================================
-    const mapa = new Map();
+    }
 
-    relatorio.forEach(item => {
+    // ==========================
+    // BUSCA
+    // ==========================
 
-        const data = parseDataBR(item.data);
-        const chave = `${item.disciplina}__${item.professor}__${item.turma}`;
+    if (
+        termoBusca &&
+        termoBusca.trim()
+    ) {
 
-        if (!mapa.has(chave)) {
+        const termo =
+            normalizarTexto(
+                termoBusca
+            );
 
-            mapa.set(chave, {
-                disciplina: item.disciplina,
-                professor: item.professor,
-                turma: item.turma,
-                inicio: data,
-                fim: data
-            });
+        dados = dados.filter(item =>
 
-        } else {
+            normalizarTexto(
+                item.disciplina
+            ).includes(termo)
 
-            const atual = mapa.get(chave);
+            ||
 
-            if (data) {
-                if (!atual.inicio || data < atual.inicio) atual.inicio = data;
-                if (!atual.fim || data > atual.fim) atual.fim = data;
-            }
-        }
-    });
+            normalizarTexto(
+                item.professor
+            ).includes(termo)
 
-    let final = Array.from(mapa.values());
+            ||
 
-    // =====================================
-    // ORDENAÇÃO
-    // =====================================
-    final.sort((a, b) =>
-        a.disciplina.localeCompare(b.disciplina, "pt-BR")
-    );
+            normalizarTexto(
+                item.turma
+            ).includes(termo)
 
-    // =====================================
-    // RENDER TABELA
-    // =====================================
+        );
+
+    }
+
+    // ==========================
+    // RENDER
+    // ==========================
+
     tabela.innerHTML = "";
 
-    final.forEach(item => {
+    const fragment =
+        document.createDocumentFragment();
 
-        const tr = document.createElement("tr");
+    dados.forEach(item => {
+
+        const tr =
+            document.createElement("tr");
 
         const periodo =
             item.inicio && item.fim
@@ -1217,10 +1194,13 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
             <td class="coluna-periodo">${periodo}</td>
         `;
 
-        tabela.appendChild(tr);
+        fragment.appendChild(tr);
+
     });
 
-    return final;
+    tabela.appendChild(fragment);
+
+    return dados;
 }
 
 function parseDataBR(str) {
