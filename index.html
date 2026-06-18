@@ -1017,29 +1017,110 @@ function atualizarRelatorio() {
 function exportarRelatorioPDF() {
 
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape');
+    const pdf = new jsPDF('p', 'mm', 'a4');
 
-    const filtro = document.getElementById("selectModalidadeEstatistica").value;
-    const busca = document.getElementById("inputBuscaEstatistica").value;
+    const filtro = document.getElementById("selectModalidadeEstatistica")?.value || "TODOS";
+    const busca = document.getElementById("inputBuscaEstatistica")?.value || "";
 
     const dados = montarRelatorioDisciplinas(filtro, busca);
 
     const linhas = dados.map(item => [
-        item.disciplina,
-        item.professor,
-        item.turma
+        item.disciplina || "",
+        item.professor || "",
+        item.turma || "",
+        item.inicio && item.fim
+            ? `${formatarData(item.inicio)} → ${formatarData(item.fim)}`
+            : "-"
     ]);
 
-    doc.autoTable({
-        head: [["Disciplina", "Professor", "Turma"]],
+    const pageWidth = pdf.internal.pageSize.getWidth();
+
+    // =====================================
+    // CABEÇALHO (PADRÃO IFRO)
+    // =====================================
+    function desenharCabecalho() {
+
+        pdf.setFontSize(9);
+        pdf.setFont(undefined, 'normal');
+
+        pdf.text(
+            "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
+            pageWidth / 2,
+            8,
+            { align: 'center' }
+        );
+
+        pdf.text(
+            "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
+            pageWidth / 2,
+            12,
+            { align: 'center' }
+        );
+
+        pdf.text(
+            `RELATÓRIO DE DISCIPLINAS - ${filtro}`,
+            pageWidth / 2,
+            16,
+            { align: 'center' }
+        );
+    }
+
+    // =====================================
+    // TABELA
+    // =====================================
+    pdf.autoTable({
+        head: [["Disciplina", "Professor", "Turma", "Período"]],
         body: linhas,
+        startY: 22,
+        theme: 'grid',
+
         styles: {
-            fontSize: 9,
-            cellPadding: 2
+            fontSize: 7,
+            halign: 'center',
+            valign: 'middle',
+            cellPadding: 1.5
+        },
+
+        headStyles: {
+            fillColor: [46, 125, 50],
+            textColor: [0, 0, 0],
+            fontStyle: 'bold'
+        },
+
+        columnStyles: {
+            0: { halign: 'left' },
+            1: { halign: 'left' },
+            2: { halign: 'center' },
+            3: { halign: 'center' }
+        },
+
+        didDrawPage: function () {
+            desenharCabecalho();
         }
     });
 
-    doc.save("relatorio-disciplinas.pdf");
+    // =====================================
+    // RODAPÉ (SEU PADRÃO EXATO)
+    // =====================================
+    const pageCount = pdf.internal.getNumberOfPages();
+
+    for (let i = 1; i <= pageCount; i++) {
+
+        pdf.setPage(i);
+
+        pdf.setFontSize(8);
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+
+        pdf.text(
+            "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
+            pageWidth / 2,
+            285,
+            { align: "center" }
+        );
+    }
+
+    pdf.save(`RELATORIO_DISCIPLINAS_${filtro}.pdf`);
 }
   
 window.onload = async () => {
