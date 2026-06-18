@@ -1,1 +1,913 @@
-fadsf
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Consulta de Horários Semanais - IFRO</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<body>
+
+<div class="ifro-header">
+<div class="ifro-header-content">
+
+<div class="ifro-linha1">
+INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO
+</div>
+
+<div class="ifro-linha2">
+CAMPUS CACOAL
+</div>
+
+<div class="ifro-linha3">
+DEPARTAMENTO DE APOIO AO ENSINO
+</div>
+
+<div class="ifro-linha4">
+HORÁRIOS SEMANAIS - 2026
+</div>
+
+</div>
+</div>
+
+<div class="tabs-container">
+
+<button class="tab-btn active"
+onclick="abrirAba('dashboard',this)">
+📊 Dashboard
+</button>
+
+<button class="tab-btn"
+onclick="abrirAba('horarios',this)">
+📅 Horários
+</button>
+
+<button class="tab-btn"
+onclick="abrirAba('sabados',this)">
+📚 Sábados Letivos
+</button>
+
+<button class="tab-btn"
+onclick="abrirAba('professores',this)">
+👨‍🏫 Professores
+</button>
+
+<button class="tab-btn"
+onclick="abrirAba('turmas',this)">
+🏫 Turmas
+</button>
+
+<button class="tab-btn"
+onclick="abrirAba('estatisticas',this)">
+📈 Estatísticas
+</button>
+
+<button id="btnTema">🌙</button>
+
+</div>
+
+<div id="dashboard" class="tab-content active">
+    <div id="dashboardContent"></div>
+</div>
+
+</div>
+
+</div>
+
+<div id="horarios" class="tab-content">
+<div class="header-sticky">
+<div class="controls-card">
+<select id="selectModalidade" onchange="trocarModalidade()">
+<option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
+<option value="SUPERIOR">CURSOS SUPERIORES</option>
+</select>
+
+<select id="selectSemana" onchange="trocarSemana()"></select>
+
+<input type="text" id="searchProf" class="search-box"
+placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
+
+<button class="btn-pdf" onclick="exportarPDF()">📄 Baixe o PDF da Semana</button>
+</div>
+</div>
+
+<div class="week-container">
+
+<!-- 🔥 AVISO DE SEMANA ESPECIAL -->
+<div id="alertaSemanaEspecial"></div>
+
+<!-- 🔥 BOTÕES NOVOS -->
+<div id="botoesRelatorio"></div>
+
+<div id="painelAlteracoes" style="
+  display:none;
+  background:white;
+  border-left:6px solid #d32f2f;
+  padding:15px;
+  margin:10px;
+  border-radius:8px;
+  max-height:300px;
+  overflow-y:auto;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);
+">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <strong>⚠️ Alterações Detectadas</strong>
+    <button onclick="fecharPainel()" style="
+      background:#d32f2f;color:white;border:none;
+      padding:5px 10px;border-radius:5px;cursor:pointer;">
+      ✖
+    </button>
+  </div>
+
+  <pre id="conteudoAlteracoes" style="
+    white-space:pre-wrap;
+    font-size:12px;
+    margin-top:10px;
+  "></pre>
+
+  <button onclick="copiarAlteracoes()" style="
+    margin-top:10px;
+    padding:8px;
+    background:#2e7d32;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;">
+    📋 Copiar
+  </button>
+</div>
+  
+<div class="table-responsive" id="tabelaHorario"></div>
+</div>
+
+</div>
+
+<div id="sabados" class="tab-content">
+<div class="header-sticky">
+<div class="controls-card">
+<select id="selectModalidadeSabados" onchange="trocarModalidadeSabados()">
+<option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
+<option value="SUPERIOR">CURSOS SUPERIORES</option></select>
+
+<input type="text" id="searchSabados" class="search-box"
+placeholder="🔍 Professor ou disciplina..." onkeyup="renderSabados()">
+
+<button class="btn-pdf" onclick="exportarPDFSabados()">📄 Baixe o PDF dos Sábados</button>
+</div>
+</div>
+
+<div class="week-container">
+<div class="table-responsive" id="containerSabados"></div>
+</div>
+
+</div>
+
+<div id="professores" class="tab-content">
+
+<div class="header-sticky">
+<div class="controls-card">
+<select id="selectProfessor" onchange="renderProfessor()">
+<option value="">Selecione um professor</option>
+</select>
+<select id="selectSemanaProfessor" onchange="renderProfessor()">
+</select>
+
+<button class="btn-pdf" onclick="exportarFichaProfessorPDF()">📄 Baixe a Ficha Semanal</button>
+</div>
+</div>
+<div class="week-container">
+<div class="table-responsive" id="tabelaProfessor">
+</div>
+</div>
+</div>
+
+<div id="turmas" class="tab-content">
+<div class="header-sticky">
+<div class="controls-card">
+<select id="selectTurma" onchange="renderTurma()">
+<option value="">Selecione uma Turma</option>
+</select>
+<select id="selectSemanaTurma" onchange="renderTurma()">
+</select>
+<button class="btn-pdf" onclick="exportarFichaTurmaPDF()">📄 Baixe a Ficha Semanal</button>
+</div>
+</div>
+<div class="week-container">
+<div class="table-responsive" id="tabelaTurma">
+</div>
+</div>
+</div>
+
+<div id="estatisticas" class="tab-content">
+<div style="padding:30px">
+🚧 Em construção
+</div>
+</div>
+<footer class="ifro-footer">
+IFRO - Campus Cacoal<br>
+BR 364, Km 228, Lote 2-A - Zona Rural<br>
+☎ (69) 3443-2445 | ✉ dape.cacoal@ifro.edu.br
+</footer>
+
+<script>
+
+function deveCompararDia(dataStr){
+
+  const [d,m,a] = dataStr.split('/');
+  const data = new Date(a, m-1, d);
+
+  const hoje = new Date();
+
+  // remove hora
+  hoje.setHours(0,0,0,0);
+  data.setHours(0,0,0,0);
+
+  // segunda-feira da semana atual
+  const segunda = new Date(hoje);
+  const diaSemana = segunda.getDay();
+  const ajuste = diaSemana === 0 ? -6 : 1 - diaSemana;
+  segunda.setDate(segunda.getDate() + ajuste);
+  segunda.setHours(0,0,0,0);
+
+  // sábado da semana atual
+  const sabado = new Date(segunda);
+  sabado.setDate(sabado.getDate() + 5);
+  sabado.setHours(23,59,59,999);
+
+  // só compara dias da semana atual
+  if(data < segunda) return false;
+  if(data > sabado) return false;
+
+  // só compara de hoje para frente
+  if(data < hoje) return false;
+
+  return true;
+}
+
+  function semanaSelecionadaEhAtual(){
+
+  const semanaSelecionada =
+    document.getElementById('selectSemana').value;
+
+  return semanaSelecionada === getSemanaAtual();
+}
+
+  function isSemanaPassada(dataStr){
+  const [d,m,a] = dataStr.split('/');
+  const data = new Date(a, m-1, d);
+
+  const hoje = new Date();
+
+  // pega segunda-feira da semana atual
+  const dia = hoje.getDay();
+  const diff = hoje.getDate() - dia + (dia === 0 ? -6 : 1);
+  const segundaAtual = new Date(hoje.setDate(diff));
+
+  return data < segundaAtual;
+}
+
+function limparPainelAlteracoes(){
+  document.getElementById("conteudoAlteracoes").innerText = "";
+  document.getElementById("painelAlteracoes").style.display = "none";
+}
+  
+function trocarModalidade(){
+  window.trocouModalidade = true;
+
+  limparPainelAlteracoes(); // 🔥 ESSENCIAL
+
+  init();
+}
+
+  function trocarSemana(){
+  limparPainelAlteracoes(); // 🔥 ESSENCIAL
+  renderizarTabela();
+}
+
+function salvarSnapshotAtual() {
+
+  if(!semanaSelecionadaEhAtual()){
+    return;
+  }
+
+  const sem = document.getElementById('selectSemana').value;
+  const mod = document.getElementById('selectModalidade').value;
+
+  const snapshot = {
+    tempo:new Date().toISOString(),
+    dados:dadosGlobais
+  };
+
+  localStorage.setItem(
+    `snapshot_${mod}_${sem}`,
+    JSON.stringify(snapshot)
+  );
+}
+
+function obterSnapshotAntigo() {
+  const sem = document.getElementById('selectSemana').value;
+  const mod = document.getElementById('selectModalidade').value;
+
+  const data = localStorage.getItem(`snapshot_${mod}_${sem}`);
+  return data ? JSON.parse(data) : null;
+}
+
+function valorMudou(v1, v2){
+  const t1 = (v1 || "").trim();
+  const t2 = (v2 || "").trim();
+
+  if (t1 !== t2) return true;
+
+  const n1 = normalizarTexto(t1);
+  const n2 = normalizarTexto(t2);
+
+  return n1 !== n2;
+}
+  
+function verificarMudancaAoAbrir() {
+
+  if(!semanaSelecionadaEhAtual()){
+    return;
+  }
+  const sem = document.getElementById('selectSemana').value;
+  const mod = document.getElementById('selectModalidade').value;
+
+  const chave = `snapshot_${mod}_${sem}`;
+
+  const antigoRaw = localStorage.getItem(chave);
+
+  // 🔥 Se não existe snapshot → salva e sai
+  if (!antigoRaw) {
+    salvarSnapshotAtual();
+    return;
+  }
+
+  const antigo = JSON.parse(antigoRaw);
+  const novo = dadosGlobais;
+
+  const agrupado = {};
+  let ultimoDia = "";
+
+  for (let i = 1; i < novo.length; i++) {
+
+    if (novo[i][0]) ultimoDia = novo[i][0];
+    const diaAtual = ultimoDia;
+
+    if (!diaAtual) continue;
+    if (!deveCompararDia(diaAtual)) continue;
+
+    const horario = (novo[i][1] || "").trim();
+    const horarioNorm = normalizarTexto(horario);
+
+    // 🔥 IGNORA INTERVALO
+    if (
+      !horario ||
+      horarioNorm.includes("INTERVALO") ||
+      horarioNorm.includes("[+]") ||
+      horarioNorm.includes("*") ||
+      horarioNorm.includes("[R]")
+    ) continue;
+
+    for (let j = 2; j < novo[i].length; j++) {
+
+      const vNovo = (novo[i][j] || "").trim();
+      const vAntigo = (antigo.dados?.[i]?.[j] || "").trim();
+
+      if (!valorMudou(vNovo, vAntigo)) continue;
+
+      const turma = (dadosGlobais[0][j] || "").trim();
+      if (!turma) continue;
+
+      const chaveItem = `${diaAtual}__${turma}__${horario}`;
+
+      if (!agrupado[chaveItem]) {
+        agrupado[chaveItem] = {
+          dia: diaAtual,
+          turma,
+          horario,
+          alteracoes: []
+        };
+      }
+
+      agrupado[chaveItem].alteracoes.push({
+        antes: vAntigo || "(vazio)",
+        depois: vNovo || "(vazio)"
+      });
+    }
+  }
+
+  const listaFinal = Object.values(agrupado);
+
+  if (listaFinal.length > 0) {
+    mostrarAvisoAlteracoes(listaFinal);
+  } else {
+    document.getElementById("painelAlteracoes").style.display = "none";
+  }
+
+  salvarSnapshotAtual();
+}
+
+function mostrarMensagemPainel(titulo, texto){
+
+  const tituloPainel =
+    document.querySelector("#painelAlteracoes strong");
+
+  tituloPainel.innerText = titulo;
+
+  document.getElementById("conteudoAlteracoes").innerText = texto;
+
+  document.getElementById("painelAlteracoes").style.display = "block";
+}
+  
+function mostrarAvisoAlteracoes(lista) {
+
+  let texto = "⚠️ ALTERAÇÕES DE AULAS DETECTADAS:\n\n";
+
+  lista.forEach(item => {
+
+    texto += `📅 Dia: ${item.dia}\n`;
+    texto += `🏫 Turma: ${item.turma}\n`;
+    texto += `⏰ Horário: ${item.horario}\n`;
+
+    item.alteracoes.forEach(a => {
+      texto += `➡️ ${a.antes} → ${a.depois}\n`;
+    });
+
+    texto += "\n";
+  });
+
+  document.getElementById("conteudoAlteracoes").innerText = texto;
+  document.getElementById("painelAlteracoes").style.display = "block";
+}
+
+  function fecharPainel(){
+  document.getElementById("painelAlteracoes").style.display = "none";
+}
+
+function copiarAlteracoes(){
+  const texto = document.getElementById("conteudoAlteracoes").innerText;
+
+  navigator.clipboard.writeText(texto).then(()=>{
+    alert("Copiado!");
+  });
+}
+  
+/* 🔥 NOVA FUNÇÃO (BUSCA COM HIGHLIGHT) */
+function filtrarProfessor(){
+    renderizarTabela();
+}
+
+function getCursoInfo(t){
+t=t.toUpperCase();
+if(t.includes("AGROEC")) return {cl:"c-agroec",rgb:[232,245,233]};
+if(t.includes("AGROPEC")) return {cl:"c-agropec",rgb:[227,242,253]};
+if(t.includes("INFO")) return {cl:"c-info",rgb:[255,248,225]};
+if(t.includes("GEO")) return {cl:"c-geo",rgb:[243,229,245]};
+if(t.includes("MAT")) return {cl:"c-mat",rgb:[224,247,250]};
+if(t.includes("AGRONEG")) return {cl:"c-agroneg",rgb:[239,235,233]};
+if(t.includes("ZOO")) return {cl:"c-zoo",rgb:[252,228,236]};
+if(t.includes("AGRON")) return {cl:"c-agron",rgb:[241,248,233]};
+return {cl:"",rgb:[255,255,255]};
+}
+
+function processarBaseModalidade(dados) {
+
+    const semanas = {};
+
+    const turmas =
+        dados[0]
+        .slice(2)
+        .filter(t => t);
+
+    let ultima = "";
+
+    for(let i = 1; i < dados.length; i++) {
+
+        let r = [...dados[i]];
+
+        if(r[0]) ultima = r[0];
+
+        r[0] = ultima;
+
+        if(!r[0]) continue;
+
+        const [d,m,a] = r[0].split('/');
+
+        const dt = new Date(a,m-1,d);
+
+        const seg = new Date(
+            dt.setDate(
+                dt.getDate() - dt.getDay() + 1
+            )
+        ).toLocaleDateString('pt-BR');
+
+        if(!semanas[seg])
+            semanas[seg] = { dias:{} };
+
+        if(!semanas[seg].dias[r[0]])
+            semanas[seg].dias[r[0]] = [];
+
+        semanas[seg].dias[r[0]].push(r);
+    }
+
+    return {
+        semanas,
+        turmas
+    };
+}
+  
+function getTurmasAtivasNaSemana(dias){
+return turmasDaPlanilha.filter(t=>{
+const idx=dadosGlobais[0].indexOf(t);
+return Object.values(dias).some(d=>d.some(r=>{
+const v=(r[idx]||"").trim();
+return v && v!=="-" && !r[1].toUpperCase().includes("INTERVALO");
+}));
+});
+}
+
+function normalizarDia(texto) {
+    if (!texto) return "";
+
+    const t = texto.toString().toUpperCase();
+
+    if (t.includes("SEG")) return "SEGUNDA";
+    if (t.includes("TER")) return "TERÇA";
+    if (t.includes("QUA")) return "QUARTA";
+    if (t.includes("QUI")) return "QUINTA";
+    if (t.includes("SEX")) return "SEXTA";
+    if (t.includes("SÁB") || t.includes("SAB")) return "SÁBADO";
+
+    return "";
+}
+
+function montarBaseGeral(integrado, superior) {
+
+    const base = [];
+
+    function normalizarPlanilha(dados, tipo) {
+
+        const header = dados[0];
+
+        for (let i = 1; i < dados.length; i++) {
+
+            const linha = dados[i];
+
+            if (!linha || !linha.length) continue;
+
+            const data = linha[0];
+            const horario = linha[1];
+
+            if (!data || !horario) continue;
+
+            for (let c = 2; c < linha.length; c++) {
+
+                const valor = linha[c];
+
+                if (!valor || valor.trim() === "") continue;
+
+                const turma = header[c];
+
+                base.push({
+                    data,
+                    horario,
+                    turma,
+                    valor,
+                    modalidade: tipo
+                });
+            }
+        }
+    }
+
+    normalizarPlanilha(integrado, "INTEGRADO");
+    normalizarPlanilha(superior, "SUPERIOR");
+
+    BASE_GERAL = base;
+
+    montarIndiceProfessores();
+
+    console.log("BASE FINAL:", BASE_GERAL.length);
+}
+ 
+function obterInicioSemana(dataBR) {
+
+    const [d,m,a] =
+        dataBR.split("/");
+
+    const dt =
+        new Date(a,m-1,d);
+
+    const diaSemana =
+        dt.getDay();
+
+    const ajuste =
+        diaSemana === 0
+            ? -6
+            : 1 - diaSemana;
+
+    dt.setDate(
+        dt.getDate() + ajuste
+    );
+
+    return dt.toLocaleDateString("pt-BR");
+}
+
+const coresPDF = {
+    "reserva-ensino": [212, 237, 218], // verde claro
+    "pps": [11, 61, 145], // azul escuro (texto)
+    "estudos": [255, 229, 180], // laranja claro
+    "reuniao": [208, 235, 255], // azul claro
+    "caed": [255, 243, 205], // amarelo
+    "reposicao": [30, 126, 52], // verde escuro
+    "marcacao-extra": [224, 224, 224]
+};
+
+function coletarVagasDoDia(dia) {
+  const sem = document.getElementById('selectSemana').value;
+  const dias = semanasAgrupadas[sem].dias;
+
+  const vagas = [];
+
+  if (!dias[dia]) return vagas;
+
+  dias[dia].forEach(r => {
+    const horario = r[1];
+
+    turmasDaPlanilha.forEach(turma => {
+      const idx = dadosGlobais[0].indexOf(turma);
+      const val = (r[idx] || "").toUpperCase();
+
+      if (
+        val.includes("RESERVA ENSINO") ||
+        val.includes("ESTUDOS INDIVIDUAIS")
+      ) {
+        vagas.push({
+          turma,
+          horario
+        });
+      }
+    });
+  });
+
+  return vagas;
+}
+
+function gerarRelatorioDia(dia) {
+  const vagas = coletarVagasDoDia(dia);
+
+  let texto = `Olá Professores, na data de hoje (${dia}), identificamos várias turmas com aulas vagas. Segue a lista das turmas e horários.\n\n`;
+
+  if (vagas.length === 0) {
+    texto += "Não há aulas vagas no dia informado.";
+    return texto;
+  }
+
+  // 🔥 AGRUPAMENTO
+  const agrupado = {};
+
+  vagas.forEach(v => {
+    if (!agrupado[v.turma]) {
+      agrupado[v.turma] = [];
+    }
+
+    agrupado[v.turma].push(v.horario);
+  });
+
+  // 🔥 MONTAGEM FINAL
+  Object.keys(agrupado).forEach(turma => {
+
+    const horariosUnicos = [...new Set(agrupado[turma])];
+
+    texto += `📅 DATA: ${dia}\n`;
+    texto += `🏫 TURMA: ${turma}\n`;
+    texto += `⏰ AULAS VAGAS: ${horariosUnicos.join(", ")}\n\n`;
+  });
+
+  return texto;
+}
+
+function mostrarRelatorioDia(dia){
+
+  const texto = gerarRelatorioDia(dia);
+
+  mostrarMensagemPainel(
+    `📅 Relatório de aulas vagas - ${dia}`,
+    texto
+  );
+}
+
+function gerarRelatorioSemana() {
+  const sem = document.getElementById('selectSemana').value;
+  const dias = semanasAgrupadas[sem].dias;
+
+  let texto = `Olá Professores, identificamos várias turmas com aula vaga esta semana. Segue a lista dos dias, turmas e horários.\n\n`;
+
+  const agrupado = {};
+
+  // 🔥 AGRUPA DIA + TURMA
+  Object.keys(dias).forEach(dia => {
+    const vagas = coletarVagasDoDia(dia);
+
+    vagas.forEach(v => {
+      const chave = `${dia}__${v.turma}`;
+
+      if (!agrupado[chave]) {
+        agrupado[chave] = {
+          dia,
+          turma: v.turma,
+          horarios: []
+        };
+      }
+
+      agrupado[chave].horarios.push(v.horario);
+    });
+  });
+
+  const listaFinal = Object.values(agrupado);
+
+  if (listaFinal.length === 0) {
+
+  texto += "Não há aulas vagas na semana.";
+
+  mostrarMensagemPainel(
+    "📊 Relatório semanal de aulas vagas",
+    texto
+  );
+
+  return;
+}
+
+  // 🔥 ORGANIZA POR DIA
+  listaFinal.sort((a, b) => {
+    const [da, ma, aa] = a.dia.split('/');
+    const [db, mb, ab] = b.dia.split('/');
+    return new Date(aa, ma-1, da) - new Date(ab, mb-1, db);
+  });
+
+  let diaAtual = "";
+
+  listaFinal.forEach(item => {
+
+    // 🔥 quebra por dia
+    if (item.dia !== diaAtual) {
+      texto += `📅 DATA: ${item.dia}\n\n`;
+      diaAtual = item.dia;
+    }
+
+    const horariosUnicos = [...new Set(item.horarios)];
+
+    texto += `🏫 TURMA: ${item.turma}\n`;
+    texto += `⏰ AULAS VAGAS: ${horariosUnicos.join(", ")}\n\n`;
+  });
+
+  mostrarMensagemPainel(
+  "📊 Relatório semanal de aulas vagas",
+  texto
+);
+}
+  
+function criarBotoesDias() {
+
+  const sem = document.getElementById('selectSemana').value;
+
+  const dias = semanasAgrupadas[sem].dias;
+
+  let html = `
+    <div style="
+      padding:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    ">
+  `;
+
+  Object.keys(dias).forEach(dia => {
+
+    const [d,m,a] = dia.split('/');
+
+    const data = new Date(a,m-1,d);
+
+    const diaSemana = data.getDay();
+
+    // ignora sábado e domingo
+    if (diaSemana === 6 || diaSemana === 0) return;
+
+    html += `
+      <button
+        onclick="mostrarRelatorioDia('${dia}')"
+        style="
+          padding:10px;
+          background:#2e7d32;
+          color:white;
+          border:none;
+          border-radius:6px;
+          cursor:pointer;
+        ">
+        📅 ${dia}
+      </button>
+    `;
+  });
+
+  html += `
+      <button
+        onclick="gerarRelatorioSemana()"
+        style="
+          padding:10px;
+          background:#d32f2f;
+          color:white;
+          border:none;
+          border-radius:6px;
+          cursor:pointer;
+        ">
+        📊 Semana inteira
+      </button>
+    </div>
+  `;
+
+  document.getElementById("botoesRelatorio").innerHTML = html;
+}
+
+window.addEventListener("beforeunload", () => {
+  salvarSnapshotAtual();
+});
+
+function abrirAba(id, botao){
+
+  document.querySelectorAll('.tab-content')
+    .forEach(el => el.classList.remove('active'));
+
+  document.querySelectorAll('.tab-btn')
+    .forEach(el => el.classList.remove('active'));
+
+  document.getElementById(id)
+    .classList.add('active');
+
+  if(botao){
+      botao.classList.add('active');
+  }
+
+  if(id === "sabados"){
+      renderSabados();
+  }
+}
+
+window.onload = async () => {
+
+  const btnTema = document.getElementById("btnTema");
+
+  const temaSalvo = localStorage.getItem("tema");
+
+  if (temaSalvo === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    btnTema.innerHTML = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    btnTema.innerHTML = "🌙";
+  }
+
+  btnTema.addEventListener("click", () => {
+
+    const html = document.documentElement;
+
+    if (html.getAttribute("data-theme") === "dark") {
+
+      html.removeAttribute("data-theme");
+      localStorage.setItem("tema", "light");
+      btnTema.innerHTML = "🌙";
+
+    } else {
+
+      html.setAttribute("data-theme", "dark");
+      localStorage.setItem("tema", "dark");
+      btnTema.innerHTML = "☀️";
+
+    }
+
+  });
+
+  await init();
+
+  abrirAba(
+    "dashboard",
+    document.querySelector(".tab-btn")
+  );
+
+  gerarDashboard();
+};
+</script>
+<script src="js/config.js"></script>
+<script src="js/core.js"></script>
+<script src="js/base.js"></script>
+<script src="js/professor.js"></script>
+<script src="js/turma.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/sabado.js"></script>
+<script src="js/horario.js"></script>    
+</body>
+</html>
