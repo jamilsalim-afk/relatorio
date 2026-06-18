@@ -871,49 +871,63 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
 
     let dados = [...BASE_GERAL];
 
-    // =========================
-    // FILTRO MODALIDADE
-    // =========================
+    // =====================================
+    // FILTRO POR MODALIDADE
+    // =====================================
     if (filtroModalidade !== "TODOS") {
         dados = dados.filter(a => a.modalidade === filtroModalidade);
     }
 
-    // =========================
+    // =====================================
+    // TRANSFORMA EM DISCIPLINA / PROF / TURMA
+    // =====================================
+    const mapa = new Map();
+
+    dados.forEach(a => {
+
+        const partes = (a.valor || "").split(" - ");
+
+        const disciplina = (partes[0] || "").trim();
+        const professor = (partes[1] || "").trim();
+        const turma = (a.turma || "").trim();
+
+        const chave = `${disciplina}__${professor}__${turma}`;
+
+        if (!mapa.has(chave)) {
+            mapa.set(chave, {
+                disciplina,
+                professor,
+                turma
+            });
+        }
+    });
+
+    let relatorio = Array.from(mapa.values());
+
+    // =====================================
     // BUSCA
-    // =========================
+    // =====================================
     if (termoBusca && termoBusca.trim() !== "") {
 
         const termo = normalizarTexto(termoBusca);
 
-        dados = dados.filter(a =>
-    normalizarTexto(a.disciplina || "").includes(termo) ||
-    normalizarTexto(a.professor || "").includes(termo) ||
-    normalizarTexto(a.turma || "").includes(termo)
-);
+        relatorio = relatorio.filter(r =>
+            normalizarTexto(r.disciplina).includes(termo) ||
+            normalizarTexto(r.professor).includes(termo) ||
+            normalizarTexto(r.turma).includes(termo)
+        );
     }
 
-    // =========================
-    // MAPEAMENTO PARA DISCIPLINA
-    // =========================
-    const relatorio = dados.map(a => {
-
-    return {
-        disciplina: a.disciplina || (a.valor ? a.valor.split(" - ")[0] : ""),
-        professor: a.professor || (a.valor ? a.valor.split(" - ")[1] : ""),
-        turma: a.turma || ""
-    };
-});
-
-    // =========================
+    // =====================================
     // ORDENAÇÃO
-    // =========================
+    // =====================================
     relatorio.sort((a, b) =>
         a.disciplina.localeCompare(b.disciplina, "pt-BR")
     );
 
-    // =========================
-    // RENDER
-    // =========================
+    // =====================================
+    // RENDER TABELA
+    // =====================================
     tabela.innerHTML = "";
 
     relatorio.forEach(item => {
@@ -950,10 +964,10 @@ function exportarRelatorioPDF() {
 
     const dados = montarRelatorioDisciplinas(filtro, busca);
 
-    const linhas = dados.map(a => [
-        a.disciplina,
-        a.professor,
-        a.turma
+    const linhas = dados.map(item => [
+        item.disciplina,
+        item.professor,
+        item.turma
     ]);
 
     doc.autoTable({
