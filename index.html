@@ -993,6 +993,26 @@ function montarRelatorioDisciplinas(filtroModalidade = "TODOS", termoBusca = "")
     return relatorio;
 }
 
+function parseDataBR(str) {
+
+    if (!str) return null;
+
+    const [d, m, a] = str.split("/");
+
+    return new Date(a, m - 1, d);
+}
+
+function formatarData(date) {
+
+    if (!date) return "-";
+
+    const d = String(date.getDate()).padStart(2, "0");
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const a = date.getFullYear();
+
+    return `${d}/${m}/${a}`;
+}
+  
 function atualizarRelatorio() {
 
     const filtro = document.getElementById("selectModalidadeEstatistica").value;
