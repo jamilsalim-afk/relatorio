@@ -817,7 +817,7 @@ body {
 #tabelaEstatistica td {
     font-size: 15px;
     padding: 10px;
-    color: #111; /* garante mesma cor em todas colunas */
+    color: var(--text);
     white-space: nowrap;
 }
 
