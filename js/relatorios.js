@@ -41,10 +41,7 @@ function obterMes(data){
 
 function inicializarRelatorio() {
 
-  const tipo =
-    document.getElementById(
-      "selectTipoRelatorio"
-    ).value;
+  const tipo = document.getElementById("selectTipoRelatorio").value;
 
   RELATORIO_ATUAL.tipo = tipo;
 
@@ -52,24 +49,31 @@ function inicializarRelatorio() {
 
   if (!tipo) return;
 
-  document.getElementById(
-    "relatorioPlaceholder"
-  ).style.display = "none";
+  document.getElementById("relatorioPlaceholder").style.display = "none";
+  document.getElementById("relatorioContainer").style.display = "block";
 
-  document.getElementById(
-    "relatorioContainer"
-  ).style.display = "block";
+  const turma = document.getElementById("selectTurmaRelatorio");
+  const disciplina = document.getElementById("selectDisciplinaRelatorio");
+  const professor = document.getElementById("selectProfessorRelatorio");
+
+  turma.style.display = "none";
+  disciplina.style.display = "none";
+  professor.style.display = "none";
 
   if (tipo === "disciplina") {
     carregarTurmas();
+    turma.style.display = "block";
+    disciplina.style.display = "block";
   }
 
   if (tipo === "turma") {
     carregarTurmas();
+    turma.style.display = "block";
   }
 
   if (tipo === "professor") {
     carregarProfessores();
+    professor.style.display = "block";
   }
 }
 
