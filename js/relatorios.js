@@ -19,10 +19,21 @@ function extrairDisciplina(valor) {
   return valor.split(" - ")[0].trim();
 }
 
-function obterMes(data) {
-  const [d, m, a] = data.split("/");
-  const dt = new Date(a, m - 1, d);
-  return dt.toLocaleString("pt-BR", { month: "long" });
+function obterMes(data){
+
+  const [d,m,a] =
+    data.split("/");
+
+  const dt =
+    new Date(a,m-1,d);
+
+  return dt.toLocaleString(
+    "pt-BR",
+    {
+      month:"long",
+      year:"numeric"
+    }
+  );
 }
 
 function inicializarRelatorio() {
@@ -47,8 +58,15 @@ function inicializarRelatorio() {
   }
 
   if (tipo === "professor") {
-    carregarProfessores();
-  }
+
+  document
+    .getElementById(
+      "selectProfessorRelatorio"
+    )
+    .style.display = "block";
+
+  carregarProfessores();
+}
 }
 
 function resetUI() {
@@ -310,53 +328,283 @@ function montarMatrizMensal(dados) {
       meses[mes] = 0;
     }
 
-    if (valor.includes("[REC]")) resumo.REC++;
-    else if (valor.includes("[EX]")) resumo.EX++;
-    else if (valor.includes("SÁB") || a.horario?.includes("SÁB")) resumo.SAB++;
-    else resumo.TOTAL++;
+   if (valor.includes("[REC]")) {
 
-    meses[mes]++;
+  resumo.REC++;
+
+} else if (valor.includes("[EX]")) {
+
+  resumo.EX++;
+
+} else {
+
+  resumo.TOTAL++;
+
+  if(
+    normalizarDia(a.horario)
+      .includes("SÁBADO")
+  ){
+    resumo.SAB++;
+  }
+
+}
+
+meses[mes]++;
   });
 
   return { meses, resumo };
 }
 
-function renderTabelaMensal(dados) {
+function renderTabelaMensal(dados){
 
-  const { meses, resumo } = montarMatrizMensal(dados);
+  const tabela =
+    document.getElementById(
+      "tabelaResumoRelatorio"
+    );
 
-  const container = document.getElementById("tabelaRelatorio");
+  const thead =
+    tabela.querySelector("thead");
 
-  let html = `
-  <tr>
-    <th>Mês</th>
-    ${Object.keys(meses).map(m => `<th>${m}</th>`).join("")}
-    <th>Sabado</th>
-    <th>Rec</th>
-    <th>Ex</th>
-    <th>Total</th>
-  </tr>
-  <tr>
-    <td>Qtd</td>
-    ${Object.values(meses).map(v => `<td>${v}</td>`).join("")}
-    <td>${resumo.SAB}</td>
-    <td>${resumo.REC}</td>
-    <td>${resumo.EX}</td>
-    <td>${resumo.TOTAL}</td>
-  </tr>`;
+  const tbody =
+    tabela.querySelector("tbody");
 
-  container.querySelector("thead").innerHTML = html;
+  const { meses, resumo } =
+    montarMatrizMensal(dados);
+
+  thead.innerHTML = `
+    <tr>
+      ${Object.keys(meses)
+        .map(m => `<th>${m}</th>`)
+        .join("")}
+      <th>Sábado</th>
+      <th>Rec</th>
+      <th>Ex</th>
+      <th>Total</th>
+    </tr>
+  `;
+
+  tbody.innerHTML = `
+    <tr>
+      ${Object.values(meses)
+        .map(v => `<td>${v}</td>`)
+        .join("")}
+      <td>${resumo.SAB}</td>
+      <td>${resumo.REC}</td>
+      <td>${resumo.EX}</td>
+      <td>${resumo.TOTAL}</td>
+    </tr>
+  `;
 }
 
-function renderTabelaDetalhada(dados) {
+function renderTabelaMensalPorTurma(dados){
 
-  const tbody = document.querySelector("#tabelaRelatorio tbody");
+  const tabela =
+    document.getElementById(
+      "tabelaResumoRelatorio"
+    );
+
+  const thead =
+    tabela.querySelector("thead");
+
+  const tbody =
+    tabela.querySelector("tbody");
+
+  const agrupado = {};
+
+  dados.forEach(a => {
+
+    const disciplina =
+      extrairDisciplina(a.valor);
+
+    const professor =
+      extrairProfessor(a.valor);
+
+    const chave =
+      `${disciplina}|${professor}`;
+
+    if(!agrupado[chave]){
+      agrupado[chave] = [];
+    }
+
+    agrupado[chave].push(a);
+
+  });
+
+  const mesesSet = new Set();
+
+  Object.values(agrupado).forEach(lista => {
+
+    lista.forEach(a => {
+      mesesSet.add(
+        obterMes(a.data)
+      );
+    });
+
+  });
+
+  const meses =
+    [...mesesSet];
+
+  thead.innerHTML = `
+    <tr>
+      <th>Disciplina</th>
+      <th>Professor</th>
+      ${meses.map(m => `<th>${m}</th>`).join("")}
+      <th>Sábado</th>
+      <th>Rec</th>
+      <th>Ex</th>
+      <th>Total</th>
+    </tr>
+  `;
+
+  tbody.innerHTML = "";
+
+  Object.entries(agrupado).forEach(([chave, lista]) => {
+
+    const [disciplina, professor] =
+      chave.split("|");
+
+    const matriz =
+      montarMatrizMensal(lista);
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${disciplina}</td>
+      <td>${professor}</td>
+      ${meses.map(m =>
+        `<td>${matriz.meses[m] || 0}</td>`
+      ).join("")}
+      <td>${matriz.resumo.SAB}</td>
+      <td>${matriz.resumo.REC}</td>
+      <td>${matriz.resumo.EX}</td>
+      <td>${matriz.resumo.TOTAL}</td>
+    `;
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+function renderTabelaMensalPorProfessor(dados){
+
+  const tabela =
+    document.getElementById(
+      "tabelaResumoRelatorio"
+    );
+
+  const thead =
+    tabela.querySelector("thead");
+
+  const tbody =
+    tabela.querySelector("tbody");
+
+  const agrupado = {};
+
+  dados.forEach(a => {
+
+    const disciplina =
+      extrairDisciplina(a.valor);
+
+    const chave =
+      `${disciplina}|${a.turma}`;
+
+    if(!agrupado[chave]){
+      agrupado[chave] = [];
+    }
+
+    agrupado[chave].push(a);
+
+  });
+
+  const mesesSet = new Set();
+
+  Object.values(agrupado).forEach(lista => {
+
+    lista.forEach(a => {
+      mesesSet.add(
+        obterMes(a.data)
+      );
+    });
+
+  });
+
+  const meses =
+    [...mesesSet];
+
+  thead.innerHTML = `
+    <tr>
+      <th>Disciplina</th>
+      <th>Turma</th>
+      ${meses.map(m => `<th>${m}</th>`).join("")}
+      <th>Sábado</th>
+      <th>Rec</th>
+      <th>Ex</th>
+      <th>Total</th>
+    </tr>
+  `;
+
+  tbody.innerHTML = "";
+
+  Object.entries(agrupado).forEach(([chave, lista]) => {
+
+    const [disciplina, turma] =
+      chave.split("|");
+
+    const matriz =
+      montarMatrizMensal(lista);
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${disciplina}</td>
+      <td>${turma}</td>
+      ${meses.map(m =>
+        `<td>${matriz.meses[m] || 0}</td>`
+      ).join("")}
+      <td>${matriz.resumo.SAB}</td>
+      <td>${matriz.resumo.REC}</td>
+      <td>${matriz.resumo.EX}</td>
+      <td>${matriz.resumo.TOTAL}</td>
+    `;
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+function renderTabelaDetalhada(dados){
+
+  const tabela =
+    document.getElementById(
+      "tabelaDetalhadaRelatorio"
+    );
+
+  const thead =
+    tabela.querySelector("thead");
+
+  const tbody =
+    tabela.querySelector("tbody");
+
+  thead.innerHTML = `
+    <tr>
+      <th>Dia</th>
+      <th>Horário</th>
+      <th>Professor</th>
+      <th>Tipo</th>
+    </tr>
+  `;
 
   tbody.innerHTML = "";
 
   dados.forEach(a => {
 
-    const tr = document.createElement("tr");
+    const tr =
+      document.createElement("tr");
 
     tr.innerHTML = `
       <td>${a.data}</td>
@@ -366,6 +614,7 @@ function renderTabelaDetalhada(dados) {
     `;
 
     tbody.appendChild(tr);
+
   });
 }
 
