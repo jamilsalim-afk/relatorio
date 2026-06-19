@@ -96,6 +96,12 @@ function carregarTurmas() {
   });
 
   select.style.display = "block";
+
+if(RELATORIO_ATUAL.tipo === "turma"){
+  select.onchange = gerarRelatorio;
+}else{
+  select.onchange = carregarDisciplinas;
+}
 }
 
 /* =========================
@@ -132,6 +138,8 @@ function carregarDisciplinas() {
   });
 
   select.style.display = "block";
+
+select.onchange = gerarRelatorio;
 }
 
 /* =========================
@@ -161,6 +169,8 @@ function carregarProfessores() {
   });
 
   select.style.display = "block";
+
+select.onchange = gerarRelatorio;
 }
 
 /* =========================
@@ -367,4 +377,59 @@ function classificarTipo(v) {
   if (v.includes("[R]")) return "REPOSIÇÃO";
 
   return "NORMAL";
+}
+
+function exportarRelatorioAcademicoPDF(){
+
+  const { jsPDF } = window.jspdf;
+
+  const pdf = new jsPDF(
+    "l",
+    "mm",
+    "a4"
+  );
+
+  pdf.setFontSize(14);
+
+  pdf.text(
+    "RELATÓRIO ACADÊMICO",
+    148,
+    10,
+    { align:"center" }
+  );
+
+  const tabelaResumo =
+    document.querySelector(
+      "#tabelaResumoRelatorio"
+    );
+
+  const tabelaDetalhada =
+    document.querySelector(
+      "#tabelaDetalhadaRelatorio"
+    );
+
+  pdf.autoTable({
+    html:tabelaResumo,
+    startY:20,
+    theme:"grid",
+    styles:{
+      fontSize:7
+    }
+  });
+
+  const y =
+    pdf.lastAutoTable.finalY + 10;
+
+  pdf.autoTable({
+    html:tabelaDetalhada,
+    startY:y,
+    theme:"grid",
+    styles:{
+      fontSize:7
+    }
+  });
+
+  pdf.save(
+    "RELATORIO_ACADEMICO.pdf"
+  );
 }
