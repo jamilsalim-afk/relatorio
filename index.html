@@ -255,37 +255,46 @@
 </div>
 </section>
 
+<!-- RELATÓRIOS -->
 <section id="relatorios" class="tab-content">
+
+  <div class="estatistica-header">
+    <h1>📊 Relatórios</h1>
+    <p>Selecione os filtros para gerar o relatório</p>
+  </div>
+
   <div class="header-sticky">
     <div class="controls-card">
-      <select id="selectTipoRelatorio"
-              onchange="trocarTipoRelatorio()">
-        <option value="DISCIPLINA">
-          Relatório por Disciplina
-        </option>
-        <option value="PROFESSOR">
-          Relatório por Professor
-        </option>
-        <option value="TURMA">
-          Relatório por Turma
-        </option>
-      </select>
-      <div id="filtrosRelatorio"></div>
 
-      <button class="btn-pdf"
-        onclick="exportarRelatorioAtualPDF()">
-        📄 Exportar PDF
-      </button>
+      <select id="selectTipoRelatorio" onchange="inicializarRelatorio()">
+        <option value="">📌 Selecione o tipo de relatório</option>
+        <option value="disciplina">Disciplina</option>
+        <option value="turma">Turma</option>
+        <option value="professor">Professor</option>
+      </select>
+
+      <select id="selectTurmaRelatorio" onchange="carregarDisciplinas()" style="display:none"></select>
+
+      <select id="selectDisciplinaRelatorio" onchange="gerarRelatorio()" style="display:none"></select>
+
     </div>
   </div>
 
   <div class="week-container">
-      <div id="resumoRelatorio"></div>
-      <div class="table-responsive">
-          <div id="tabelaRelatorio"></div>
-      </div>
-      <div id="referenciasRelatorio"></div>
+
+    <div id="relatorioPlaceholder" style="padding:20px;text-align:center;color:#666;">
+      📊 Selecione um tipo de relatório para começar
+    </div>
+
+    <div class="table-responsive" id="relatorioContainer" style="display:none;">
+      <table id="tabelaRelatorio">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
   </div>
+
 </section>
 
 </main>
