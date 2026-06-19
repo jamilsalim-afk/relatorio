@@ -925,3 +925,51 @@ body {
     width:calc(100% - 40px);
     margin:0 auto 20px auto;
 }
+
+/* ==================================
+   RELATÓRIOS
+================================== */
+
+.relatorio-placeholder{
+  text-align:center;
+  padding:50px;
+  color:var(--text-secondary);
+  font-size:15px;
+}
+
+#tabelaResumoRelatorio,
+#tabelaDetalhadaRelatorio{
+  width:100%;
+  border-collapse:collapse;
+}
+
+#tabelaResumoRelatorio th,
+#tabelaResumoRelatorio td,
+#tabelaDetalhadaRelatorio th,
+#tabelaDetalhadaRelatorio td{
+  border:1px solid var(--border-color);
+  padding:8px;
+  text-align:center;
+}
+
+#tabelaResumoRelatorio th,
+#tabelaDetalhadaRelatorio th{
+  background:#2e7d32;
+  color:white;
+}
+
+#referenciasRelatorio{
+  margin-top:15px;
+  padding:12px;
+  border-radius:8px;
+  background:var(--card-bg);
+}
+
+#referenciasRelatorio ul{
+  margin:0;
+  padding-left:20px;
+}
+
+#referenciasRelatorio li{
+  margin-bottom:5px;
+}
