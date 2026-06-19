@@ -6,11 +6,14 @@ let RELATORIO_ATUAL = {
 };
 
 function extrairProfessor(valor) {
+
   if (!valor) return "";
   if (!valor.includes(" - ")) return "";
 
-  const prof = valor.split(" - ")[1] || "";
-  return obterNomeCompletoProfessor(prof.trim());
+  return valor
+    .split(" - ")[1]
+    .replace(/\[.*?\]/g, "")
+    .trim();
 }
 
 function extrairDisciplina(valor) {
