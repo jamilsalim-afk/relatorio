@@ -1,337 +1,181 @@
-// =====================================================
-// RELATÓRIOS - IFRO SYSTEM
-// Disciplina / Professor / Turma
-// =====================================================
+let RELATORIO_ATUAL = {
+  tipo: null,
+  turma: null,
+  disciplina: null
+};
 
-window.RELATORIOS_CACHE = [];
-window.TIPO_RELATORIO_ATUAL = "DISCIPLINA";
+function inicializarRelatorio() {
+  const tipo = document.getElementById("selectTipoRelatorio").value;
 
-// =====================================================
-// INICIALIZAÇÃO
-// =====================================================
+  RELATORIO_ATUAL.tipo = tipo;
 
-function initRelatorios() {
-    if (!window.BASE_GERAL) {
-        console.warn("BASE_GERAL ainda não carregada");
-        return;
+  resetRelatorioUI();
+
+  if (!tipo) return;
+
+  mostrarEstrutura();
+
+  if (tipo === "disciplina") {
+    popularTurmas();
+  }
+
+  if (tipo === "turma") {
+    popularTurmas();
+  }
+
+  if (tipo === "professor") {
+    popularProfessores();
+  }
+}
+
+function resetRelatorioUI() {
+  document.getElementById("relatorioPlaceholder").style.display = "block";
+  document.getElementById("relatorioContainer").style.display = "none";
+
+  document.getElementById("selectTurmaRelatorio").style.display = "none";
+  document.getElementById("selectDisciplinaRelatorio").style.display = "none";
+}
+
+function mostrarEstrutura() {
+  document.getElementById("relatorioPlaceholder").style.display = "none";
+  document.getElementById("relatorioContainer").style.display = "block";
+}
+
+/* =========================
+   TURMAS
+========================= */
+function popularTurmas() {
+  const select = document.getElementById("selectTurmaRelatorio");
+
+  select.innerHTML = `<option value="">Selecione a turma</option>`;
+
+  turmasDaPlanilha.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t;
+    select.appendChild(opt);
+  });
+
+  select.style.display = "block";
+}
+
+/* =========================
+   DISCIPLINAS
+========================= */
+function carregarDisciplinas() {
+  const turma = document.getElementById("selectTurmaRelatorio").value;
+
+  RELATORIO_ATUAL.turma = turma;
+
+  const select = document.getElementById("selectDisciplinaRelatorio");
+  select.innerHTML = `<option value="">Selecione a disciplina</option>`;
+
+  if (!turma) {
+    select.style.display = "none";
+    return;
+  }
+
+  const disciplinas = new Set();
+
+  BASE_GERAL.forEach(a => {
+    if (a.turma === turma && a.valor) {
+      const disc = a.valor.split(" - ")[0];
+      if (disc) disciplinas.add(disc.trim());
     }
+  });
 
-    montarCacheRelatorios();
-    trocarTipoRelatorio();
+  [...disciplinas].sort().forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = d;
+    select.appendChild(opt);
+  });
+
+  select.style.display = "block";
 }
 
-// =====================================================
-// CACHE BASE (reutiliza BASE_GERAL)
-// =====================================================
+/* =========================
+   GERAR RELATÓRIO
+========================= */
+function gerarRelatorio() {
 
-function montarCacheRelatorios() {
+  const turma = document.getElementById("selectTurmaRelatorio").value;
+  const disciplina = document.getElementById("selectDisciplinaRelatorio").value;
 
-    const mapa = new Map();
+  RELATORIO_ATUAL.turma = turma;
+  RELATORIO_ATUAL.disciplina = disciplina;
 
-    BASE_GERAL.forEach(a => {
+  if (!turma || !disciplina) return;
 
-        if (!a.valor || !a.data) return;
+  const dados = BASE_GERAL.filter(a => {
 
-        const valor = a.valor.trim();
+    if (a.turma !== turma) return false;
 
-        if (!valor.includes(" - ")) return;
+    if (!a.valor) return false;
 
-        let [disciplina, professor] = valor.split(" - ");
+    return a.valor.startsWith(disciplina);
+  });
 
-        disciplina = (disciplina || "").trim();
-        professor = normalizarProfessor(professor);
-
-        const chave = `${disciplina}__${professor}__${a.turma}`;
-
-        if (!mapa.has(chave)) {
-
-            mapa.set(chave, {
-                disciplina,
-                professor,
-                turma: a.turma,
-                datas: [],
-                eventos: []
-            });
-
-        }
-
-        mapa.get(chave).datas.push(a.data);
-
-        // tipo de aula
-        const tipo = identificarTipoAula(valor);
-
-        mapa.get(chave).eventos.push({
-            data: a.data,
-            horario: a.horario,
-            tipo,
-            valor
-        });
-    });
-
-    RELATORIOS_CACHE = Array.from(mapa.values());
-
-    console.log("RELATORIOS CACHE:", RELATORIOS_CACHE.length);
+  renderizarTabelaRelatorio(dados);
 }
 
-// =====================================================
-// NORMALIZAÇÕES
-// =====================================================
+/* =========================
+   RENDER TABELA
+========================= */
+function renderizarTabelaRelatorio(dados) {
 
-function normalizarProfessor(nome) {
+  const tabela = document.getElementById("tabelaRelatorio");
+  const thead = tabela.querySelector("thead");
+  const tbody = tabela.querySelector("tbody");
 
-    if (!nome) return "";
+  thead.innerHTML = `
+    <tr>
+      <th>Dia</th>
+      <th>Horário</th>
+      <th>Professor</th>
+      <th>Tipo</th>
+    </tr>
+  `;
 
-    return nome
-        .replace(/\[.*?\]/g, "")
-        .replace(/\*/g, "")
-        .replace(/\(.*?\)/g, "")
-        .trim();
-}
+  tbody.innerHTML = "";
 
-function identificarTipoAula(valor) {
-
-    const v = (valor || "").toUpperCase();
-
-    if (v.includes("[REC]") || v.includes("RECUPERA")) return "REC";
-    if (v.includes("[EX]") || v.includes("EXAME")) return "EX";
-    if (v.includes("[R]")) return "REP";
-    if (v.includes("[+]")) return "EXTRA";
-
-    return "NORMAL";
-}
-
-// =====================================================
-// TROCA DE TIPO DE RELATÓRIO
-// =====================================================
-
-function trocarTipoRelatorio() {
-
-    const tipo = document.getElementById("selectTipoRelatorio").value;
-
-    TIPO_RELATORIO_ATUAL = tipo;
-
-    document.getElementById("filtrosRelatorio").innerHTML = "";
-
-    if (tipo === "DISCIPLINA") {
-        renderFiltroDisciplina();
-        renderRelatorioDisciplina();
-    }
-
-    if (tipo === "PROFESSOR") {
-        renderFiltroProfessor();
-        renderRelatorioProfessor();
-    }
-
-    if (tipo === "TURMA") {
-        renderFiltroTurma();
-        renderRelatorioTurma();
-    }
-}
-
-// =====================================================
-// FILTROS
-// =====================================================
-
-function renderFiltroDisciplina() {
-
-    const container = document.getElementById("filtrosRelatorio");
-
-    const turmas = [...new Set(RELATORIOS_CACHE.map(r => r.turma))];
-
-    container.innerHTML = `
-        <select id="filtroTurma" onchange="renderRelatorioDisciplina()">
-            <option value="">Selecione Turma</option>
-            ${turmas.map(t => `<option value="${t}">${t}</option>`).join("")}
-        </select>
-
-        <select id="filtroDisciplina" onchange="renderRelatorioDisciplina()">
-            <option value="">Selecione Disciplina</option>
-        </select>
+  if (!dados.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align:center;color:#999;">
+          Nenhum registro encontrado
+        </td>
+      </tr>
     `;
-}
+    return;
+  }
 
-function renderFiltroProfessor() {
+  dados.forEach(a => {
 
-    const container = document.getElementById("filtrosRelatorio");
+    const valor = a.valor || "";
 
-    const professores = [...new Set(RELATORIOS_CACHE.map(r => r.professor))];
+    let professor = "";
+    let tipo = "NORMAL";
 
-    container.innerHTML = `
-        <select id="filtroProfessor" onchange="renderRelatorioProfessor()">
-            <option value="">Selecione Professor</option>
-            ${professores.map(p => `<option value="${p}">${p}</option>`).join("")}
-        </select>
-    `;
-}
+    if (valor.includes(" - ")) {
+      const partes = valor.split(" - ");
+      professor = partes[1] || "";
 
-function renderFiltroTurma() {
-
-    const container = document.getElementById("filtrosRelatorio");
-
-    const turmas = [...new Set(RELATORIOS_CACHE.map(r => r.turma))];
-
-    container.innerHTML = `
-        <select id="filtroTurma" onchange="renderRelatorioTurma()">
-            <option value="">Selecione Turma</option>
-            ${turmas.map(t => `<option value="${t}">${t}</option>`).join("")}
-        </select>
-    `;
-}
-
-// =====================================================
-// RELATÓRIO POR DISCIPLINA
-// =====================================================
-
-function renderRelatorioDisciplina() {
-
-    const turma = document.getElementById("filtroTurma")?.value;
-    const disciplinaSelect = document.getElementById("filtroDisciplina");
-
-    let base = RELATORIOS_CACHE;
-
-    if (turma) {
-        base = base.filter(b => b.turma === turma);
+      if (valor.includes("[+]")) tipo = "EXTRA";
+      if (valor.includes("[REC]")) tipo = "RECUPERAÇÃO";
+      if (valor.includes("[EX]")) tipo = "EXAME";
+      if (valor.includes("[R]")) tipo = "REPOSIÇÃO";
     }
 
-    const disciplinas = [...new Set(base.map(b => b.disciplina))];
+    const tr = document.createElement("tr");
 
-    if (disciplinaSelect) {
-        disciplinaSelect.innerHTML = `
-            <option value="">Selecione Disciplina</option>
-            ${disciplinas.map(d => `<option value="${d}">${d}</option>`).join("")}
-        `;
-    }
-
-    const disciplina = disciplinaSelect?.value;
-
-    let dados = base;
-
-    if (disciplina) {
-        dados = dados.filter(d => d.disciplina === disciplina);
-    }
-
-    renderTabelaRelatorio(dados);
-}
-
-// =====================================================
-// RELATÓRIO POR PROFESSOR
-// =====================================================
-
-function renderRelatorioProfessor() {
-
-    const professor = document.getElementById("filtroProfessor")?.value;
-
-    let dados = RELATORIOS_CACHE;
-
-    if (professor) {
-        dados = dados.filter(d => d.professor === professor);
-    }
-
-    renderTabelaRelatorio(dados);
-}
-
-// =====================================================
-// RELATÓRIO POR TURMA
-// =====================================================
-
-function renderRelatorioTurma() {
-
-    const turma = document.getElementById("filtroTurma")?.value;
-
-    let dados = RELATORIOS_CACHE;
-
-    if (turma) {
-        dados = dados.filter(d => d.turma === turma);
-    }
-
-    renderTabelaRelatorio(dados);
-}
-
-// =====================================================
-// TABELA PRINCIPAL (REAPROVEITÁVEL)
-// =====================================================
-
-function renderTabelaRelatorio(dados) {
-
-    const container = document.getElementById("tabelaRelatorio");
-
-    container.innerHTML = "";
-
-    const tabela = document.createElement("table");
-
-    tabela.style.width = "100%";
-    tabela.style.borderCollapse = "collapse";
-
-    tabela.innerHTML = `
-        <thead>
-            <tr>
-                <th>Disciplina</th>
-                <th>Professor</th>
-                <th>Turma</th>
-                <th>Período</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
+    tr.innerHTML = `
+      <td>${a.data || ""}</td>
+      <td>${a.horario || ""}</td>
+      <td>${professor}</td>
+      <td>${tipo}</td>
     `;
 
-    const tbody = tabela.querySelector("tbody");
-
-    dados.forEach(item => {
-
-        const datas = item.datas
-            .map(d => parseDataBR(d))
-            .filter(Boolean)
-            .sort((a,b) => a - b);
-
-        const inicio = datas[0];
-        const fim = datas[datas.length - 1];
-
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-            <td>${item.disciplina}</td>
-            <td>${item.professor}</td>
-            <td>${item.turma}</td>
-            <td>${formatarData(inicio)} → ${formatarData(fim)}</td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-
-    container.appendChild(tabela);
-
-    document.getElementById("resumoRelatorio").innerText =
-        `Total de registros: ${dados.length}`;
+    tbody.appendChild(tr);
+  });
 }
-
-// =====================================================
-// HELPERS (reaproveitando padrão do seu sistema)
-// =====================================================
-
-function parseDataBR(str) {
-    if (!str) return null;
-    const [d,m,a] = str.split("/");
-    return new Date(a, m-1, d);
-}
-
-function formatarData(d) {
-    if (!d) return "";
-    return d.toLocaleDateString("pt-BR");
-}
-
-// =====================================================
-// EXPORT PDF (placeholder pronto)
-// =====================================================
-
-function exportarRelatorioAtualPDF() {
-
-    alert("PDF será implementado na próxima etapa (já estruturado)");
-}
-
-// =====================================================
-// INIT AUTOMÁTICO
-// =====================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(initRelatorios, 500);
-});
