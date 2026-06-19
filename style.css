@@ -897,11 +897,11 @@ body {
 }
 
 #tabelaRelatorioEstatistica tbody tr:nth-child(even){
-    background:#f5fdf6;
+    background:rgba(46,125,50,.08);
 }
 
 #tabelaRelatorioEstatistica tbody tr:hover{
-    background:#e8f5e9;
+    background:rgba(46,125,50,.15);
 }
 
 .coluna-periodo{
