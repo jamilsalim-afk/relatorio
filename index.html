@@ -41,6 +41,7 @@
   <button class="tab" onclick="abrirAba('professores',this)">👨‍🏫 Professores</button>
   <button class="tab" onclick="abrirAba('turmas',this)">🏫 Turmas</button>
   <button class="tab" onclick="abrirAba('estatisticas',this)">📈 Estatísticas</button>
+  <button class="tab" onclick="abrirAba('relatorios',this)">📑 Relatórios</button>
 </nav>
 
 <!-- ================= CONTENT ================= -->
@@ -206,19 +207,15 @@
         <select
             id="selectModalidadeEstatistica"
             onchange="atualizarRelatorio()">
-
             <option value=>
                 Selecione a modalidade desejada
             </option>
-          
             <option value="TODOS">
                 INTEGRADO + SUPERIOR
             </option>
-
             <option value="INTEGRADO">
                 SOMENTE INTEGRADO
             </option>
-
             <option value="SUPERIOR">
                 SOMENTE SUPERIOR
             </option>
@@ -235,22 +232,15 @@
         <button
             onclick="exportarRelatorioPDF()"
             class="btn-pdf">
-
             📄 Baixar PDF
-
         </button>
-
     </div>
 </div>
 
 <div class="week-container">
-
     <div class="table-responsive">
-
         <table id="tabelaRelatorioEstatistica">
-
 <thead>
-
 <tr>
 <th>Disciplina</th>
 <th>Professor</th>
@@ -263,6 +253,39 @@
 </table>
       </div>
 </div>
+</section>
+
+<section id="relatorios" class="tab-content">
+  <div class="header-sticky">
+    <div class="controls-card">
+      <select id="selectTipoRelatorio"
+              onchange="trocarTipoRelatorio()">
+        <option value="DISCIPLINA">
+          Relatório por Disciplina
+        </option>
+        <option value="PROFESSOR">
+          Relatório por Professor
+        </option>
+        <option value="TURMA">
+          Relatório por Turma
+        </option>
+      </select>
+      <div id="filtrosRelatorio"></div>
+
+      <button class="btn-pdf"
+        onclick="exportarRelatorioAtualPDF()">
+        📄 Exportar PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="week-container">
+      <div id="resumoRelatorio"></div>
+      <div class="table-responsive">
+          <div id="tabelaRelatorio"></div>
+      </div>
+      <div id="referenciasRelatorio"></div>
+  </div>
 </section>
 
 </main>
