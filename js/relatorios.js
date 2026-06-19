@@ -41,7 +41,10 @@ function obterMes(data){
 
 function inicializarRelatorio() {
 
-  const tipo = document.getElementById("selectTipoRelatorio").value;
+  const tipo =
+    document.getElementById(
+      "selectTipoRelatorio"
+    ).value;
 
   RELATORIO_ATUAL.tipo = tipo;
 
@@ -49,8 +52,13 @@ function inicializarRelatorio() {
 
   if (!tipo) return;
 
-  document.getElementById("relatorioPlaceholder").style.display = "none";
-  document.getElementById("relatorioContainer").style.display = "block";
+  document.getElementById(
+    "relatorioPlaceholder"
+  ).style.display = "none";
+
+  document.getElementById(
+    "relatorioContainer"
+  ).style.display = "block";
 
   if (tipo === "disciplina") {
     carregarTurmas();
@@ -61,24 +69,27 @@ function inicializarRelatorio() {
   }
 
   if (tipo === "professor") {
-
-  document
-    .getElementById(
-      "selectProfessorRelatorio"
-    )
-    .style.display = "block";
-
-  carregarProfessores();
-}
+    carregarProfessores();
+  }
 }
 
 function resetUI() {
-  document.getElementById("relatorioPlaceholder").style.display = "block";
-  document.getElementById("relatorioContainer").style.display = "none";
 
-  document.getElementById("selectTurmaRelatorio").style.display = "none";
-  document.getElementById("selectDisciplinaRelatorio").style.display = "none";
-  document.getElementById("selectProfessorRelatorio").style.display = "none";
+  document.getElementById(
+    "selectTurmaRelatorio"
+  ).style.display = "none";
+
+  document.getElementById(
+    "selectDisciplinaRelatorio"
+  ).style.display = "none";
+
+  document.getElementById(
+    "selectProfessorRelatorio"
+  ).style.display = "none";
+
+  document.getElementById(
+    "relatorioContainer"
+  ).style.display = "none";
 }
 
 function mostrarEstrutura() {
