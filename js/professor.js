@@ -1,16 +1,10 @@
 function montarIndiceProfessores() {
-
     INDEX_PROFESSOR = {};
     INDEX_TURMA = {};
-
     BASE_GERAL.forEach(item => {
-
-        const valor =
-            item.valor || "";
-
+        const valor = item.valor || "";
         if (!valor.includes(" - "))
             return;
-
         const [
             disciplina,
             professor
@@ -21,31 +15,23 @@ function montarIndiceProfessores() {
 
         if (!professor)
             return;
-
-        const profNorm =
-            normalizarProfessor(
+        const profNorm = normalizarProfessor(
                 professor
             );
 
         // ====================================
         // ÍNDICE DE PROFESSORES
         // ====================================
-
         if (!INDEX_PROFESSOR[profNorm]) {
-
             INDEX_PROFESSOR[profNorm] = [];
-
         }
-
         const registro = {
-
             data: item.data,
             horario: item.horario,
             turma: item.turma,
             disciplina,
             professor,
             modalidade: item.modalidade
-
         };
 
         INDEX_PROFESSOR[profNorm].push(
@@ -56,22 +42,16 @@ function montarIndiceProfessores() {
         // ÍNDICE DE TURMAS
         // ====================================
 
-        const turma =
-            item.turma || "";
-
+        const turma = item.turma || "";
         if (!turma)
             return;
-
         if (!INDEX_TURMA[turma]) {
-
             INDEX_TURMA[turma] = [];
-
         }
 
         INDEX_TURMA[turma].push(
             registro
         );
-
     });
 
     console.log(
@@ -90,35 +70,25 @@ function montarIndiceProfessores() {
 }
 
 function normalizarProfessor(nome) {
-
     if (!nome) return "";
-
     return nome
         .toString()
         .toUpperCase()
-
         // remove [R], [EX], [REP], [+] etc
         .replace(/\[.*?\]/g, "")
-
         // remove *
         .replace(/\*/g, "")
-
         // remove espaços duplicados
         .replace(/\s+/g, " ")
-
         .trim();
 }
 
 function carregarListaProfessores() {
-
     const select =
         document.getElementById("selectProfessor");
-
     if (!select) return;
-
     select.innerHTML =
         '<option value="">Selecione um professor</option>';
-
     dadosProfessores
         .slice(1)
         .sort((a,b)=>
@@ -129,12 +99,8 @@ function carregarListaProfessores() {
                 )
         )
         .forEach(linha => {
-
-            const nomeCompleto =
-                (linha[0] || "").trim();
-
+            const nomeCompleto = (linha[0] || "").trim();
             if (!nomeCompleto) return;
-
             select.innerHTML += `
                 <option value="${nomeCompleto}">
                     ${nomeCompleto}
@@ -144,21 +110,14 @@ function carregarListaProfessores() {
 }
 
 function traduzirProfessor(nomeCompleto) {
-
     if (!nomeCompleto) return "";
-
-    const nomeNorm =
-        normalizarProfessor(nomeCompleto);
-
+    const nomeNorm = normalizarProfessor(nomeCompleto);
     for (let i = 1; i < dadosProfessores.length; i++) {
-
-        const nomeExibicao =
-            normalizarProfessor(
+        const nomeExibicao = normalizarProfessor(
                 dadosProfessores[i][0]
             );
 
-        const variacao =
-            normalizarProfessor(
+        const variacao = normalizarProfessor(
                 dadosProfessores[i][1]
             );
 
@@ -166,83 +125,53 @@ function traduzirProfessor(nomeCompleto) {
             return variacao;
         }
     }
-
     return nomeNorm;
 }
 
 function obterNomeCompletoProfessor(nome) {
-
     if (!nome) return "";
-
-    const nomeNorm =
-        normalizarProfessor(nome);
-
+    const nomeNorm = normalizarProfessor(nome);
     for (let i = 1; i < dadosProfessores.length; i++) {
-
-        const nomeCompleto =
-            (dadosProfessores[i][0] || "").trim();
-
-        const nomeCurto =
-            normalizarProfessor(
+        const nomeCompleto = (dadosProfessores[i][0] || "").trim();
+        const nomeCurto = normalizarProfessor(
                 dadosProfessores[i][1]
             );
-
         if (nomeCurto === nomeNorm) {
             return nomeCompleto;
         }
     }
-
     return nome;
 }
   
 function getDadosProfessor(professor, semana) {
-
-    const profCurto =
-        traduzirProfessor(professor);
-
+    const profCurto = traduzirProfessor(professor);
     return (
         INDEX_PROFESSOR[profCurto] || []
     ).filter(aula => {
-
-        const data =
-            aula.data;
-
-        const semanaAula =
-            obterInicioSemana(data);
-
+        const data = aula.data;
+        const semanaAula = obterInicioSemana(data);
         return semanaAula === semana;
     });
 }
   
 function carregarSemanasProfessor(){
-
-    const origem =
-        document.getElementById('selectSemana');
-
-    const destino =
-        document.getElementById('selectSemanaProfessor');
-
+    const origem = document.getElementById('selectSemana');
+    const destino = document.getElementById('selectSemanaProfessor');
     if(!origem || !destino) return;
-
     destino.innerHTML = origem.innerHTML;
-
     // 🔥 IMPORTANTE: evita disparo automático de onchange
     destino.value = origem.value;
-
     // 🔥 BLOQUEIA render automático nessa etapa
     destino.dataset.ready = "true";
 }
 
 function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
-
-    const aulas =
-        getDadosProfessor(
+    const aulas = getDadosProfessor(
             professorSelecionado,
             semanaSelecionada
         );
 
     console.log("AULAS ENCONTRADAS:", aulas.length);
-
     const dias = [
         "SEGUNDA",
         "TERÇA",
@@ -289,11 +218,8 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
     // 🔥 GRADE BASE (TUDO ARRAY)
     // ==============================
     const grade = {};
-
     horarios.forEach(h => {
-
         grade[h] = {};
-
         dias.forEach(d => {
             grade[h][d] = [];
         });
@@ -303,11 +229,8 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
     // 🔥 PREENCHIMENTO
     // ==============================
     aulas.forEach(aula => {
-
         const [d, m, a] = aula.data.split("/");
-
         const dt = new Date(a, m - 1, d);
-
         const diaSemana =
             [
                 "DOMINGO",
@@ -325,16 +248,13 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
         );
 
         if (!horario) return;
-
         if (!grade[horario]) return;
-
         if (!grade[horario][diaSemana]) {
             grade[horario][diaSemana] = [];
         }
 
         const turma = aula.turma || "";
         const disciplina = aula.disciplina || "";
-
         grade[horario][diaSemana].push(`
             <div style="
                 margin-bottom:4px;
@@ -355,10 +275,7 @@ function montarGradeProfessor(dados, professorSelecionado, semanaSelecionada) {
 }
 
 function renderProfessor(){
-
-    const semanaEl =
-        document.getElementById("selectSemanaProfessor");
-
+    const semanaEl = document.getElementById("selectSemanaProfessor");
     if (
         semanaEl &&
         semanaEl.dataset.ready !== "true"
@@ -366,40 +283,26 @@ function renderProfessor(){
         return;
     }
 
-    const professor =
-        document.getElementById("selectProfessor")?.value;
-
-    const semana =
-        semanaEl?.value;
-
+    const professor = document.getElementById("selectProfessor")?.value;
+    const semana = semanaEl?.value;
     if (!professor || !semana) return;
-
-    const container =
-        document.getElementById("tabelaProfessor");
-
+    const container = document.getElementById("tabelaProfessor");
     const { dias, horarios, grade } =
         montarGradeProfessor(
             BASE_GERAL,
             professor,
             semana
         );
-
-    const aulas =
-        getDadosProfessor(
+    const aulas = getDadosProfessor(
             professor,
             semana
         );
-
-    const totalAulas =
-        aulas.length;
-
-    const totalTurmas =
-        new Set(
+    const totalAulas = aulas.length;
+    const totalTurmas = new Set(
             aulas.map(a => a.turma)
         ).size;
 
-    const totalDias =
-        new Set(
+    const totalDias = new Set(
             aulas.map(a => a.data)
         ).size;
 
@@ -414,7 +317,7 @@ function renderProfessor(){
 
         <div style="
             background:var(--surface);
-color:var(--text);
+            color:var(--text);
             padding:15px;
             border-radius:10px;
             box-shadow:0 2px 6px rgba(0,0,0,.15);
@@ -435,7 +338,7 @@ color:var(--text);
 
         <div style="
             background:var(--surface);
-color:var(--text);
+            color:var(--text);
             padding:15px;
             border-radius:10px;
             box-shadow:0 2px 6px rgba(0,0,0,.15);
@@ -456,7 +359,7 @@ color:var(--text);
 
         <div style="
             background:var(--surface);
-color:var(--text);
+            color:var(--text);
             padding:15px;
             border-radius:10px;
             box-shadow:0 2px 6px rgba(0,0,0,.15);
@@ -474,7 +377,6 @@ color:var(--text);
                 ${totalDias}
             </div>
         </div>
-
     </div>
 
     <table style="
@@ -497,7 +399,6 @@ color:var(--text);
     `;
 
     dias.forEach(d => {
-
         html += `
             <th style="
                 padding:8px;
@@ -507,7 +408,6 @@ color:var(--text);
             </th>
         `;
     });
-
     html += `
         </tr>
         </thead>
@@ -515,13 +415,11 @@ color:var(--text);
     `;
 
     horarios.forEach(h => {
-
         if (h === "__INTERVALO_1__") {
-
             html += `
             <tr style="
                 background:var(--intervalo);
-color:var(--text);
+                color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -533,11 +431,10 @@ color:var(--text);
         }
 
         if (h === "__INTERVALO_2__") {
-
             html += `
             <tr style="
                 background:var(--intervalo);
-color:var(--text);
+                color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -549,11 +446,10 @@ color:var(--text);
         }
 
         if (h === "__INTERVALO_3__") {
-
             html += `
             <tr style="
                 background:var(--intervalo);
-color:var(--text);
+                color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -565,11 +461,10 @@ color:var(--text);
         }
 
         if (h === "__ALMOCO__") {
-
             html += `
             <tr style="
                 background:var(--caed);
-color:var(--text);
+                color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -581,11 +476,10 @@ color:var(--text);
         }
 
         if (h === "__JANTAR__") {
-
             html += `
             <tr style="
                 background:var(--caed);
-color:var(--text);
+                color:var(--text);
                 font-weight:bold;
                 text-align:center;
             ">
@@ -597,7 +491,6 @@ color:var(--text);
         }
 
         html += `<tr>`;
-
         html += `
             <td style="
                 border:1px solid #ccc;
@@ -605,7 +498,7 @@ color:var(--text);
                 font-weight:bold;
                 text-align:center;
                 background:var(--time-bg);
-color:var(--text);
+                color:var(--text);
             ">
                 ${h}
             </td>
@@ -613,17 +506,21 @@ color:var(--text);
 
         dias.forEach(d => {
 
-            html += `
-                <td style="
-                    border:1px solid #ccc;
-                    padding:6px;
-                    vertical-align:top;
-                    min-height:50px;
-                ">
-                    ${grade[h]?.[d] || ""}
-                </td>
-            `;
-        });
+    const conteudo = grade[h]?.[d] || [];
+
+    html += `
+        <td style="
+            border:1px solid #ccc;
+            padding:6px;
+            vertical-align:top;
+            min-height:50px;
+        ">
+            ${Array.isArray(conteudo)
+                ? conteudo.join("")
+                : conteudo}
+        </td>
+    `;
+});
 
         html += `</tr>`;
     });
@@ -638,13 +535,8 @@ color:var(--text);
     };
 
     aulas.forEach(aula => {
-
-        const [d,m,a] =
-            aula.data.split("/");
-
-        const dt =
-            new Date(a,m-1,d);
-
+        const [d,m,a] = aula.data.split("/");
+        const dt = new Date(a,m-1,d);
         const dia =
             [
                 "DOMINGO",
@@ -664,7 +556,7 @@ color:var(--text);
     html += `
     <tr style="
         background:var(--intervalo);
-    color:var(--text);
+        color:var(--text);
         font-weight:bold;
         text-align:center;
     ">
@@ -682,7 +574,6 @@ color:var(--text);
         </tbody>
         </table>
     `;
-
     container.innerHTML = html;
 }
 
@@ -717,30 +608,26 @@ function exportarFichaProfessorPDF() {
     pdf.setFontSize(10);
     pdf.text(
         "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
-        pageWidth / 2,
-        10,
+        pageWidth / 2, 10,
         { align: "center" }
     );
     pdf.text(
         "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
-        pageWidth / 2,
-        14,
+        pageWidth / 2, 14,
         { align: "center" }
     );
     pdf.setFontSize(11);
     pdf.setFont(undefined, "bold");
     pdf.text(
         `FICHA DO PROFESSOR: ${professor}`,
-        pageWidth / 2,
-        22,
+        pageWidth / 2, 22,
         { align: "center" }
     );
     pdf.setFontSize(9);
     pdf.setFont(undefined, "normal");
     pdf.text(
         `Semana de ${semana}`,
-        pageWidth / 2,
-        27,
+        pageWidth / 2, 27,
         { align: "center" }
     );
 
@@ -753,50 +640,34 @@ function exportarFichaProfessorPDF() {
     pdf.roundedRect(140, 33, 60, 22, 2, 2);
     pdf.setFontSize(8);
     pdf.text(
-        "TOTAL DE AULAS",
-        40,
-        38,
+        "TOTAL DE AULAS", 40, 38,
         { align: "center" }
     );
     pdf.text(
-        "TURMAS",
-        105,
-        38,
+        "TURMAS", 105, 38,
         { align: "center" }
     );
     pdf.text(
-        "DIAS COM AULA",
-        170,
-        38,
+        "DIAS COM AULA", 170, 38,
         { align: "center" }
     );
     pdf.setFontSize(18);
     pdf.setFont(undefined, "bold");
 
-    pdf.text(
-        String(totalAulas),
-        40,
-        46,
+    pdf.text(String(totalAulas), 40, 46,
         { align: "center" }
     );
-    pdf.text(
-        String(totalTurmas),
-        105,
-        46,
+    pdf.text(String(totalTurmas), 105, 46,
         { align: "center" }
     );
-    pdf.text(
-        String(totalDias),
-        170,
-        46,
+    pdf.text(String(totalDias), 170, 46,
         { align: "center" }
     );
     pdf.setFontSize(7);
     pdf.setFont(undefined, "normal");
     pdf.text(
         `Seg-Sex: ${totalAulasSegSex} | Sáb: ${totalAulasSab}`,
-        40,
-        52,
+        40, 52,
         { align: "center" }
     );
     // =====================================
