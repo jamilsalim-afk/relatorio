@@ -256,7 +256,6 @@
 </section>
 
 <!-- RELATÓRIOS -->
-<!-- RELATÓRIOS -->
 <section id="relatorios" class="tab-content">
 
 <div class="estatistica-header">
@@ -270,27 +269,28 @@
 
   <div class="controls-card">
 
-    <select
-      id="selectTipoRelatorio"
-      onchange="inicializarRelatorio()">
+    <select id="selectTipoRelatorio"
+        onchange="inicializarRelatorio()">
+  <option value="">📌 Selecione o tipo de relatório</option>
+  <option value="disciplina">Disciplina</option>
+  <option value="turma">Turma</option>
+  <option value="professor">Professor</option>
+</select>
 
-      <option value="">
-        Selecione o tipo de relatório
-      </option>
+<select id="selectTurmaRelatorio"
+        onchange="carregarDisciplinas()"
+        style="display:none">
+</select>
 
-      <option value="disciplina">
-        Relatório por Disciplina
-      </option>
+<select id="selectDisciplinaRelatorio"
+        onchange="gerarRelatorio()"
+        style="display:none">
+</select>
 
-      <option value="turma">
-        Relatório por Turma
-      </option>
-
-      <option value="professor">
-        Relatório por Professor
-      </option>
-
-    </select>
+<select id="selectProfessorRelatorio"
+        onchange="gerarRelatorio()"
+        style="display:none">
+</select>
 
     <select
       id="selectTurmaRelatorio"
