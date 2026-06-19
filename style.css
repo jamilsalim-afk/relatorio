@@ -927,3 +927,8 @@ body {
     word-break:break-word;
     overflow-wrap:anywhere;
 }
+
+#estatisticas .table-responsive{
+    width:calc(100% - 40px);
+    margin:0 auto 20px auto;
+}
