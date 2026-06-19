@@ -10,10 +10,12 @@ function extrairProfessor(valor) {
   if (!valor) return "";
   if (!valor.includes(" - ")) return "";
 
-  return valor
-    .split(" - ")[1]
-    .replace(/\[.*?\]/g, "")
-    .trim();
+  const partes = valor.split(" - ");
+
+  const prof = partes[1] || "";
+
+  // NÃO usa mais normalização global da aba professor
+  return prof.trim();
 }
 
 function extrairDisciplina(valor) {
@@ -133,11 +135,18 @@ function carregarTurmas() {
 
   select.style.display = "block";
 
-if(RELATORIO_ATUAL.tipo === "turma"){
-  select.onchange = gerarRelatorio;
-}else{
-  select.onchange = carregarDisciplinas;
-}
+select.onchange = () => {
+  if (RELATORIO_ATUAL.tipo === "turma") {
+    RELATORIO_ATUAL.turma = select.value;
+    gerarRelatorio();
+    return;
+  }
+
+  if (RELATORIO_ATUAL.tipo === "disciplina") {
+    RELATORIO_ATUAL.turma = select.value;
+    carregarDisciplinas();
+  }
+};
 }
 
 /* =========================
