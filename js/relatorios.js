@@ -215,7 +215,11 @@ function carregarProfessores() {
 
   select.style.display = "block";
 
-select.onchange = gerarRelatorio;
+  // ❌ REMOVIDO: select.onchange = gerarRelatorio;
+
+  select.onchange = () => {
+    RELATORIO_ATUAL.professor = select.value;
+  };
 }
 
 /* =========================
