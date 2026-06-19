@@ -65,14 +65,6 @@
   box-sizing:border-box;
 }
 
-body{
-  font-family:'Segoe UI',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  margin:0;
-  transition:.3s;
-}
-
 /* CABEÇALHO */
 
 .ifro-header{
@@ -769,7 +761,7 @@ body {
   display: flex;
   gap: 8px;
   padding: 10px;
-  background: white;
+  background:var(--surface);
   border-bottom: 1px solid #e5e7eb;
   overflow-x: auto;
 }
@@ -855,7 +847,8 @@ body {
 }
 
 .estat-card{
-    background:white;
+    background:var(--surface);
+    color:var(--text);
     border-radius:12px;
     padding:20px;
     text-align:center;
