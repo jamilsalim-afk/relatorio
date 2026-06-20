@@ -74,7 +74,7 @@ function inicializarRelatorio() {
   }
 
   if (tipo === "professor") {
-    carregarProfessores();
+    carregarProfessoresRelatorio();
     professor.style.display = "block";
   }
 }
@@ -191,7 +191,7 @@ select.onchange = gerarRelatorio;
    PROFESSORES
 ========================= */
 
-function carregarProfessores() {
+function carregarProfessoresRelatorio() {
 
   const select = document.getElementById("selectProfessorRelatorio");
 
