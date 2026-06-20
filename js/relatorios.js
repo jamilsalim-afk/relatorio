@@ -83,7 +83,9 @@ function carregarListaTurmasRelatorio() {
 
   select.innerHTML = '<option value="">Selecione a turma</option>';
 
-  turmasDaPlanilha.forEach(t => {
+  Object.keys(INDEX_TURMA)
+  .sort((a,b)=> a.localeCompare(b,'pt-BR'))
+  .forEach(t => {
     select.innerHTML += `<option value="${t}">${t}</option>`;
   });
 
