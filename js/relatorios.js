@@ -79,15 +79,16 @@ function carregarListaProfessoresRelatorio() {
 }
 
 function carregarListaTurmasRelatorio() {
+
   const select = document.getElementById("selectTurmaRelatorio");
 
   select.innerHTML = '<option value="">Selecione a turma</option>';
 
   Object.keys(INDEX_TURMA)
-  .sort((a,b)=> a.localeCompare(b,'pt-BR'))
-  .forEach(t => {
-    select.innerHTML += `<option value="${t}">${t}</option>`;
-  });
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+    .forEach(t => {
+      select.innerHTML += `<option value="${t}">${t}</option>`;
+    });
 
   select.onchange = () => {
     Relatorio.turma = select.value;
