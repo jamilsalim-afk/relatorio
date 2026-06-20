@@ -1,3 +1,32 @@
+function extrairDisciplinaRelatorio(valor) {
+  if (!valor) return "";
+
+  if (!valor.includes(" - ")) return "";
+
+  const partes = valor.split(" - ");
+
+  const disciplina = partes[0]?.trim();
+  const professor = partes[1]?.trim();
+
+  // regra principal: só vale se tiver os dois lados
+  if (!disciplina || !professor) return "";
+
+  // bloqueios de lixo comum
+  const bloqueados = [
+    "INTERVALO",
+    "REUNIÃO",
+    "REUNIAO",
+    "ALMOÇO",
+    "ALMOCO",
+    "EVENTO",
+    "ATIVIDADE"
+  ];
+
+  if (bloqueados.includes(disciplina.toUpperCase())) return "";
+
+  return disciplina;
+}
+
 const Relatorio = {
   tipo: "",
   professor: "",
@@ -78,7 +107,7 @@ function carregarDisciplinasRelatorio() {
 
   BASE_GERAL.forEach(a => {
     if (a.turma === Relatorio.turma) {
-      const disc = a.valor?.split(" - ")[0];
+      const disc = extrairDisciplinaRelatorio(a.valor);
       if (disc) set.add(disc.trim());
     }
   });
@@ -111,7 +140,7 @@ function gerarRelatorio() {
   if (Relatorio.tipo === "disciplina") {
     dados = BASE_GERAL.filter(a =>
       a.turma === Relatorio.turma &&
-      a.valor?.startsWith(Relatorio.disciplina)
+      extrairDisciplinaRelatorio(a.valor) === Relatorio.disciplina
     );
   }
 
