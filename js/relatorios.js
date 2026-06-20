@@ -192,3 +192,178 @@ function esconderTodosSelects() {
   document.getElementById("selectTurmaRelatorio").style.display = "none";
   document.getElementById("selectDisciplinaRelatorio").style.display = "none";
 }
+
+function classificarTipoRelatorio(valor) {
+
+  if (!valor) return "NORMAL";
+
+  const v = valor.toUpperCase();
+
+  if (v.includes("[REC]")) return "RECUPERAÇÃO";
+  if (v.includes("[EX]")) return "EXAME";
+  if (v.includes("[+]")) return "EXTRA";
+  if (v.includes("[R]") || v.includes("[REP]")) return "REPOSIÇÃO";
+
+  return "NORMAL";
+}
+
+function obterMesRelatorio(data) {
+
+  const [d, m, a] = data.split("/");
+
+  const dt = new Date(a, m - 1, d);
+
+  return dt.toLocaleString("pt-BR", {
+    month: "long",
+    year: "numeric"
+  });
+}
+
+function obterProfessorRelatorio(valor) {
+
+  if (!valor || !valor.includes(" - ")) return "";
+
+  const partes = valor.split(" - ");
+
+  const prof = partes[1] || "";
+
+  return obterNomeCompletoProfessor(prof.trim());
+}
+
+function obterDisciplinaRelatorio(valor) {
+
+  if (!valor || !valor.includes(" - ")) return "";
+
+  const disciplina = valor.split(" - ")[0].trim();
+
+  const bloqueados = [
+    "INTERVALO",
+    "REUNIÃO",
+    "REUNIAO",
+    "ALMOÇO",
+    "ALMOCO",
+    "EVENTO",
+    "ATIVIDADE"
+  ];
+
+  if (bloqueados.includes(disciplina.toUpperCase())) return "";
+
+  return disciplina;
+}
+
+function montarResumoDisciplina(dados) {
+
+  const meses = {};
+  const resumo = {
+    SAB: 0,
+    REC: 0,
+    EX: 0,
+    TOTAL: 0
+  };
+
+  dados.forEach(a => {
+
+    const mes = obterMesRelatorio(a.data);
+    const tipo = classificarTipoRelatorio(a.valor);
+
+    if (!meses[mes]) meses[mes] = 0;
+
+    // ❌ não entra no mês
+    if (tipo === "RECUPERAÇÃO") {
+      resumo.REC++;
+      return;
+    }
+
+    if (tipo === "EXAME") {
+      resumo.EX++;
+      return;
+    }
+
+    // ✔ entra no mês
+    meses[mes]++;
+    resumo.TOTAL++;
+
+    // sábado separado (mas não impede mês)
+    if (normalizarDia(a.horario) === "SÁBADO") {
+      resumo.SAB++;
+    }
+  });
+
+  return { meses, resumo };
+}
+
+function renderTabelaResumoDisciplina(resumoObj) {
+
+  const tabela = document.getElementById("tabelaRelatorioResumo");
+  const thead = tabela.querySelector("thead");
+  const tbody = tabela.querySelector("tbody");
+
+  const { meses, resumo } = resumoObj;
+
+  const mesesKeys = Object.keys(meses);
+
+  thead.innerHTML = `
+    <tr>
+      ${mesesKeys.map(m => `<th>${m}</th>`).join("")}
+      <th>SÁBADO</th>
+      <th>REC</th>
+      <th>EX</th>
+      <th>TOTAL</th>
+    </tr>
+  `;
+
+  tbody.innerHTML = `
+    <tr>
+      ${mesesKeys.map(m => `<td>${meses[m]}</td>`).join("")}
+      <td>${resumo.SAB}</td>
+      <td>${resumo.REC}</td>
+      <td>${resumo.EX}</td>
+      <td>${resumo.TOTAL}</td>
+    </tr>
+  `;
+}
+
+function renderTabelaDetalhadaDisciplina(dados) {
+
+  const tabela = document.getElementById("tabelaRelatorioDetalhado");
+  const thead = tabela.querySelector("thead");
+  const tbody = tabela.querySelector("tbody");
+
+  thead.innerHTML = `
+    <tr>
+      <th>Data</th>
+      <th>Horário</th>
+      <th>Professor</th>
+      <th>Tipo</th>
+    </tr>
+  `;
+
+  tbody.innerHTML = "";
+
+  dados.forEach(a => {
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${a.data}</td>
+      <td>${a.horario}</td>
+      <td>${obterProfessorRelatorio(a.valor)}</td>
+      <td>${classificarTipoRelatorio(a.valor)}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+function gerarRelatorioDisciplina() {
+
+  const dados = BASE_GERAL.filter(a =>
+    a.turma === Relatorio.turma &&
+    obterDisciplinaRelatorio(a.valor) === Relatorio.disciplina
+  );
+
+  const resumo = montarResumoDisciplina(dados);
+
+  renderTabelaResumoDisciplina(resumo);
+  renderTabelaDetalhadaDisciplina(dados);
+}
