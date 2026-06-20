@@ -167,8 +167,8 @@ function renderTabelaRelatorioSimples(dados) {
 
   dados.forEach(a => {
 
-    const [disciplina, professor] =
-      (a.valor || "").split(" - ");
+    const disciplina = extrairDisciplinaRelatorio(a.valor);
+const professor = (a.valor || "").split(" - ")[1] || "";
 
     const tr = document.createElement("tr");
 
