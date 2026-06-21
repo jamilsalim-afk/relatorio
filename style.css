@@ -979,21 +979,21 @@ body {
 ========================= */
 
 #relatorioContainer table {
-  font-size: 14px !important;
+  font-size: 12px !important;
 }
 
 #relatorioContainer th {
-  font-size: 15px !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
 }
 
 #relatorioContainer td {
-  font-size: 14px !important;
+  font-size: 12px !important;
 }
 
 /* aumenta ainda mais se quiser leitura confortável */
 #relatorioContainer {
-  font-size: 15px;
+  font-size: 13px;
 }
 
 /* COLUNAS DE VALORES (meses, sab, rec, ex, total) */
