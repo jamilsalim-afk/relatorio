@@ -1506,6 +1506,53 @@ window.onload = async () => {
 
   gerarDashboard();
 };
+
+<div id="loadingOverlay" class="loading-overlay hidden">
+    
+    <div class="loading-box">
+
+        <div class="loading-text" id="loadingText">
+            Carregando relatório...
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="progress-percent" id="progressPercent">
+            0%
+        </div>
+
+    </div>
+
+</div>
+
+  function mostrarLoading(texto = "Carregando...") {
+
+    document.getElementById("loadingOverlay").classList.remove("hidden");
+
+    document.getElementById("loadingText").innerText = texto;
+
+    atualizarProgresso(0);
+}
+
+function atualizarProgresso(valor) {
+
+    const fill = document.getElementById("progressFill");
+    const percent = document.getElementById("progressPercent");
+
+    fill.style.width = valor + "%";
+    percent.innerText = valor + "%";
+}
+
+function esconderLoading() {
+
+    atualizarProgresso(100);
+
+    setTimeout(() => {
+        document.getElementById("loadingOverlay").classList.add("hidden");
+    }, 300);
+}
   
 </script>
 <script src="js/config.js"></script>
