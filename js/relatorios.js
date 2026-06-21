@@ -1175,49 +1175,46 @@ function exportarRelatorioDisciplinaPDF() {
             );
         });
 
+  const pageWidth = pdf.internal.pageSize.getWidth();
+
     pdf.autoTable({
 
     head: headDetalhado,
-
     body: bodyDetalhado,
 
-    tableWidth: 'auto',
-        startY: y + 4,
+    startY: y + 4,
 
-        theme: "grid",
+    theme: "grid",
 
-        margin: {
-    top: 35,
-    bottom: 15,
-    left: 12,
-    right: 12
-},
+    styles: {
+        fontSize: 8,
+        cellPadding: 1.5,
+        halign: "center"
+    },
 
-        styles: {
-            fontSize: 8,
-             halign: "center"
-        },
+    headStyles: {
+        fillColor: [46,125,50],
+        textColor: 255
+    },
 
-        headStyles: {
-            fillColor: [46,125,50],
-            textColor: 255
-        },
+    columnStyles: {
+        0: { cellWidth: 28 },
+        1: { cellWidth: 28 },
+        2: { cellWidth: 85 },
+        3: { cellWidth: 35 }
+    },
 
-        columnStyles: {
+    tableWidth: 'wrap',
 
-            0: { cellWidth: 28 },
-            1: { cellWidth: 28 },
-            2: { cellWidth: 85 },
-            3: { cellWidth: 35 }
+    margin: {
+        left: (pageWidth - (28 + 28 + 85 + 35)) / 2,
+        right: 0
+    },
 
-        },
-
-        didDrawPage: function() {
-
-            desenharCabecalho();
-
-        }
-    });
+    didDrawPage: function () {
+        desenharCabecalho();
+    }
+});
 
     const totalPages =
         pdf.getNumberOfPages();
