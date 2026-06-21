@@ -418,9 +418,25 @@ function gerarRelatorioDisciplina() {
 
 function gerarRelatorioProfessor() {
 
-  const dados = BASE_GERAL.filter(a =>
-    (a.valor || "").includes(Relatorio.professor)
-  );
+  if (!Relatorio.professor) return;
+
+  const profSelecionado = Relatorio.professor.toUpperCase().trim();
+
+  const dados = BASE_GERAL.filter(a => {
+
+    if (!a.valor) return false;
+
+    const prof = obterProfessorRelatorio(a.valor);
+
+    if (!prof) return false;
+
+    return prof.toUpperCase().trim() === profSelecionado;
+  });
+
+  if (dados.length === 0) {
+    console.warn("Nenhum dado encontrado para o professor:", Relatorio.professor);
+    return;
+  }
 
   const meses = obterMesesRelatorio(dados);
 
@@ -431,14 +447,16 @@ function gerarRelatorioProfessor() {
     const disc = obterDisciplinaRelatorio(a.valor);
     const turma = a.turma;
 
+    if (!disc || !turma) return;
+
     const tipo = classificarTipoRelatorio(a.valor);
 
-    const [d,m,y] = a.data.split("/");
-    const dt = new Date(y,m-1,d);
+    const [d, m, y] = a.data.split("/");
+    const dt = new Date(y, m - 1, d);
 
     const mes = dt.toLocaleDateString("pt-BR", {
-      month:"short",
-      year:"numeric"
+      month: "short",
+      year: "numeric"
     });
 
     const key = `${disc}|${turma}`;
@@ -448,10 +466,10 @@ function gerarRelatorioProfessor() {
         disciplina: disc,
         turma: turma,
         meses: {},
-        sab:0,
-        rec:0,
-        ex:0,
-        total:0
+        sab: 0,
+        rec: 0,
+        ex: 0,
+        total: 0
       };
     }
 
