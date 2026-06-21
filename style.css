@@ -998,16 +998,16 @@ body {
 
 /* COLUNAS DE TEXTO (disciplina, turma, professor) */
 .col-texto {
-  min-width: 180px;
+  min-width: 150px;
   text-align: left;
   padding-left: 8px !important;
 }
 
 /* COLUNAS NUMÉRICAS (meses, sab, rec, ex, total) */
 .col-mes {
-  width: 45px !important;
-  min-width: 45px !important;
-  max-width: 45px !important;
+  width: 55px !important;
+  min-width: 55px !important;
+  max-width: 55px !important;
   text-align: center;
   padding: 4px !important;
 }
