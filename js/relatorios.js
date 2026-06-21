@@ -126,24 +126,38 @@ function carregarDisciplinasRelatorio() {
 }
 
 function gerarRelatorio() {
+
+  // RELATÓRIO DE DISCIPLINA
+  if (Relatorio.tipo === "disciplina") {
+
+    if (!Relatorio.turma || !Relatorio.disciplina)
+      return;
+
+    gerarRelatorioDisciplina();
+    return;
+  }
+
   let dados = [];
 
+  // RELATÓRIO DE PROFESSOR
   if (Relatorio.tipo === "professor") {
+
+    if (!Relatorio.professor)
+      return;
+
     dados = BASE_GERAL.filter(a =>
       a.valor?.includes(Relatorio.professor)
     );
   }
 
+  // RELATÓRIO DE TURMA
   if (Relatorio.tipo === "turma") {
+
+    if (!Relatorio.turma)
+      return;
+
     dados = BASE_GERAL.filter(a =>
       a.turma === Relatorio.turma
-    );
-  }
-
-  if (Relatorio.tipo === "disciplina") {
-    dados = BASE_GERAL.filter(a =>
-      a.turma === Relatorio.turma &&
-      extrairDisciplinaRelatorio(a.valor) === Relatorio.disciplina
     );
   }
 
@@ -254,6 +268,7 @@ function obterDisciplinaRelatorio(valor) {
 function montarResumoDisciplina(dados) {
 
   const meses = {};
+
   const resumo = {
     SAB: 0,
     REC: 0,
@@ -264,32 +279,48 @@ function montarResumoDisciplina(dados) {
   dados.forEach(a => {
 
     const mes = obterMesRelatorio(a.data);
-    const tipo = classificarTipoRelatorio(a.valor);
 
-    if (!meses[mes]) meses[mes] = 0;
+    const tipo =
+      classificarTipoRelatorio(a.valor);
 
-    // ❌ não entra no mês
+    if (!meses[mes]) {
+      meses[mes] = 0;
+    }
+
+    // RECUPERAÇÃO
     if (tipo === "RECUPERAÇÃO") {
+
       resumo.REC++;
       return;
     }
 
+    // EXAME
     if (tipo === "EXAME") {
+
       resumo.EX++;
       return;
     }
 
-    // ✔ entra no mês
+    // SOMA NO MÊS
     meses[mes]++;
     resumo.TOTAL++;
 
-    // sábado separado (mas não impede mês)
-    if (normalizarDia(a.horario) === "SÁBADO") {
+    const [dia, mesNum, ano] =
+      a.data.split("/");
+
+    const dt =
+      new Date(ano, mesNum - 1, dia);
+
+    if (dt.getDay() === 6) {
       resumo.SAB++;
     }
+
   });
 
-  return { meses, resumo };
+  return {
+    meses,
+    resumo
+  };
 }
 
 function renderTabelaResumoDisciplina(resumoObj) {
