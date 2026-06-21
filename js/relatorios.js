@@ -38,13 +38,37 @@ function inicializarRelatorio() {
   const tipo = document.getElementById("selectTipoRelatorio").value;
 
   Relatorio.tipo = tipo;
+  Relatorio.professor = "";
+  Relatorio.turma = "";
+  Relatorio.disciplina = "";
 
-  document.getElementById("relatorioPlaceholder").style.display = "none";
-  document.getElementById("relatorioContainer").style.display = "block";
+  // 🔥 LIMPEZA TOTAL DA TELA
+  const container = document.getElementById("relatorioContainer");
+  const placeholder = document.getElementById("relatorioPlaceholder");
+
+  container.style.display = "none";
+  placeholder.style.display = "block";
+
+  // limpa tabelas antigas
+  const t1 = document.getElementById("tabelaRelatorioResumo");
+  const t2 = document.getElementById("tabelaRelatorioDetalhado");
+
+  if (t1) {
+    t1.querySelector("thead").innerHTML = "";
+    t1.querySelector("tbody").innerHTML = "";
+  }
+
+  if (t2) {
+    t2.querySelector("thead").innerHTML = "";
+    t2.querySelector("tbody").innerHTML = "";
+  }
 
   esconderTodosSelects();
 
   if (!tipo) return;
+
+  container.style.display = "block";
+  placeholder.style.display = "none";
 
   if (tipo === "professor") {
     document.getElementById("selectProfessorRelatorio").style.display = "block";
@@ -127,26 +151,20 @@ function carregarDisciplinasRelatorio() {
 
 function gerarRelatorio() {
 
+  // 🔥 sempre limpa tabelas antes de qualquer coisa
+  limparTabelasRelatorio();
+
   if (Relatorio.tipo === "disciplina") {
-
-    if (!Relatorio.turma || !Relatorio.disciplina) return;
-
     gerarRelatorioDisciplina();
     return;
   }
 
   if (Relatorio.tipo === "professor") {
-
-    if (!Relatorio.professor) return;
-
     gerarRelatorioProfessor();
     return;
   }
 
   if (Relatorio.tipo === "turma") {
-
-    if (!Relatorio.turma) return;
-
     gerarRelatorioTurma();
     return;
   }
@@ -321,17 +339,20 @@ function obterDisciplinaRelatorio(valor) {
 function renderTabelaResumoDisciplina(resumoObj) {
 
   const tabela = document.getElementById("tabelaRelatorioResumo");
+  if (!tabela) return;
+
   const thead = tabela.querySelector("thead");
   const tbody = tabela.querySelector("tbody");
 
-  const { meses, resumo } = resumoObj;
+  if (!thead || !tbody) return;
 
+  const { meses, resumo } = resumoObj;
   const mesesKeys = Object.keys(meses);
 
   thead.innerHTML = `
-    <tr>
-      ${mesesKeys.map(m => `<th>${m}</th>`).join("")}
-      <th>SÁBADO</th>
+    <tr style="font-size:14px; font-weight:bold;">
+      ${mesesKeys.map(m => `<th style="border:1px solid #999;padding:6px;">${m}</th>`).join("")}
+      <th>SÁB</th>
       <th>REC</th>
       <th>EX</th>
       <th>TOTAL</th>
@@ -339,12 +360,12 @@ function renderTabelaResumoDisciplina(resumoObj) {
   `;
 
   tbody.innerHTML = `
-    <tr>
-      ${mesesKeys.map(m => `<td>${meses[m]}</td>`).join("")}
-      <td>${resumo.SAB}</td>
-      <td>${resumo.REC}</td>
-      <td>${resumo.EX}</td>
-      <td>${resumo.TOTAL}</td>
+    <tr style="font-size:14px;">
+      ${mesesKeys.map(m => `<td style="border:1px solid #999;padding:6px;">${meses[m].aulas}</td>`).join("")}
+      <td style="border:1px solid #999;padding:6px;">${resumo.SAB}</td>
+      <td style="border:1px solid #999;padding:6px;">${resumo.REC}</td>
+      <td style="border:1px solid #999;padding:6px;">${resumo.EX}</td>
+      <td style="border:1px solid #999;padding:6px;">${resumo.TOTAL}</td>
     </tr>
   `;
 }
@@ -398,88 +419,187 @@ function gerarRelatorioDisciplina() {
 function gerarRelatorioProfessor() {
 
   const dados = BASE_GERAL.filter(a =>
-    a.valor &&
-    a.valor.trim() !== "" &&
-    a.valor.includes(Relatorio.professor)
+    (a.valor || "").includes(Relatorio.professor)
   );
 
-  const mapa = new Map();
+  const meses = obterMesesRelatorio(dados);
+
+  const mapa = {};
 
   dados.forEach(a => {
 
-    const disciplina = obterDisciplinaRelatorio(a.valor);
+    const disc = obterDisciplinaRelatorio(a.valor);
     const turma = a.turma;
 
-    if (!disciplina || !turma) return;
+    const tipo = classificarTipoRelatorio(a.valor);
 
-    const chave = `${disciplina}__${turma}`;
+    const [d,m,y] = a.data.split("/");
+    const dt = new Date(y,m-1,d);
 
-    if (!mapa.has(chave)) {
-      mapa.set(chave, []);
+    const mes = dt.toLocaleDateString("pt-BR", {
+      month:"short",
+      year:"numeric"
+    });
+
+    const key = `${disc}|${turma}`;
+
+    if (!mapa[key]) {
+      mapa[key] = {
+        disciplina: disc,
+        turma: turma,
+        meses: {},
+        sab:0,
+        rec:0,
+        ex:0,
+        total:0
+      };
     }
 
-    mapa.get(chave).push(a);
+    if (tipo === "RECUPERAÇÃO") {
+      mapa[key].rec++;
+      return;
+    }
+
+    if (tipo === "EXAME") {
+      mapa[key].ex++;
+      return;
+    }
+
+    mapa[key].meses[mes] = (mapa[key].meses[mes] || 0) + 1;
+    mapa[key].total++;
+
+    if (dt.getDay() === 6) mapa[key].sab++;
   });
 
-  const linhas = [];
+  const linhas = Object.values(mapa);
 
-  mapa.forEach((items, chave) => {
+  const tabela = document.getElementById("tabelaResumoRelatorio");
+  const thead = tabela.querySelector("thead");
+  const tbody = tabela.querySelector("tbody");
 
-    const resumo = criarResumoMensal(items);
-    const [disciplina, turma] = chave.split("__");
+  thead.innerHTML = `
+    <tr>
+      <th>Disciplina</th>
+      <th>Turma</th>
+      ${meses.map(m => `<th>${m}</th>`).join("")}
+      <th>SÁB</th>
+      <th>REC</th>
+      <th>EX</th>
+      <th>TOTAL</th>
+    </tr>
+  `;
 
-    linhas.push({
-      disciplina,
-      turma,
-      resumo
-    });
+  tbody.innerHTML = "";
+
+  linhas.forEach(l => {
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${l.disciplina}</td>
+      <td>${l.turma}</td>
+      ${meses.map(m => `<td>${l.meses[m] || 0}</td>`).join("")}
+      <td>${l.sab}</td>
+      <td>${l.rec}</td>
+      <td>${l.ex}</td>
+      <td>${l.total}</td>
+    `;
+
+    tbody.appendChild(tr);
   });
-
-  renderTabelaProfessor(linhas);
 }
 
 function gerarRelatorioTurma() {
 
   const dados = BASE_GERAL.filter(a =>
     a.turma === Relatorio.turma &&
-    a.valor &&
-    a.valor.trim() !== "" &&
-    obterDisciplinaRelatorio(a.valor)
+    a.valor && a.valor.trim() !== ""
   );
 
-  const mapa = new Map();
+  const meses = obterMesesRelatorio(dados);
+
+  const mapa = {};
 
   dados.forEach(a => {
 
-    const disciplina = obterDisciplinaRelatorio(a.valor);
-    const professor = obterProfessorRelatorio(a.valor);
+    const disc = obterDisciplinaRelatorio(a.valor);
+    const prof = obterProfessorRelatorio(a.valor);
+    const tipo = classificarTipoRelatorio(a.valor);
 
-    if (!disciplina || !professor) return;
+    const [d,m,y] = a.data.split("/");
+    const dt = new Date(y,m-1,d);
 
-    const chave = `${disciplina}__${professor}`;
+    const mes = dt.toLocaleDateString("pt-BR", {
+      month:"short",
+      year:"numeric"
+    });
 
-    if (!mapa.has(chave)) {
-      mapa.set(chave, []);
+    const key = `${disc}|${prof}`;
+
+    if (!mapa[key]) {
+      mapa[key] = {
+        disciplina: disc,
+        professor: prof,
+        meses: {},
+        sab:0,
+        rec:0,
+        ex:0,
+        total:0
+      };
     }
 
-    mapa.get(chave).push(a);
+    if (tipo === "RECUPERAÇÃO") {
+      mapa[key].rec++;
+      return;
+    }
+
+    if (tipo === "EXAME") {
+      mapa[key].ex++;
+      return;
+    }
+
+    mapa[key].meses[mes] = (mapa[key].meses[mes] || 0) + 1;
+    mapa[key].total++;
+
+    if (dt.getDay() === 6) mapa[key].sab++;
   });
 
-  const linhas = [];
+  const linhas = Object.values(mapa);
 
-  mapa.forEach((items, chave) => {
+  const tabela = document.getElementById("tabelaResumoRelatorio");
+  const thead = tabela.querySelector("thead");
+  const tbody = tabela.querySelector("tbody");
 
-    const resumo = criarResumoMensal(items);
-    const [disciplina, professor] = chave.split("__");
+  thead.innerHTML = `
+    <tr>
+      <th>Disciplina</th>
+      <th>Professor</th>
+      ${meses.map(m => `<th>${m}</th>`).join("")}
+      <th>SÁB</th>
+      <th>REC</th>
+      <th>EX</th>
+      <th>TOTAL</th>
+    </tr>
+  `;
 
-    linhas.push({
-      disciplina,
-      professor,
-      resumo
-    });
+  tbody.innerHTML = "";
+
+  linhas.forEach(l => {
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${l.disciplina}</td>
+      <td>${l.professor}</td>
+      ${meses.map(m => `<td>${l.meses[m] || 0}</td>`).join("")}
+      <td>${l.sab}</td>
+      <td>${l.rec}</td>
+      <td>${l.ex}</td>
+      <td>${l.total}</td>
+    `;
+
+    tbody.appendChild(tr);
   });
-
-  renderTabelaResumoTurma(linhas);
 }
 
 function renderTabelaResumoRelatorio(resumoObj) {
@@ -645,5 +765,26 @@ function renderTabelaProfessor(linhas) {
     `;
 
     tbody.appendChild(tr);
+  });
+}
+
+function limparTabelasRelatorio() {
+
+  const ids = [
+    "tabelaResumoRelatorio",
+    "tabelaDetalhadaRelatorio"
+  ];
+
+  ids.forEach(id => {
+
+    const tabela = document.getElementById(id);
+
+    if (!tabela) return;
+
+    const thead = tabela.querySelector("thead");
+    const tbody = tabela.querySelector("tbody");
+
+    if (thead) thead.innerHTML = "";
+    if (tbody) tbody.innerHTML = "";
   });
 }
