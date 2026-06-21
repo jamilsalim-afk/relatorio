@@ -496,35 +496,35 @@ function gerarRelatorioProfessor() {
   const tbody = tabela.querySelector("tbody");
 
   thead.innerHTML = `
-    <tr>
-      <th>Disciplina</th>
-      <th>Turma</th>
-      ${meses.map(m => `<th>${m}</th>`).join("")}
-      <th>SÁB</th>
-      <th>REC</th>
-      <th>EX</th>
-      <th>TOTAL</th>
-    </tr>
-  `;
+  <tr>
+    <th class="col-texto">Disciplina</th>
+    <th class="col-texto">Turma</th>
+    ${meses.map(m => `<th class="col-mes">${m}</th>`).join("")}
+    <th class="col-mes">SÁB</th>
+    <th class="col-mes">REC</th>
+    <th class="col-mes">EX</th>
+    <th class="col-mes">TOTAL</th>
+  </tr>
+`;
 
   tbody.innerHTML = "";
 
-  linhas.forEach(l => {
+linhas.forEach(l => {
 
-    const tr = document.createElement("tr");
+  const tr = document.createElement("tr");
 
-    tr.innerHTML = `
-      <td>${l.disciplina}</td>
-      <td>${l.turma}</td>
-      ${meses.map(m => `<td>${l.meses[m] || 0}</td>`).join("")}
-      <td>${l.sab}</td>
-      <td>${l.rec}</td>
-      <td>${l.ex}</td>
-      <td>${l.total}</td>
-    `;
+  tr.innerHTML = `
+    <td class="col-texto">${l.disciplina}</td>
+    <td class="col-texto">${l.turma}</td>
+    ${meses.map(m => `<td class="col-mes">${l.meses[m] || 0}</td>`).join("")}
+    <td class="col-mes">${l.sab}</td>
+    <td class="col-mes">${l.rec}</td>
+    <td class="col-mes">${l.ex}</td>
+    <td class="col-mes">${l.total}</td>
+  `;
 
-    tbody.appendChild(tr);
-  });
+  tbody.appendChild(tr);
+});
 }
 
 function gerarRelatorioTurma() {
@@ -595,13 +595,13 @@ function gerarRelatorioTurma() {
 
   thead.innerHTML = `
     <tr>
-      <th>Disciplina</th>
-      <th>Professor</th>
-      ${meses.map(m => `<th>${m}</th>`).join("")}
-      <th>SÁB</th>
-      <th>REC</th>
-      <th>EX</th>
-      <th>TOTAL</th>
+      <th class="col-texto">Disciplina</th>
+<th class="col-texto">Professor</th>
+${meses.map(m => `<th class="col-mes">${m}</th>`).join("")}
+<th class="col-mes">SÁB</th>
+<th class="col-mes">REC</th>
+<th class="col-mes">EX</th>
+<th class="col-mes">TOTAL</th>
     </tr>
   `;
 
@@ -612,13 +612,13 @@ function gerarRelatorioTurma() {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td>${l.disciplina}</td>
-      <td>${l.professor}</td>
-      ${meses.map(m => `<td>${l.meses[m] || 0}</td>`).join("")}
-      <td>${l.sab}</td>
-      <td>${l.rec}</td>
-      <td>${l.ex}</td>
-      <td>${l.total}</td>
+     <td class="col-texto">${l.disciplina}</td>
+<td class="col-texto">${l.professor}</td>
+${meses.map(m => `<td class="col-mes">${l.meses[m] || 0}</td>`).join("")}
+<td class="col-mes">${l.sab}</td>
+<td class="col-mes">${l.rec}</td>
+<td class="col-mes">${l.ex}</td>
+<td class="col-mes">${l.total}</td>
     `;
 
     tbody.appendChild(tr);
