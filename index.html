@@ -13,6 +13,10 @@
 
 <body>
 
+<div id="topLoader" class="top-loader">
+  <div id="topLoaderBar" class="top-loader-bar"></div>
+</div>
+
 <div class="app-container">
 
 <!-- ================= HEADER ================= -->
@@ -343,26 +347,6 @@
 </section>
 
 </main>
-
-<div id="loadingOverlay" class="loading-overlay hidden">
-    
-    <div class="loading-box">
-
-        <div class="loading-text" id="loadingText">
-            Carregando relatório...
-        </div>
-
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-
-        <div class="progress-percent" id="progressPercent">
-            0%
-        </div>
-
-    </div>
-
-</div>
   
 <!-- ================= FOOTER ================= -->
 <footer class="ifro-footer">
@@ -1482,8 +1466,52 @@ function exportarRelatorioPDF() {
 
     pdf.save(`RELATORIO_DISCIPLINAS_${filtro}.pdf`);
 }
+
+let progressoTopo = 0;
+let loaderInterval = null;
+
+function iniciarLoaderPagina() {
+
+    const bar = document.getElementById("topLoaderBar");
+
+    progressoTopo = 0;
+    bar.style.width = "0%";
+
+    // anima sozinho (efeito “sistema carregando”)
+    loaderInterval = setInterval(() => {
+
+        if (progressoTopo < 90) {
+            progressoTopo += Math.random() * 8; // avanço natural
+            bar.style.width = progressoTopo + "%";
+        }
+
+    }, 200);
+}
+
+function avançarLoaderPagina(valor) {
+
+    const bar = document.getElementById("topLoaderBar");
+
+    progressoTopo = Math.min(100, valor);
+    bar.style.width = progressoTopo + "%";
+}
+
+function finalizarLoaderPagina() {
+
+    const bar = document.getElementById("topLoaderBar");
+
+    clearInterval(loaderInterval);
+
+    bar.style.width = "100%";
+
+    setTimeout(() => {
+        bar.style.width = "0%";
+    }, 300);
+}
   
 window.onload = async () => {
+
+  startLoader(); // 🔥 inicia barra ao abrir página
 
   const btnTema = document.getElementById("btnTema");
 
@@ -1517,7 +1545,11 @@ window.onload = async () => {
 
   });
 
+  setLoader(25); // tema carregado
+
   await init();
+
+  setLoader(70); // dados carregados
 
   abrirAba(
     "dashboard",
@@ -1525,34 +1557,11 @@ window.onload = async () => {
   );
 
   gerarDashboard();
+
+  setLoader(100); // finalizado
+
+  finishLoader(); // esconde barra
 };
-
-function mostrarLoading(texto = "Carregando...") {
-
-    document.getElementById("loadingOverlay").classList.remove("hidden");
-
-    document.getElementById("loadingText").innerText = texto;
-
-    atualizarProgresso(0);
-}
-
-function atualizarProgresso(valor) {
-
-    const fill = document.getElementById("progressFill");
-    const percent = document.getElementById("progressPercent");
-
-    fill.style.width = valor + "%";
-    percent.innerText = valor + "%";
-}
-
-function esconderLoading() {
-
-    atualizarProgresso(100);
-
-    setTimeout(() => {
-        document.getElementById("loadingOverlay").classList.add("hidden");
-    }, 300);
-}
   
 </script>
 <script src="js/config.js"></script>
