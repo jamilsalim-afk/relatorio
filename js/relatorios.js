@@ -947,18 +947,20 @@ function exportarRelatorioResumoPDF() {
 
         head: [headers],
 
-        body,
+body,
 
-        startY: 30,
+tableWidth: 'auto',
 
+startY: 30,
+      
         theme: "grid",
 
         margin: {
-            top: 28,
-            bottom: 15,
-            left: 6,
-            right: 6
-        },
+    top: 28,
+    bottom: 15,
+    left: 12,
+    right: 12
+},
 
         styles: {
             fontSize: 6.5,
@@ -974,42 +976,19 @@ function exportarRelatorioResumoPDF() {
             fontStyle: "bold"
         },
 
-        didParseCell: function(data) {
+        columnStyles: {
 
-            const totalCols =
-                headers.length;
+    0: {
+        cellWidth: 55,
+        halign: "left"
+    },
 
-            if (data.column.index === 0) {
+    1: {
+        cellWidth: 45,
+        halign: "left"
+    }
 
-                data.cell.styles.cellWidth = 45;
-                data.cell.styles.halign = "left";
-
-            }
-
-            if (data.column.index === 1) {
-
-                data.cell.styles.cellWidth = 35;
-                data.cell.styles.halign = "left";
-
-            }
-
-            if (
-                data.column.index > 1 &&
-                data.column.index < totalCols - 4
-            ) {
-
-                data.cell.styles.cellWidth = 10;
-
-            }
-
-            if (
-                data.column.index >= totalCols - 4
-            ) {
-
-                data.cell.styles.cellWidth = 10;
-
-            }
-        },
+},
 
         didDrawPage: function() {
 
@@ -1130,16 +1109,19 @@ function exportarRelatorioDisciplinaPDF() {
     pdf.setFont("helvetica", "bold");
 
     pdf.text(
-        "RESUMO MENSAL",
-        14,
-        38
-    );
+    "RESUMO MENSAL",
+    pageWidth / 2,
+    38,
+    { align: "center" }
+);
 
     pdf.autoTable({
 
-        head: headResumo,
+    head: headDetalhado,
 
-        body: bodyResumo,
+    body: bodyDetalhado,
+
+    tableWidth: 'auto',
 
         startY: 42,
 
@@ -1169,10 +1151,11 @@ function exportarRelatorioDisciplinaPDF() {
     pdf.setFont("helvetica", "bold");
 
     pdf.text(
-        "AULAS MINISTRADAS",
-        14,
-        y
-    );
+    "AULAS MINISTRADAS",
+    pageWidth / 2,
+    y,
+    { align: "center" }
+);
 
     const headDetalhado =
         [
@@ -1194,18 +1177,22 @@ function exportarRelatorioDisciplinaPDF() {
 
     pdf.autoTable({
 
-        head: headDetalhado,
+    head: headResumo,
 
-        body: bodyDetalhado,
+    body: bodyResumo,
+
+    tableWidth: 'auto',
 
         startY: y + 4,
 
         theme: "grid",
 
         margin: {
-            top: 35,
-            bottom: 15
-        },
+    top: 35,
+    bottom: 15,
+    left: 12,
+    right: 12
+},
 
         styles: {
             fontSize: 8,
