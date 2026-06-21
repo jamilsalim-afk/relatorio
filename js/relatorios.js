@@ -486,7 +486,24 @@ function gerarRelatorioProfessor() {
     if (dt.getDay() === 6) mapa[key].sab++;
   });
 
-  const linhas = Object.values(mapa);
+  const linhas =
+    Object.values(mapa)
+    .sort((a, b) => {
+
+        const disc =
+            a.disciplina.localeCompare(
+                b.disciplina,
+                "pt-BR"
+            );
+
+        if (disc !== 0)
+            return disc;
+
+        return a.turma.localeCompare(
+            b.turma,
+            "pt-BR"
+        );
+    });
 
   const tabela = document.getElementById("tabelaResumoRelatorio");
   const thead = tabela.querySelector("thead");
@@ -583,7 +600,24 @@ function gerarRelatorioTurma() {
     if (dt.getDay() === 6) mapa[key].sab++;
   });
 
-  const linhas = Object.values(mapa);
+  const linhas =
+    Object.values(mapa)
+    .sort((a, b) => {
+
+        const disc =
+            a.disciplina.localeCompare(
+                b.disciplina,
+                "pt-BR"
+            );
+
+        if (disc !== 0)
+            return disc;
+
+        return a.professor.localeCompare(
+            b.professor,
+            "pt-BR"
+        );
+    });
 
   const tabela = document.getElementById("tabelaResumoRelatorio");
   const thead = tabela.querySelector("thead");
