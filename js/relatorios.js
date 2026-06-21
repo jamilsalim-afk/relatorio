@@ -929,12 +929,12 @@ function exportarRelatorioAcademicoPDF() {
   // RODAPÉ
   // =====================================
   pdf.setFontSize(8);
-  pdf.text(
-    "IFRO - Campus Cacoal | Relatório Acadêmico",
-    pageWidth / 2,
-    200,
-    { align: "center" }
-  );
+    pdf.text(
+        "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
+        pageWidth / 2,
+        285,
+        { align: "center" }
+    );
 
   const nomeArquivo =
     `RELATORIO_${tipo}_${new Date().getTime()}.pdf`;
