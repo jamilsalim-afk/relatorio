@@ -808,7 +808,7 @@ function limparTabelasRelatorio() {
   });
 }
 
-function exportarRelatorioPDF() {
+function exportarRelatorioAcademicoPDF() {
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF('l', 'mm', 'a4'); // 🔥 paisagem (melhor pra tabelas)
