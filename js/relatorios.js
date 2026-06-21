@@ -385,30 +385,66 @@ function gerarRelatorioDisciplina() {
 
   const dados = BASE_GERAL.filter(a =>
     a.turma === Relatorio.turma &&
-    obterDisciplinaRelatorio(a.valor) === Relatorio.disciplina
+    obterDisciplinaRelatorio(a.valor) === Relatorio.disciplina &&
+    a.valor && a.valor.trim() !== ""
   );
 
   const resumo = criarResumoMensal(dados);
 
-  renderTabelaResumoDisciplina(resumo);
-  renderTabelaDetalhadaDisciplina(dados);
+  renderTabelaResumoRelatorio(resumo);
+  renderTabelaDetalhadaRelatorio(dados);
 }
 
 function gerarRelatorioProfessor() {
 
   const dados = BASE_GERAL.filter(a =>
-    (a.valor || "").includes(Relatorio.professor)
+    a.valor &&
+    a.valor.trim() !== "" &&
+    a.valor.includes(Relatorio.professor)
   );
 
-  const resumo = criarResumoMensal(dados);
+  const mapa = new Map();
 
-  renderTabelaResumoRelatorio(resumo, dados, "professor");
+  dados.forEach(a => {
+
+    const disciplina = obterDisciplinaRelatorio(a.valor);
+    const turma = a.turma;
+
+    if (!disciplina || !turma) return;
+
+    const chave = `${disciplina}__${turma}`;
+
+    if (!mapa.has(chave)) {
+      mapa.set(chave, []);
+    }
+
+    mapa.get(chave).push(a);
+  });
+
+  const linhas = [];
+
+  mapa.forEach((items, chave) => {
+
+    const resumo = criarResumoMensal(items);
+    const [disciplina, turma] = chave.split("__");
+
+    linhas.push({
+      disciplina,
+      turma,
+      resumo
+    });
+  });
+
+  renderTabelaProfessor(linhas);
 }
 
 function gerarRelatorioTurma() {
 
   const dados = BASE_GERAL.filter(a =>
-    a.turma === Relatorio.turma
+    a.turma === Relatorio.turma &&
+    a.valor &&
+    a.valor.trim() !== "" &&
+    obterDisciplinaRelatorio(a.valor)
   );
 
   const mapa = new Map();
@@ -417,6 +453,8 @@ function gerarRelatorioTurma() {
 
     const disciplina = obterDisciplinaRelatorio(a.valor);
     const professor = obterProfessorRelatorio(a.valor);
+
+    if (!disciplina || !professor) return;
 
     const chave = `${disciplina}__${professor}`;
 
@@ -432,7 +470,6 @@ function gerarRelatorioTurma() {
   mapa.forEach((items, chave) => {
 
     const resumo = criarResumoMensal(items);
-
     const [disciplina, professor] = chave.split("__");
 
     linhas.push({
@@ -448,6 +485,9 @@ function gerarRelatorioTurma() {
 function renderTabelaResumoRelatorio(resumoObj) {
 
   const tabela = document.getElementById("tabelaResumoRelatorio");
+
+  if (!tabela) return; // 🔥 proteção contra null
+
   const thead = tabela.querySelector("thead");
   const tbody = tabela.querySelector("tbody");
 
@@ -509,14 +549,23 @@ function renderTabelaDetalhadaRelatorio(dados) {
 function renderTabelaResumoTurma(linhas) {
 
   const tabela = document.getElementById("tabelaResumoRelatorio");
+
   const thead = tabela.querySelector("thead");
   const tbody = tabela.querySelector("tbody");
+
+  const todosMeses = new Set();
+
+  linhas.forEach(l => {
+    Object.keys(l.resumo.meses).forEach(m => todosMeses.add(m));
+  });
+
+  const meses = [...todosMeses];
 
   thead.innerHTML = `
     <tr>
       <th>Disciplina</th>
       <th>Professor</th>
-      <th>Meses</th>
+      ${meses.map(m => `<th>${m}</th>`).join("")}
       <th>SÁB</th>
       <th>REC</th>
       <th>EX</th>
@@ -528,16 +577,67 @@ function renderTabelaResumoTurma(linhas) {
 
   linhas.forEach(l => {
 
-    const mesesKeys = Object.keys(l.resumo.meses)
-      .map(m => `${m}:${l.resumo.meses[m].aulas}`)
-      .join(" | ");
-
     const tr = document.createElement("tr");
+
+    const mesesCells = meses.map(m =>
+      `<td>${l.resumo.meses[m]?.aulas || 0}</td>`
+    ).join("");
 
     tr.innerHTML = `
       <td>${l.disciplina}</td>
       <td>${l.professor}</td>
-      <td>${mesesKeys}</td>
+      ${mesesCells}
+      <td>${l.resumo.sabados}</td>
+      <td>${l.resumo.recuperacoes}</td>
+      <td>${l.resumo.exames}</td>
+      <td>${l.resumo.total}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+function renderTabelaProfessor(linhas) {
+
+  const tabela = document.getElementById("tabelaResumoRelatorio");
+
+  const thead = tabela.querySelector("thead");
+  const tbody = tabela.querySelector("tbody");
+
+  const mesesSet = new Set();
+
+  linhas.forEach(l => {
+    Object.keys(l.resumo.meses).forEach(m => mesesSet.add(m));
+  });
+
+  const meses = [...mesesSet];
+
+  thead.innerHTML = `
+    <tr>
+      <th>Disciplina</th>
+      <th>Turma</th>
+      ${meses.map(m => `<th>${m}</th>`).join("")}
+      <th>SÁB</th>
+      <th>REC</th>
+      <th>EX</th>
+      <th>TOTAL</th>
+    </tr>
+  `;
+
+  tbody.innerHTML = "";
+
+  linhas.forEach(l => {
+
+    const tr = document.createElement("tr");
+
+    const mesesCells = meses.map(m =>
+      `<td>${l.resumo.meses[m]?.aulas || 0}</td>`
+    ).join("");
+
+    tr.innerHTML = `
+      <td>${l.disciplina}</td>
+      <td>${l.turma}</td>
+      ${mesesCells}
       <td>${l.resumo.sabados}</td>
       <td>${l.resumo.recuperacoes}</td>
       <td>${l.resumo.exames}</td>
