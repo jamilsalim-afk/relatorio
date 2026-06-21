@@ -187,7 +187,6 @@ function criarResumoMensal(dados) {
 
     const mesKey = dt.toLocaleDateString("pt-BR", {
       month: "short",
-      year: "numeric"
     });
 
     if (!meses[mesKey]) {
@@ -264,7 +263,6 @@ function obterMesesRelatorio(dados) {
         "pt-BR",
         {
           month: "short",
-          year: "numeric"
         }
       );
 
@@ -456,7 +454,6 @@ function gerarRelatorioProfessor() {
 
     const mes = dt.toLocaleDateString("pt-BR", {
       month: "short",
-      year: "numeric"
     });
 
     const key = `${disc}|${turma}`;
@@ -554,7 +551,6 @@ function gerarRelatorioTurma() {
 
     const mes = dt.toLocaleDateString("pt-BR", {
       month: "short",
-      year: "numeric"
     });
 
     const key = `${disc}|${prof}`;
