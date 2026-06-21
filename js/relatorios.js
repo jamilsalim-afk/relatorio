@@ -1195,7 +1195,7 @@ function exportarRelatorioDisciplinaPDF() {
 
         styles: {
             fontSize: 8,
-            cellPadding: 1.5
+             halign: "center"
         },
 
         headStyles: {
