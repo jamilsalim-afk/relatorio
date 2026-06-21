@@ -811,7 +811,7 @@ function limparTabelasRelatorio() {
 function exportarRelatorioAcademicoPDF() {
 
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('l', 'mm', 'a4'); // 🔥 paisagem (melhor pra tabelas)
+  const pdf = new jsPDF('p', 'mm', 'a4'); // 🔥 paisagem (melhor pra tabelas)
   const pageWidth = pdf.internal.pageSize.getWidth();
 
   const tipo = Relatorio.tipo;
