@@ -513,7 +513,8 @@ function gerarRelatorioTurma() {
 
   const dados = BASE_GERAL.filter(a =>
     a.turma === Relatorio.turma &&
-    a.valor && a.valor.trim() !== ""
+    a.valor &&
+    a.valor.includes(" - ")
   );
 
   const meses = obterMesesRelatorio(dados);
@@ -524,14 +525,18 @@ function gerarRelatorioTurma() {
 
     const disc = obterDisciplinaRelatorio(a.valor);
     const prof = obterProfessorRelatorio(a.valor);
+
+    // 🔥 FILTRO ANTI-LINHA VAZIA (CORREÇÃO PRINCIPAL)
+    if (!disc || !prof) return;
+
     const tipo = classificarTipoRelatorio(a.valor);
 
-    const [d,m,y] = a.data.split("/");
-    const dt = new Date(y,m-1,d);
+    const [d, m, y] = a.data.split("/");
+    const dt = new Date(y, m - 1, d);
 
     const mes = dt.toLocaleDateString("pt-BR", {
-      month:"short",
-      year:"numeric"
+      month: "short",
+      year: "numeric"
     });
 
     const key = `${disc}|${prof}`;
@@ -541,10 +546,10 @@ function gerarRelatorioTurma() {
         disciplina: disc,
         professor: prof,
         meses: {},
-        sab:0,
-        rec:0,
-        ex:0,
-        total:0
+        sab: 0,
+        rec: 0,
+        ex: 0,
+        total: 0
       };
     }
 
