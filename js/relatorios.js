@@ -1117,9 +1117,9 @@ function exportarRelatorioDisciplinaPDF() {
 
     pdf.autoTable({
 
-    head: headDetalhado,
+    head: headResumo,
 
-    body: bodyDetalhado,
+    body: bodyResumo,
 
     tableWidth: 'auto',
 
@@ -1177,12 +1177,11 @@ function exportarRelatorioDisciplinaPDF() {
 
     pdf.autoTable({
 
-    head: headResumo,
+    head: headDetalhado,
 
-    body: bodyResumo,
+    body: bodyDetalhado,
 
     tableWidth: 'auto',
-
         startY: y + 4,
 
         theme: "grid",
