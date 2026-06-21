@@ -344,6 +344,26 @@
 
 </main>
 
+<div id="loadingOverlay" class="loading-overlay hidden">
+    
+    <div class="loading-box">
+
+        <div class="loading-text" id="loadingText">
+            Carregando relatório...
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="progress-percent" id="progressPercent">
+            0%
+        </div>
+
+    </div>
+
+</div>
+  
 <!-- ================= FOOTER ================= -->
 <footer class="ifro-footer">
   IFRO - Campus Cacoal<br>
@@ -1507,27 +1527,7 @@ window.onload = async () => {
   gerarDashboard();
 };
 
-<div id="loadingOverlay" class="loading-overlay hidden">
-    
-    <div class="loading-box">
-
-        <div class="loading-text" id="loadingText">
-            Carregando relatório...
-        </div>
-
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-
-        <div class="progress-percent" id="progressPercent">
-            0%
-        </div>
-
-    </div>
-
-</div>
-
-  function mostrarLoading(texto = "Carregando...") {
+function mostrarLoading(texto = "Carregando...") {
 
     document.getElementById("loadingOverlay").classList.remove("hidden");
 
