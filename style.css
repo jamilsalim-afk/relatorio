@@ -973,3 +973,54 @@ body {
 #referenciasRelatorio li{
   margin-bottom:5px;
 }
+
+/* =========================
+   RELATÓRIOS - AJUSTE FORTE
+========================= */
+
+#relatorioContainer table {
+  font-size: 14px !important;
+}
+
+#relatorioContainer th {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+#relatorioContainer td {
+  font-size: 14px !important;
+}
+
+/* aumenta ainda mais se quiser leitura confortável */
+#relatorioContainer {
+  font-size: 15px;
+}
+
+/* COLUNAS DE VALORES (meses, sab, rec, ex, total) */
+#relatorioContainer th:nth-last-child(-n+4),
+#relatorioContainer td:nth-last-child(-n+4) {
+  width: 55px;
+  min-width: 55px;
+  max-width: 55px;
+  padding: 4px !important;
+}
+
+/* primeiras colunas mais largas */
+#relatorioContainer th:nth-child(1),
+#relatorioContainer td:nth-child(1) {
+  min-width: 180px;
+}
+
+#relatorioContainer th:nth-child(2),
+#relatorioContainer td:nth-child(2) {
+  min-width: 180px;
+}
+
+#relatorioContainer table {
+  border-collapse: collapse;
+}
+
+#relatorioContainer th,
+#relatorioContainer td {
+  border: 1px solid #999 !important;
+}
