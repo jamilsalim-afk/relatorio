@@ -810,134 +810,413 @@ function limparTabelasRelatorio() {
 
 function exportarRelatorioAcademicoPDF() {
 
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'mm', 'a4'); // 🔥 paisagem (melhor pra tabelas)
-  const pageWidth = pdf.internal.pageSize.getWidth();
-
-  const tipo = Relatorio.tipo;
-
-  if (!tipo) return;
-
-  const tabela = document.getElementById("tabelaResumoRelatorio");
-  if (!tabela) return;
-
-  const linhas = tabela.querySelectorAll("tbody tr");
-  const headers = [...tabela.querySelectorAll("thead th")].map(th => th.innerText);
-
-  // =====================================
-  // CABEÇALHO
-  // =====================================
-  pdf.setFontSize(10);
-  pdf.text(
-    "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
-    pageWidth / 2, 10,
-    { align: "center" }
-  );
-
-  pdf.text(
-    "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
-    pageWidth / 2, 14,
-    { align: "center" }
-  );
-
-  pdf.setFontSize(11);
-  pdf.setFont("helvetica", "bold");
-  pdf.text(
-    `RELATÓRIO - ${tipo.toUpperCase()}`,
-    pageWidth / 2, 22,
-    { align: "center" }
-  );
-
-  pdf.setFontSize(9);
-  pdf.setFont("helvetica", "normal");
-
-  if (Relatorio.professor)
-    pdf.text(`Professor: ${Relatorio.professor}`, pageWidth / 2, 27, { align: "center" });
-
-  if (Relatorio.turma)
-    pdf.text(`Turma: ${Relatorio.turma}`, pageWidth / 2, 27, { align: "center" });
-
-  if (Relatorio.disciplina)
-    pdf.text(`Disciplina: ${Relatorio.disciplina}`, pageWidth / 2, 27, { align: "center" });
-
-  // =====================================
-  // BODY (TABELA)
-  // =====================================
-  const body = [];
-
-  linhas.forEach(tr => {
-    const cols = [...tr.querySelectorAll("td")].map(td =>
-      td.innerText.replace(/\s+/g, " ").trim()
-    );
-    body.push(cols);
-  });
-
-  // =====================================
-  // AUTO TABLE
-  // =====================================
-  pdf.autoTable({
-    head: [headers],
-    body,
-    startY: 35,
-    theme: "grid",
-
-    styles: {
-      fontSize: 6.5,
-      cellPadding: 1.5,
-      halign: "center",
-      valign: "middle",
-      overflow: "linebreak"
-    },
-
-    headStyles: {
-      fillColor: [46, 125, 50],
-      textColor: 255,
-      fontStyle: "bold"
-    },
-
-    // =====================================
-    // COLUNAS (REGRA IMPORTANTE)
-    // =====================================
-    didParseCell: (data) => {
-
-      const colCount = headers.length;
-
-      // primeiras colunas (texto)
-      if (data.column.index === 0) {
-        data.cell.styles.halign = "left";
-        data.cell.styles.cellWidth = 45;
-      }
-
-      if (data.column.index === 1) {
-        data.cell.styles.halign = "left";
-        data.cell.styles.cellWidth = 45;
-      }
-
-      // últimos 4 (SÁB REC EX TOTAL)
-      if (data.column.index >= colCount - 4) {
-        data.cell.styles.cellWidth = 12;
-      }
-
-      // meses (meio)
-      if (data.column.index > 1 && data.column.index < colCount - 4) {
-        data.cell.styles.cellWidth = 14;
-      }
+    if (Relatorio.tipo === "disciplina") {
+        exportarRelatorioDisciplinaPDF();
+        return;
     }
-  });
 
-  // =====================================
-  // RODAPÉ
-  // =====================================
-  pdf.setFontSize(8);
+    exportarRelatorioResumoPDF();
+}
+
+function exportarRelatorioResumoPDF() {
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const tabela =
+        document.getElementById("tabelaResumoRelatorio");
+
+    if (!tabela) return;
+
+    const headers =
+        [...tabela.querySelectorAll("thead th")]
+        .map(th => th.innerText.trim());
+
+    const body = [];
+
+    tabela
+        .querySelectorAll("tbody tr")
+        .forEach(tr => {
+
+            body.push(
+                [...tr.querySelectorAll("td")]
+                .map(td =>
+                    td.innerText
+                      .replace(/\s+/g, " ")
+                      .trim()
+                )
+            );
+        });
+
+    const pageWidth =
+        pdf.internal.pageSize.getWidth();
+
+    const pageHeight =
+        pdf.internal.pageSize.getHeight();
+
+    function desenharCabecalho() {
+
+        pdf.setFontSize(9);
+
+        pdf.text(
+            "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
+            pageWidth / 2,
+            8,
+            { align: "center" }
+        );
+
+        pdf.text(
+            "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
+            pageWidth / 2,
+            12,
+            { align: "center" }
+        );
+
+        pdf.setFontSize(11);
+        pdf.setFont("helvetica", "bold");
+
+        pdf.text(
+            `RELATÓRIO POR ${Relatorio.tipo.toUpperCase()}`,
+            pageWidth / 2,
+            18,
+            { align: "center" }
+        );
+
+        pdf.setFontSize(8);
+        pdf.setFont("helvetica", "normal");
+
+        if (Relatorio.professor) {
+
+            pdf.text(
+                `Professor: ${Relatorio.professor}`,
+                pageWidth / 2,
+                24,
+                { align: "center" }
+            );
+
+        }
+
+        if (Relatorio.turma) {
+
+            pdf.text(
+                `Turma: ${Relatorio.turma}`,
+                pageWidth / 2,
+                24,
+                { align: "center" }
+            );
+
+        }
+    }
+
+    pdf.autoTable({
+
+        head: [headers],
+
+        body,
+
+        startY: 30,
+
+        theme: "grid",
+
+        margin: {
+            top: 28,
+            bottom: 15,
+            left: 6,
+            right: 6
+        },
+
+        styles: {
+            fontSize: 6.5,
+            cellPadding: 1.2,
+            overflow: "linebreak",
+            valign: "middle",
+            halign: "center"
+        },
+
+        headStyles: {
+            fillColor: [46,125,50],
+            textColor: 255,
+            fontStyle: "bold"
+        },
+
+        didParseCell: function(data) {
+
+            const totalCols =
+                headers.length;
+
+            if (data.column.index === 0) {
+
+                data.cell.styles.cellWidth = 45;
+                data.cell.styles.halign = "left";
+
+            }
+
+            if (data.column.index === 1) {
+
+                data.cell.styles.cellWidth = 35;
+                data.cell.styles.halign = "left";
+
+            }
+
+            if (
+                data.column.index > 1 &&
+                data.column.index < totalCols - 4
+            ) {
+
+                data.cell.styles.cellWidth = 10;
+
+            }
+
+            if (
+                data.column.index >= totalCols - 4
+            ) {
+
+                data.cell.styles.cellWidth = 10;
+
+            }
+        },
+
+        didDrawPage: function() {
+
+            desenharCabecalho();
+
+        }
+    });
+
+    const totalPages =
+        pdf.getNumberOfPages();
+
+    for (let i = 1; i <= totalPages; i++) {
+
+        pdf.setPage(i);
+
+        pdf.setFontSize(8);
+
+        pdf.text(
+            "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
+            pageWidth / 2,
+            pageHeight - 8,
+            { align: "center" }
+        );
+    }
+
+    pdf.save(
+        `RELATORIO_${Relatorio.tipo.toUpperCase()}.pdf`
+    );
+}
+
+function exportarRelatorioDisciplinaPDF() {
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pageWidth =
+        pdf.internal.pageSize.getWidth();
+
+    const pageHeight =
+        pdf.internal.pageSize.getHeight();
+
+    function desenharCabecalho() {
+
+        pdf.setFontSize(9);
+
+        pdf.text(
+            "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
+            pageWidth / 2,
+            8,
+            { align: "center" }
+        );
+
+        pdf.text(
+            "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
+            pageWidth / 2,
+            12,
+            { align: "center" }
+        );
+
+        pdf.setFontSize(11);
+        pdf.setFont("helvetica", "bold");
+
+        pdf.text(
+            "RELATÓRIO POR DISCIPLINA",
+            pageWidth / 2,
+            18,
+            { align: "center" }
+        );
+
+        pdf.setFontSize(8);
+        pdf.setFont("helvetica", "normal");
+
+        pdf.text(
+            `Turma: ${Relatorio.turma}`,
+            pageWidth / 2,
+            24,
+            { align: "center" }
+        );
+
+        pdf.text(
+            `Disciplina: ${Relatorio.disciplina}`,
+            pageWidth / 2,
+            28,
+            { align: "center" }
+        );
+    }
+
+    const tabelaResumo =
+        document.getElementById(
+            "tabelaResumoRelatorio"
+        );
+
+    const tabelaDetalhada =
+        document.getElementById(
+            "tabelaDetalhadaRelatorio"
+        );
+
+    const headResumo =
+        [
+            [...tabelaResumo.querySelectorAll("thead th")]
+            .map(th => th.innerText.trim())
+        ];
+
+    const bodyResumo = [];
+
+    tabelaResumo
+        .querySelectorAll("tbody tr")
+        .forEach(tr => {
+
+            bodyResumo.push(
+                [...tr.querySelectorAll("td")]
+                .map(td => td.innerText.trim())
+            );
+        });
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "bold");
+
     pdf.text(
-        "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
-        pageWidth / 2,
-        285,
-        { align: "center" }
+        "RESUMO MENSAL",
+        14,
+        38
     );
 
-  const nomeArquivo =
-    `RELATORIO_${tipo}_${new Date().getTime()}.pdf`;
+    pdf.autoTable({
 
-  pdf.save(nomeArquivo);
+        head: headResumo,
+
+        body: bodyResumo,
+
+        startY: 42,
+
+        theme: "grid",
+
+        styles: {
+            fontSize: 8,
+            halign: "center"
+        },
+
+        headStyles: {
+            fillColor: [46,125,50],
+            textColor: 255
+        },
+
+        didDrawPage: function() {
+
+            desenharCabecalho();
+
+        }
+    });
+
+    const y =
+        pdf.lastAutoTable.finalY + 10;
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text(
+        "AULAS MINISTRADAS",
+        14,
+        y
+    );
+
+    const headDetalhado =
+        [
+            [...tabelaDetalhada.querySelectorAll("thead th")]
+            .map(th => th.innerText.trim())
+        ];
+
+    const bodyDetalhado = [];
+
+    tabelaDetalhada
+        .querySelectorAll("tbody tr")
+        .forEach(tr => {
+
+            bodyDetalhado.push(
+                [...tr.querySelectorAll("td")]
+                .map(td => td.innerText.trim())
+            );
+        });
+
+    pdf.autoTable({
+
+        head: headDetalhado,
+
+        body: bodyDetalhado,
+
+        startY: y + 4,
+
+        theme: "grid",
+
+        margin: {
+            top: 35,
+            bottom: 15
+        },
+
+        styles: {
+            fontSize: 8,
+            cellPadding: 1.5
+        },
+
+        headStyles: {
+            fillColor: [46,125,50],
+            textColor: 255
+        },
+
+        columnStyles: {
+
+            0: { cellWidth: 28 },
+            1: { cellWidth: 28 },
+            2: { cellWidth: 85 },
+            3: { cellWidth: 35 }
+
+        },
+
+        didDrawPage: function() {
+
+            desenharCabecalho();
+
+        }
+    });
+
+    const totalPages =
+        pdf.getNumberOfPages();
+
+    for (let i = 1; i <= totalPages; i++) {
+
+        pdf.setPage(i);
+
+        pdf.setFontSize(8);
+
+        pdf.text(
+            "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
+            pageWidth / 2,
+            pageHeight - 8,
+            { align: "center" }
+        );
+    }
+
+    pdf.save(
+        `RELATORIO_DISCIPLINA_${Relatorio.disciplina}.pdf`
+    );
 }
