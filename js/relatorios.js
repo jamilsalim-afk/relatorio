@@ -1114,7 +1114,7 @@ function exportarRelatorioDisciplinaPDF() {
     38,
     { align: "center" }
 );
-
+  
     pdf.autoTable({
 
     head: headResumo,
@@ -1175,46 +1175,50 @@ function exportarRelatorioDisciplinaPDF() {
             );
         });
 
-  const pageWidth = pdf.internal.pageSize.getWidth();
-
     pdf.autoTable({
 
     head: headDetalhado,
+
     body: bodyDetalhado,
 
-    startY: y + 4,
+    tableWidth: 'auto',
 
-    theme: "grid",
+        startY: y + 4,
 
-    styles: {
-        fontSize: 8,
-        cellPadding: 1.5,
-        halign: "center"
-    },
+        theme: "grid",
 
-    headStyles: {
-        fillColor: [46,125,50],
-        textColor: 255
-    },
+        margin: {
+    top: 35,
+    bottom: 15,
+    left: 12,
+    right: 12
+},
 
-    columnStyles: {
-        0: { cellWidth: 28 },
-        1: { cellWidth: 28 },
-        2: { cellWidth: 85 },
-        3: { cellWidth: 35 }
-    },
+        styles: {
+            fontSize: 8,
+            cellPadding: 1.5
+        },
 
-    tableWidth: 'wrap',
+        headStyles: {
+            fillColor: [46,125,50],
+            textColor: 255
+        },
 
-    margin: {
-        left: (pageWidth - (28 + 28 + 85 + 35)) / 2,
-        right: 0
-    },
+        columnStyles: {
 
-    didDrawPage: function () {
-        desenharCabecalho();
-    }
-});
+            0: { cellWidth: 28 },
+            1: { cellWidth: 28 },
+            2: { cellWidth: 85 },
+            3: { cellWidth: 35 }
+
+        },
+
+        didDrawPage: function() {
+
+            desenharCabecalho();
+
+        }
+    });
 
     const totalPages =
         pdf.getNumberOfPages();
