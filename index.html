@@ -1467,46 +1467,45 @@ function exportarRelatorioPDF() {
     pdf.save(`RELATORIO_DISCIPLINAS_${filtro}.pdf`);
 }
 
-let progressoTopo = 0;
-let loaderInterval = null;
+let loaderTimer = null;
+let progresso = 0;
 
-function iniciarLoaderPagina() {
+function startLoader() {
 
-    const bar = document.getElementById("topLoaderBar");
+  const bar = document.getElementById("topLoaderBar");
 
-    progressoTopo = 0;
+  progresso = 0;
+  bar.style.width = "0%";
+
+  loaderTimer = setInterval(() => {
+
+    if (progresso < 90) {
+      progresso += Math.random() * 6; // movimento natural
+      bar.style.width = progresso + "%";
+    }
+
+  }, 200);
+}
+
+function setLoader(value) {
+
+  const bar = document.getElementById("topLoaderBar");
+
+  progresso = value;
+  bar.style.width = value + "%";
+}
+
+function finishLoader() {
+
+  const bar = document.getElementById("topLoaderBar");
+
+  clearInterval(loaderTimer);
+
+  bar.style.width = "100%";
+
+  setTimeout(() => {
     bar.style.width = "0%";
-
-    // anima sozinho (efeito “sistema carregando”)
-    loaderInterval = setInterval(() => {
-
-        if (progressoTopo < 90) {
-            progressoTopo += Math.random() * 8; // avanço natural
-            bar.style.width = progressoTopo + "%";
-        }
-
-    }, 200);
-}
-
-function avançarLoaderPagina(valor) {
-
-    const bar = document.getElementById("topLoaderBar");
-
-    progressoTopo = Math.min(100, valor);
-    bar.style.width = progressoTopo + "%";
-}
-
-function finalizarLoaderPagina() {
-
-    const bar = document.getElementById("topLoaderBar");
-
-    clearInterval(loaderInterval);
-
-    bar.style.width = "100%";
-
-    setTimeout(() => {
-        bar.style.width = "0%";
-    }, 300);
+  }, 300);
 }
   
 window.onload = async () => {
