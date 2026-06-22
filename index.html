@@ -438,16 +438,22 @@ function trocarModalidade(){
 
 function salvarSnapshotAtual() {
 
-  if(!semanaSelecionadaEhAtual()){
-    return;
-  }
-
   const sem = document.getElementById('selectSemana').value;
   const mod = document.getElementById('selectModalidade').value;
 
+  if (!sem || !mod) {
+    console.warn("Snapshot não salvo: semana ou modalidade vazia.");
+    return;
+  }
+
+  if (!dadosGlobais || !dadosGlobais.length) {
+    console.warn("Snapshot não salvo: dados vazios.");
+    return;
+  }
+
   const snapshot = {
-    tempo:new Date().toISOString(),
-    dados:dadosGlobais
+    tempo: new Date().toISOString(),
+    dados: JSON.parse(JSON.stringify(dadosGlobais))
   };
 
   localStorage.setItem(
@@ -456,6 +462,35 @@ function salvarSnapshotAtual() {
   );
 }
 
+function limparSnapshotsInvalidos() {
+
+  const semanaAtual = getSemanaAtual();
+
+  Object.keys(localStorage)
+    .filter(k => k.startsWith("snapshot_"))
+    .forEach(k => {
+
+      // remove snapshots sem semana
+      if (/^snapshot_[^_]+_$/.test(k)) {
+        localStorage.removeItem(k);
+        return;
+      }
+
+      // mantém apenas semana atual
+      if (
+        k.startsWith("snapshot_INTEGRADO_") ||
+        k.startsWith("snapshot_SUPERIOR_")
+      ) {
+
+        if (!k.endsWith(semanaAtual)) {
+          localStorage.removeItem(k);
+        }
+      }
+
+    });
+
+}
+  
 function obterSnapshotAntigo() {
   const sem = document.getElementById('selectSemana').value;
   const mod = document.getElementById('selectModalidade').value;
