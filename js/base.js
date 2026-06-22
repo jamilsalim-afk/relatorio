@@ -47,6 +47,8 @@ async function init(){
 
   document.getElementById('searchProf').value = "";
 
+  limparSnapshotsInvalidos();
+
   const mod = document.getElementById('selectModalidade').value;
 
   document.getElementById("painelAlteracoes").style.display = "none";
