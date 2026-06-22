@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
 <meta charset="UTF-8">
 <title>Consulta de Horários Semanais - IFRO</title>
@@ -12,208 +13,353 @@
 
 <body>
 
-<body>
+<div class="app-container">
 
-<div class="ifro-header">
-<div class="ifro-header-content">
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <div class="header-inner">
 
-<div class="ifro-linha1">
-INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO
-</div>
+    <div class="brand">
+      <div class="brand-title">
+        IFRO - Campus Cacoal
+      </div>
+      <div class="brand-subtitle">
+        Sistema de Horários Acadêmicos • 2026
+      </div>
+    </div>
 
-<div class="ifro-linha2">
-CAMPUS CACOAL
-</div>
+    <button id="btnTema" class="theme-btn">🌙</button>
 
-<div class="ifro-linha3">
-DEPARTAMENTO DE APOIO AO ENSINO
-</div>
+  </div>
+</header>
 
-<div class="ifro-linha4">
-HORÁRIOS SEMANAIS - 2026
-</div>
+<!-- ================= NAV ================= -->
+<nav class="tabs">
+  <button class="tab active" onclick="abrirAba('dashboard',this)">📊 Dashboard</button>
+  <button class="tab" onclick="abrirAba('horarios',this)">📅 Horários</button>
+  <button class="tab" onclick="abrirAba('sabados',this)">📚 Sábados</button>
+  <button class="tab" onclick="abrirAba('professores',this)">👨‍🏫 Professores</button>
+  <button class="tab" onclick="abrirAba('turmas',this)">🏫 Turmas</button>
+  <button class="tab" onclick="abrirAba('estatisticas',this)">📈 Estatísticas</button>
+  <button class="tab" onclick="abrirAba('relatorios',this)">📑 Relatórios</button>
+</nav>
 
-</div>
-</div>
+<!-- ================= CONTENT ================= -->
+<main class="content">
 
-<div class="tabs-container">
+<!-- DASHBOARD -->
+<section id="dashboard" class="tab-content active">
+  <div id="dashboardContent"></div>
+</section>
 
-<button class="tab-btn active"
-onclick="abrirAba('dashboard',this)">
-📊 Dashboard
-</button>
+<!-- HORÁRIOS -->
+<section id="horarios" class="tab-content">
 
-<button class="tab-btn"
-onclick="abrirAba('horarios',this)">
-📅 Horários
-</button>
+  <div class="header-sticky">
+    <div class="controls-card">
 
-<button class="tab-btn"
-onclick="abrirAba('sabados',this)">
-📚 Sábados Letivos
-</button>
+      <select id="selectModalidade" onchange="trocarModalidade()">
+        <option value="INTEGRADO">CURSOS INTEGRADOS</option>
+        <option value="SUPERIOR">CURSOS SUPERIORES</option>
+      </select>
 
-<button class="tab-btn"
-onclick="abrirAba('professores',this)">
-👨‍🏫 Professores
-</button>
+      <select id="selectSemana" onchange="trocarSemana()"></select>
 
-<button class="tab-btn"
-onclick="abrirAba('turmas',this)">
-🏫 Turmas
-</button>
+      <input type="text" id="searchProf"
+        class="search-box"
+        placeholder="🔍 Buscar Professor..."
+        onkeyup="filtrarProfessor()">
 
-<button class="tab-btn"
-onclick="abrirAba('estatisticas',this)">
-📈 Estatísticas
-</button>
+      <button class="btn-pdf" onclick="exportarPDF()">
+        📄 Baixar PDF
+      </button>
 
-<button id="btnTema">🌙</button>
-
-</div>
-
-<div id="dashboard" class="tab-content active">
-    <div id="dashboardContent"></div>
-</div>
-
-</div>
-
-</div>
-
-<div id="horarios" class="tab-content">
-<div class="header-sticky">
-<div class="controls-card">
-<select id="selectModalidade" onchange="trocarModalidade()">
-<option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
-<option value="SUPERIOR">CURSOS SUPERIORES</option>
-</select>
-
-<select id="selectSemana" onchange="trocarSemana()"></select>
-
-<input type="text" id="searchProf" class="search-box"
-placeholder="🔍 Buscar Professor..." onkeyup="filtrarProfessor()">
-
-<button class="btn-pdf" onclick="exportarPDF()">📄 Baixe o PDF da Semana</button>
-</div>
-</div>
-
-<div class="week-container">
-
-<!-- 🔥 AVISO DE SEMANA ESPECIAL -->
-<div id="alertaSemanaEspecial"></div>
-
-<!-- 🔥 BOTÕES NOVOS -->
-<div id="botoesRelatorio"></div>
-
-<div id="painelAlteracoes" style="
-  display:none;
-  background:white;
-  border-left:6px solid #d32f2f;
-  padding:15px;
-  margin:10px;
-  border-radius:8px;
-  max-height:300px;
-  overflow-y:auto;
-  box-shadow:0 2px 10px rgba(0,0,0,0.2);
-">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <strong>⚠️ Alterações Detectadas</strong>
-    <button onclick="fecharPainel()" style="
-      background:#d32f2f;color:white;border:none;
-      padding:5px 10px;border-radius:5px;cursor:pointer;">
-      ✖
-    </button>
+    </div>
   </div>
 
-  <pre id="conteudoAlteracoes" style="
-    white-space:pre-wrap;
-    font-size:12px;
-    margin-top:10px;
-  "></pre>
+  <div class="week-container">
 
-  <button onclick="copiarAlteracoes()" style="
-    margin-top:10px;
-    padding:8px;
-    background:#2e7d32;
-    color:white;
-    border:none;
-    border-radius:5px;
-    cursor:pointer;">
-    📋 Copiar
-  </button>
+    <div id="alertaSemanaEspecial"></div>
+    <div id="botoesRelatorio"></div>
+
+    <div id="painelAlteracoes" class="painel-alerta">
+      <div class="painel-header">
+        <strong>⚠️ Alterações Detectadas</strong>
+        <button onclick="fecharPainel()">✖</button>
+      </div>
+
+      <pre id="conteudoAlteracoes"></pre>
+
+      <button onclick="copiarAlteracoes()">📋 Copiar</button>
+    </div>
+
+    <div class="table-responsive" id="tabelaHorario"></div>
+
+  </div>
+
+</section>
+
+<!-- SÁBADOS -->
+<section id="sabados" class="tab-content">
+
+  <div class="header-sticky">
+    <div class="controls-card">
+
+      <select id="selectModalidadeSabados" onchange="trocarModalidadeSabados()">
+        <option value="INTEGRADO">CURSOS INTEGRADOS</option>
+        <option value="SUPERIOR">CURSOS SUPERIORES</option>
+      </select>
+
+      <input type="text" id="searchSabados"
+        class="search-box"
+        placeholder="🔍 Buscar..."
+        onkeyup="renderSabados()">
+
+      <button class="btn-pdf" onclick="exportarPDFSabados()">
+        📄 Baixar PDF
+      </button>
+
+    </div>
+  </div>
+
+  <div class="week-container">
+    <div class="table-responsive" id="containerSabados"></div>
+  </div>
+
+</section>
+
+<!-- PROFESSORES -->
+<section id="professores" class="tab-content">
+
+  <div class="header-sticky">
+    <div class="controls-card">
+
+      <select id="selectProfessor" onchange="renderProfessor()"></select>
+
+      <select id="selectSemanaProfessor" onchange="renderProfessor()"></select>
+
+      <button class="btn-pdf" onclick="exportarFichaProfessorPDF()">
+        📄 Baixar PDF
+      </button>
+
+    </div>
+  </div>
+
+  <div class="week-container">
+    <div class="table-responsive" id="tabelaProfessor"></div>
+  </div>
+
+</section>
+
+<!-- TURMAS -->
+<section id="turmas" class="tab-content">
+
+  <div class="header-sticky">
+    <div class="controls-card">
+      <select id="selectTurma" onchange="renderTurma()"></select>
+      <select id="selectSemanaTurma" onchange="renderTurma()"></select>
+      <button class="btn-pdf" onclick="exportarFichaTurmaPDF()">
+        📄 Baixar PDF
+      </button>
+
+    </div>
+  </div>
+
+  <div class="week-container">
+    <div class="table-responsive" id="tabelaTurma"></div>
+  </div>
+
+</section>
+
+<!-- ESTATISTICAS -->
+<section id="estatisticas" class="tab-content">
+<div class="estatistica-header">
+    <h1>📈 Relatório de Disciplinas</h1>
+    <p>
+        Visão consolidada das disciplinas,
+        professores e turmas do IFRO Campus Cacoal
+    </p>
+</div>
+<div class="estatistica-cards">
+    <div class="estat-card">
+        <span id="estatTotalDisciplinas">0</span>
+        <small>Disciplinas</small>
+    </div>
+    <div class="estat-card">
+        <span id="estatTotalProfessores">0</span>
+        <small>Professores</small>
+    </div>
+
+    <div class="estat-card">
+        <span id="estatTotalTurmas">0</span>
+        <small>Turmas</small>
+    </div>
+
+    <div class="estat-card">
+        <span id="estatTotalRegistros">0</span>
+        <small>Registros</small>
+    </div>
+
+</div>
+
+<div class="header-sticky">
+    <div class="controls-card">
+        <select
+            id="selectModalidadeEstatistica"
+            onchange="atualizarRelatorio()">
+            <option value=>
+                Selecione a modalidade desejada
+            </option>
+            <option value="TODOS">
+                INTEGRADO + SUPERIOR
+            </option>
+            <option value="INTEGRADO">
+                SOMENTE INTEGRADO
+            </option>
+            <option value="SUPERIOR">
+                SOMENTE SUPERIOR
+            </option>
+
+        </select>
+
+        <input
+            type="text"
+            id="inputBuscaEstatistica"
+            class="search-box"
+            placeholder="🔍 Disciplina, professor ou turma"
+            oninput="atualizarRelatorio()">
+
+        <button
+            onclick="exportarRelatorioPDF()"
+            class="btn-pdf">
+            📄 Baixar PDF
+        </button>
+    </div>
+</div>
+
+<div class="week-container">
+    <div class="table-responsive">
+        <table id="tabelaRelatorioEstatistica">
+<thead>
+<tr>
+<th>Disciplina</th>
+<th>Professor</th>
+<th>Turma</th>
+<th>Período</th>
+</tr>
+
+</thead>
+<tbody id="tabelaEstatistica"></tbody>
+</table>
+      </div>
+</div>
+</section>
+
+<!-- RELATÓRIOS -->
+<section id="relatorios" class="tab-content">
+
+<div class="estatistica-header">
+  <h1>📑 Relatórios Acadêmicos</h1>
+  <p>
+    Relatórios por Disciplina, Turma e Professor
+  </p>
+</div>
+
+<div class="header-sticky">
+
+  <div class="controls-card">
+
+    <select id="selectTipoRelatorio"
+        onchange="inicializarRelatorio()">
+  <option value="">📌 Selecione o tipo de relatório</option>
+  <option value="disciplina">Disciplina</option>
+  <option value="turma">Turma</option>
+  <option value="professor">Professor</option>
+</select>
+
+<select id="selectTurmaRelatorio"
+        onchange="carregarDisciplinas()"
+        style="display:none">
+</select>
+
+<select id="selectDisciplinaRelatorio"
+        onchange="gerarRelatorio()"
+        style="display:none">
+</select>
+
+<select id="selectProfessorRelatorio"
+        onchange="gerarRelatorio()"
+        style="display:none">
+</select>
+
+<button
+      class="btn-pdf"
+      onclick="exportarRelatorioAcademicoPDF()">
+
+      📄 Baixar PDF
+
+    </button>
+
+  </div>
+
+</div>
+
+<div class="week-container">
+
+  <div id="relatorioPlaceholder"
+       class="relatorio-placeholder">
+  </div>
+
+  <div
+    id="relatorioContainer"
+    style="display:none">
+
+    <div class="table-responsive">
+
+      <table id="tabelaResumoRelatorio">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+
+    </div>
+
+    <br>
+
+    <div class="table-responsive">
+
+      <table id="tabelaDetalhadaRelatorio">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+
+    </div>
+
+    <div id="referenciasRelatorio"></div>
+
+  </div>
+
+</div>
+
+</section>
+
+</main>
+
+<div id="abaLoader" class="aba-loader hidden">
+
+  <div class="aba-loader-text">
+    Carregando<span id="dots">.</span>
+  </div>
+
 </div>
   
-<div class="table-responsive" id="tabelaHorario"></div>
-</div>
-
-</div>
-
-<div id="sabados" class="tab-content">
-<div class="header-sticky">
-<div class="controls-card">
-<select id="selectModalidadeSabados" onchange="trocarModalidadeSabados()">
-<option value="INTEGRADO">CURSOS TÉCNICOS INTEGRADOS</option>
-<option value="SUPERIOR">CURSOS SUPERIORES</option></select>
-
-<input type="text" id="searchSabados" class="search-box"
-placeholder="🔍 Professor ou disciplina..." onkeyup="renderSabados()">
-
-<button class="btn-pdf" onclick="exportarPDFSabados()">📄 Baixe o PDF dos Sábados</button>
-</div>
-</div>
-
-<div class="week-container">
-<div class="table-responsive" id="containerSabados"></div>
-</div>
-
-</div>
-
-<div id="professores" class="tab-content">
-
-<div class="header-sticky">
-<div class="controls-card">
-<select id="selectProfessor" onchange="renderProfessor()">
-<option value="">Selecione um professor</option>
-</select>
-<select id="selectSemanaProfessor" onchange="renderProfessor()">
-</select>
-
-<button class="btn-pdf" onclick="exportarFichaProfessorPDF()">📄 Baixe a Ficha Semanal</button>
-</div>
-</div>
-<div class="week-container">
-<div class="table-responsive" id="tabelaProfessor">
-</div>
-</div>
-</div>
-
-<div id="turmas" class="tab-content">
-<div class="header-sticky">
-<div class="controls-card">
-<select id="selectTurma" onchange="renderTurma()">
-<option value="">Selecione uma Turma</option>
-</select>
-<select id="selectSemanaTurma" onchange="renderTurma()">
-</select>
-<button class="btn-pdf" onclick="exportarFichaTurmaPDF()">📄 Baixe a Ficha Semanal</button>
-</div>
-</div>
-<div class="week-container">
-<div class="table-responsive" id="tabelaTurma">
-</div>
-</div>
-</div>
-
-<div id="estatisticas" class="tab-content">
-<div style="padding:30px">
-🚧 Em construção
-</div>
-</div>
+<!-- ================= FOOTER ================= -->
 <footer class="ifro-footer">
-IFRO - Campus Cacoal<br>
-BR 364, Km 228, Lote 2-A - Zona Rural<br>
-☎ (69) 3443-2445 | ✉ dape.cacoal@ifro.edu.br
+  IFRO - Campus Cacoal<br>
+  BR 364, Km 228, Lote 2-A - Zona Rural<br>
+  ☎ (69) 3443-2445 | ✉ dape.cacoal@ifro.edu.br
 </footer>
+
+</div>
 
 <script>
 
@@ -292,16 +438,22 @@ function trocarModalidade(){
 
 function salvarSnapshotAtual() {
 
-  if(!semanaSelecionadaEhAtual()){
-    return;
-  }
-
   const sem = document.getElementById('selectSemana').value;
   const mod = document.getElementById('selectModalidade').value;
 
+  if (!sem || !mod) {
+    console.warn("Snapshot não salvo: semana ou modalidade vazia.");
+    return;
+  }
+
+  if (!dadosGlobais || !dadosGlobais.length) {
+    console.warn("Snapshot não salvo: dados vazios.");
+    return;
+  }
+
   const snapshot = {
-    tempo:new Date().toISOString(),
-    dados:dadosGlobais
+    tempo: new Date().toISOString(),
+    dados: JSON.parse(JSON.stringify(dadosGlobais))
   };
 
   localStorage.setItem(
@@ -310,6 +462,35 @@ function salvarSnapshotAtual() {
   );
 }
 
+function limparSnapshotsInvalidos() {
+
+  const semanaAtual = getSemanaAtual();
+
+  Object.keys(localStorage)
+    .filter(k => k.startsWith("snapshot_"))
+    .forEach(k => {
+
+      // remove snapshots sem semana
+      if (/^snapshot_[^_]+_$/.test(k)) {
+        localStorage.removeItem(k);
+        return;
+      }
+
+      // mantém apenas semana atual
+      if (
+        k.startsWith("snapshot_INTEGRADO_") ||
+        k.startsWith("snapshot_SUPERIOR_")
+      ) {
+
+        if (!k.endsWith(semanaAtual)) {
+          localStorage.removeItem(k);
+        }
+      }
+
+    });
+
+}
+  
 function obterSnapshotAntigo() {
   const sem = document.getElementById('selectSemana').value;
   const mod = document.getElementById('selectModalidade').value;
@@ -332,19 +513,28 @@ function valorMudou(v1, v2){
   
 function verificarMudancaAoAbrir() {
 
-  if(!semanaSelecionadaEhAtual()){
+  if (!semanaSelecionadaEhAtual()) {
     return;
   }
+
   const sem = document.getElementById('selectSemana').value;
   const mod = document.getElementById('selectModalidade').value;
+
+  if (!sem || !mod) {
+    return;
+  }
 
   const chave = `snapshot_${mod}_${sem}`;
 
   const antigoRaw = localStorage.getItem(chave);
 
-  // 🔥 Se não existe snapshot → salva e sai
+  // PRIMEIRO ACESSO DA SEMANA
   if (!antigoRaw) {
+
     salvarSnapshotAtual();
+
+    document.getElementById("painelAlteracoes").style.display = "none";
+
     return;
   }
 
@@ -357,6 +547,7 @@ function verificarMudancaAoAbrir() {
   for (let i = 1; i < novo.length; i++) {
 
     if (novo[i][0]) ultimoDia = novo[i][0];
+
     const diaAtual = ultimoDia;
 
     if (!diaAtual) continue;
@@ -365,7 +556,6 @@ function verificarMudancaAoAbrir() {
     const horario = (novo[i][1] || "").trim();
     const horarioNorm = normalizarTexto(horario);
 
-    // 🔥 IGNORA INTERVALO
     if (
       !horario ||
       horarioNorm.includes("INTERVALO") ||
@@ -382,35 +572,45 @@ function verificarMudancaAoAbrir() {
       if (!valorMudou(vNovo, vAntigo)) continue;
 
       const turma = (dadosGlobais[0][j] || "").trim();
+
       if (!turma) continue;
 
       const chaveItem = `${diaAtual}__${turma}__${horario}`;
 
       if (!agrupado[chaveItem]) {
+
         agrupado[chaveItem] = {
           dia: diaAtual,
           turma,
           horario,
           alteracoes: []
         };
+
       }
 
       agrupado[chaveItem].alteracoes.push({
         antes: vAntigo || "(vazio)",
         depois: vNovo || "(vazio)"
       });
+
     }
+
   }
 
   const listaFinal = Object.values(agrupado);
 
   if (listaFinal.length > 0) {
+
     mostrarAvisoAlteracoes(listaFinal);
+
   } else {
+
     document.getElementById("painelAlteracoes").style.display = "none";
+
   }
 
   salvarSnapshotAtual();
+
 }
 
 function mostrarMensagemPainel(titulo, texto){
@@ -839,24 +1039,524 @@ window.addEventListener("beforeunload", () => {
 
 function abrirAba(id, botao){
 
-  document.querySelectorAll('.tab-content')
-    .forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-content')
+        .forEach(el => el.classList.remove('active'));
 
-  document.querySelectorAll('.tab-btn')
-    .forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab')
+        .forEach(el => el.classList.remove('active'));
 
-  document.getElementById(id)
-    .classList.add('active');
+    document.getElementById(id)
+        .classList.add('active');
 
-  if(botao){
-      botao.classList.add('active');
-  }
+    if(botao){
+        botao.classList.add('active');
+    }
 
-  if(id === "sabados"){
-      renderSabados();
-  }
+    if(id === "sabados"){
+        renderSabados();
+    }
 }
 
+function montarRelatorioBase() {
+
+    const mapa = {};
+
+    BASE_GERAL.forEach(aula => {
+
+        const valor = aula.valor || "";
+
+        if (!valor.includes(" - "))
+            return;
+
+        const partes = valor.split(" - ");
+
+        if (partes.length < 2)
+            return;
+
+        const disciplina =
+            partes[0].trim();
+
+        const professorCompleto =
+    obterNomeCompletoProfessor(
+        partes[1].trim()
+    );
+
+        const turma =
+            aula.turma || "";
+
+        const chave =
+            `${disciplina}|${professorCompleto}|${turma}|${aula.modalidade}`;
+
+        if (!mapa[chave]) {
+
+            mapa[chave] = {
+
+                disciplina,
+                professor: professorCompleto,
+                turma,
+                modalidade: aula.modalidade,
+                datas: []
+
+            };
+        }
+
+        mapa[chave].datas.push(
+            aula.data
+        );
+    });
+
+    RELATORIO_DISCIPLINAS =
+        Object.values(mapa)
+        .map(item => {
+
+            const datas =
+                ordenarDatasBR(
+                    [...new Set(item.datas)]
+                );
+
+            return {
+
+                disciplina:
+                    item.disciplina,
+
+                professor:
+                    item.professor,
+
+                turma:
+                    item.turma,
+
+                modalidade:
+                    item.modalidade,
+
+                periodo:
+                    `${datas[0]} até ${datas[datas.length - 1]}`
+
+            };
+
+        });
+
+    console.log(
+        "RELATÓRIO CACHE:",
+        RELATORIO_DISCIPLINAS.length
+    );
+}
+
+  function montarCacheRelatorioDisciplinas() {
+
+    const mapa = new Map();
+
+    BASE_GERAL.forEach(a => {
+
+        const valor = (a.valor || "").trim();
+
+        if (!valor.includes(" - "))
+            return;
+
+        let [disciplina, professor] =
+            valor.split(" - ");
+
+        if (!disciplina || !professor)
+            return;
+
+        disciplina = disciplina.trim();
+
+        professor = professor
+    .replace(/\[.*?\]/g, "")
+    .replace(/\*/g, "")
+    .trim();
+
+professor =
+    obterNomeCompletoProfessor(
+        professor
+    );
+
+        const data =
+            parseDataBR(a.data);
+
+        const chave =
+            `${disciplina}__${professor}__${a.turma}`;
+
+        if (!mapa.has(chave)) {
+
+            mapa.set(chave, {
+
+                disciplina,
+                professor,
+                turma: a.turma || "",
+                modalidade: a.modalidade || "",
+
+                inicio: data,
+                fim: data
+
+            });
+
+        } else {
+
+            const atual =
+                mapa.get(chave);
+
+            if (data) {
+
+                if (!atual.inicio || data < atual.inicio)
+                    atual.inicio = data;
+
+                if (!atual.fim || data > atual.fim)
+                    atual.fim = data;
+
+            }
+
+            if (
+                atual.modalidade !== a.modalidade
+            ) {
+
+                atual.modalidade = "TODOS";
+
+            }
+
+        }
+
+    });
+
+    RELATORIO_DISCIPLINAS =
+        Array.from(mapa.values());
+
+    RELATORIO_DISCIPLINAS.sort(
+        (a, b) =>
+            a.disciplina.localeCompare(
+                b.disciplina,
+                "pt-BR"
+            )
+    );
+
+    console.log(
+        "CACHE RELATÓRIO:",
+        RELATORIO_DISCIPLINAS.length
+    );
+}
+
+function montarRelatorioDisciplinas(
+    filtroModalidade = "TODOS",
+    termoBusca = ""
+) {
+
+    const tabela =
+        document.getElementById(
+            "tabelaEstatistica"
+        );
+
+    let dados =
+        [...RELATORIO_DISCIPLINAS];
+
+    // ==========================
+    // MODALIDADE
+    // ==========================
+
+    if (
+        filtroModalidade &&
+        filtroModalidade !== "TODOS"
+    ) {
+
+        dados = dados.filter(item => {
+
+            if (
+                item.modalidade === "TODOS"
+            )
+                return true;
+
+            return (
+                item.modalidade ===
+                filtroModalidade
+            );
+
+        });
+
+    }
+
+    // ==========================
+    // BUSCA
+    // ==========================
+
+    if (
+        termoBusca &&
+        termoBusca.trim()
+    ) {
+
+        const termo =
+            normalizarTexto(
+                termoBusca
+            );
+
+        dados = dados.filter(item =>
+
+            normalizarTexto(
+                item.disciplina
+            ).includes(termo)
+
+            ||
+
+            normalizarTexto(
+                item.professor
+            ).includes(termo)
+
+            ||
+
+            normalizarTexto(
+                item.turma
+            ).includes(termo)
+
+        );
+
+    }
+
+    // ==========================
+    // RENDER
+    // ==========================
+
+    tabela.innerHTML = "";
+
+    const fragment =
+        document.createDocumentFragment();
+
+    dados.forEach(item => {
+
+        const tr =
+            document.createElement("tr");
+
+        const periodo =
+            item.inicio && item.fim
+                ? `${formatarData(item.inicio)} → ${formatarData(item.fim)}`
+                : "-";
+
+        tr.innerHTML = `
+            <td>${item.disciplina}</td>
+            <td>${item.professor}</td>
+            <td>${item.turma}</td>
+            <td class="coluna-periodo">${periodo}</td>
+        `;
+
+        fragment.appendChild(tr);
+
+    });
+
+    tabela.appendChild(fragment);
+
+    return dados;
+}
+
+function parseDataBR(str) {
+    if (!str) return null;
+    const [d, m, a] = str.split('/');
+    const dt = new Date(a, m - 1, d);
+    dt.setHours(0, 0, 0, 0);
+    return dt;
+}
+
+function formatarData(date) {
+    if (!date) return "-";
+    const d = String(date.getDate()).padStart(2, "0");
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const a = date.getFullYear();
+    return `${d}/${m}/${a}`;
+}
+  
+function atualizarRelatorio() {
+
+    const filtro =
+        document.getElementById(
+            "selectModalidadeEstatistica"
+        ).value;
+
+    const busca =
+        document.getElementById(
+            "inputBuscaEstatistica"
+        ).value;
+
+    const dados =
+        montarRelatorioDisciplinas(
+            filtro,
+            busca
+        );
+
+    document.getElementById(
+        "estatTotalDisciplinas"
+    ).innerText =
+        new Set(
+            dados.map(
+                d => d.disciplina
+            )
+        ).size;
+
+    document.getElementById(
+        "estatTotalProfessores"
+    ).innerText =
+        new Set(
+            dados.map(
+                d => d.professor
+            )
+        ).size;
+
+    document.getElementById(
+        "estatTotalTurmas"
+    ).innerText =
+        new Set(
+            dados.map(
+                d => d.turma
+            )
+        ).size;
+
+    document.getElementById(
+        "estatTotalRegistros"
+    ).innerText =
+        dados.length;
+}
+
+function exportarRelatorioPDF() {
+
+    const { jsPDF } = window.jspdf;
+
+    // =====================================
+    // A4 RETRATO (CORREÇÃO PRINCIPAL)
+    // =====================================
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const filtro = document.getElementById("selectModalidadeEstatistica")?.value || "TODOS";
+    const busca = document.getElementById("inputBuscaEstatistica")?.value || "";
+
+    const dados = montarRelatorioDisciplinas(filtro, busca);
+
+    const linhas = dados.map(item => [
+
+        item.disciplina || "",
+        item.professor || "",
+        item.turma || "",
+        item.inicio && item.fim
+    ? `${formatarData(item.inicio)} até ${formatarData(item.fim)}`
+    : "-"
+    ]);
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // =====================================
+    // CABEÇALHO
+    // =====================================
+    function cabecalho() {
+
+        pdf.setFontSize(9);
+
+        pdf.text(
+            "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE RONDÔNIA - IFRO",
+            pageWidth / 2, 8,
+            { align: "center" }
+        );
+
+        pdf.text(
+            "CAMPUS CACOAL - Departamento de Apoio ao Ensino - DAPE",
+            pageWidth / 2, 12,
+            { align: "center" }
+        );
+
+        pdf.text(
+            `RELATÓRIO DE DISCIPLINAS - ${filtro}`,
+            pageWidth / 2, 16,
+            { align: "center" }
+        );
+    }
+
+    // =====================================
+    // TABELA
+    // =====================================
+    pdf.autoTable({
+        head: [["Disciplina", "Professor", "Turma", "Período"]],
+        body: linhas,
+        startY: 22,
+        theme: "grid",
+
+        margin: {
+            top: 25,
+            bottom: 20
+        },
+
+        styles: {
+            fontSize: 7,
+            halign: "center",
+            valign: "middle",
+            cellPadding: 1.5,
+            overflow: "linebreak"
+        },
+
+        headStyles: {
+            fillColor: [46, 125, 50],
+            textColor: 0,
+            fontStyle: "bold"
+        },
+
+        columnStyles: {
+            0: { cellWidth: 62, halign: "left" },   // disciplina
+            1: { cellWidth: 50, halign: "left" },   // professor
+            2: { cellWidth: 38, halign: "left" },  // turma
+            3: { cellWidth: 35, halign: "left" }   // período
+        },
+
+        didDrawPage: function () {
+            cabecalho();
+        }
+    });
+
+    // =====================================
+    // RODAPÉ (AGORA FUNCIONANDO CORRETAMENTE)
+    // =====================================
+    const pageCount = pdf.getNumberOfPages();
+
+    for (let i = 1; i <= pageCount; i++) {
+
+        pdf.setPage(i);
+
+        pdf.setFontSize(8);
+
+        pdf.text(
+            "IFRO - Campus Cacoal | BR 364, Km 228, Lote 2-A | (69) 3443-2445 | dape.cacoal@ifro.edu.br",
+            pageWidth / 2,
+            pageHeight - 10, // 🔥 CORREÇÃO IMPORTANTE
+            { align: "center" }
+        );
+    }
+
+    pdf.save(`RELATORIO_DISCIPLINAS_${filtro}.pdf`);
+}
+
+let dotsInterval = null;
+let dotsCount = 0;
+
+function mostrarLoaderAbas(texto = "Carregando") {
+
+  const loader = document.getElementById("abaLoader");
+  const dots = document.getElementById("dots");
+
+  loader.classList.remove("hidden");
+
+  dotsCount = 0;
+
+  if (dotsInterval) clearInterval(dotsInterval);
+
+  dotsInterval = setInterval(() => {
+
+    dotsCount = (dotsCount + 1) % 4;
+
+    dots.innerText = ".".repeat(dotsCount);
+
+  }, 400);
+}
+
+function esconderLoaderAbas() {
+
+  const loader = document.getElementById("abaLoader");
+
+  clearInterval(dotsInterval);
+
+  loader.classList.add("hidden");
+}
+  
 window.onload = async () => {
 
   const btnTema = document.getElementById("btnTema");
@@ -891,6 +1591,8 @@ window.onload = async () => {
 
   });
 
+  mostrarLoaderAbas(); // 🔥 aparece abaixo das abas
+
   await init();
 
   abrirAba(
@@ -899,7 +1601,10 @@ window.onload = async () => {
   );
 
   gerarDashboard();
+
+  esconderLoaderAbas(); // 🔥 some quando tudo pronto
 };
+  
 </script>
 <script src="js/config.js"></script>
 <script src="js/core.js"></script>
@@ -908,6 +1613,7 @@ window.onload = async () => {
 <script src="js/turma.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/sabado.js"></script>
-<script src="js/horario.js"></script>    
+<script src="js/horario.js"></script>
+<script src="js/relatorios.js"></script>
 </body>
 </html>
