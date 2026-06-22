@@ -1,10 +1,47 @@
+const CALENDARIO_LETIVO = {
+  INTEGRADO: {
+    semestres: [
+      { inicio: "10/02/2026", fim: "20/06/2026" },
+      { inicio: "22/07/2026", fim: "27/11/2026" }
+    ]
+  },
+
+  SUPERIOR: {
+    semestres: [
+      { inicio: "09/02/2026", fim: "26/06/2026" },
+      { inicio: "22/07/2026", fim: "04/12/2026" }
+    ]
+  }
+};
+
+function dentroPeriodoLetivo(dataStr, modalidade){
+
+  const [d,m,a] = dataStr.split('/');
+  const data = new Date(a, m-1, d);
+  data.setHours(0,0,0,0);
+
+  const periodos = CALENDARIO_LETIVO[modalidade].semestres;
+
+  return periodos.some(p => {
+
+    const [di,mi,ai] = p.inicio.split('/');
+    const inicio = new Date(ai, mi-1, di);
+
+    const [df,mf,af] = p.fim.split('/');
+    const fim = new Date(af, mf-1, df);
+
+    inicio.setHours(0,0,0,0);
+    fim.setHours(23,59,59,999);
+
+    return data >= inicio && data <= fim;
+  });
+}
+
 function gerarDashboard(){
 
-    const integrado =
-        calcularIndicadores(dadosIntegrado);
+    const integrado = calcularIndicadores(dadosIntegrado, "INTEGRADO");
 
-    const superior =
-        calcularIndicadores(dadosSuperior);
+    const superior = calcularIndicadores(dadosSuperior, "SUPERIOR");
 
     const agora =
         new Date().toLocaleString("pt-BR");
@@ -187,7 +224,7 @@ return `
 `;
 }
 
-function calcularIndicadores(dados){
+function calcularIndicadores(dados, modalidade){
 
   let diasLetivos = new Set();
   let sabadosComAula = new Set();
@@ -210,13 +247,16 @@ function calcularIndicadores(dados){
       if(!dataStr) continue;
 
       const [d,m,a] = dataStr.split('/');
-      const data = new Date(a,m-1,d);
+const data = new Date(a,m-1,d);
 
-      // ignora datas futuras
-      if(data > hoje) continue;
+// ignora datas futuras
+if(data > hoje) continue;
 
-      // ignora feriados
-      if(isFeriado(dataStr)) continue;
+// 🔥 NOVO: ignora fora do período letivo real
+if(!dentroPeriodoLetivo(dataStr, modalidade)) continue;
+
+// ignora feriados
+if(isFeriado(dataStr)) continue;
 
       const horario = normalizarTexto(row[1] || "");
 
