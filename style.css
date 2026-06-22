@@ -883,8 +883,8 @@ summary{
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f5f7fb;
-  color: #1f2937;
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* HEADER */
