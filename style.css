@@ -103,56 +103,107 @@
   color:var(--text);
 }
 
-/* CONTROLES */
+/* =========================
+   CONTROLES (VERSÃO FINAL)
+   RESPONSIVO + STICKY SEGURO
+========================= */
 
 .header-sticky{
-  position:sticky;
-  top:110px;
-  z-index:1000;
-  background:var(--bg);
-  padding:9px;
+  position: sticky;
+  top: 70px;
+
+  z-index: 9999;
+
+  background: var(--bg);
+
+  padding: 10px 0;
+
+  width: 100%;
 }
 
+/* CARD DOS CONTROLES */
 .controls-card{
-  background:var(--surface);
-  padding:15px;
-  border-radius:12px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  justify-content:center;
-  box-shadow:var(--shadow);
+  position: relative;
+  z-index: 10000;
+
+  background: var(--surface);
+
+  padding: 15px;
+
+  border-radius: 12px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  justify-content: center;
+
+  box-shadow: var(--shadow);
 }
 
+/* INPUTS PADRÃO */
 select,
 .search-box,
 .btn-pdf{
-  padding:12px;
-  font-size:14px;
-  border-radius:6px;
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 6px;
 }
 
+/* SELECT E BUSCA */
 select,
 .search-box{
-  background:var(--surface);
-  color:var(--text);
-  border:2px solid var(--primary);
+  background: var(--surface);
+  color: var(--text);
+
+  border: 2px solid var(--primary);
 }
 
+/* BUSCA */
 .search-box{
-  width:260px;
+  width: 260px;
 }
 
+/* BOTÃO PDF */
 .btn-pdf{
-  background:#d32f2f;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-  font-weight:bold;
+  background: #d32f2f;
+  color: #fff;
+
+  border: none;
+  cursor: pointer;
+
+  font-weight: bold;
 }
 
 .btn-pdf:hover{
-  opacity:.92;
+  opacity: .92;
+}
+
+/* TABELA NÃO INVADIR HEADER */
+.table-responsive{
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media (max-width: 768px){
+
+  .header-sticky{
+    top: 60px;
+  }
+
+  .controls-card{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box{
+    width: 100%;
+  }
+
 }
 
 /* CONTEÚDO */
