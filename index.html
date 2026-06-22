@@ -13,10 +13,6 @@
 
 <body>
 
-<div id="topLoader" class="top-loader">
-  <div id="topLoaderBar" class="top-loader-bar"></div>
-</div>
-
 <div class="app-container">
 
 <!-- ================= HEADER ================= -->
@@ -347,6 +343,14 @@
 </section>
 
 </main>
+
+<div id="abaLoader" class="aba-loader hidden">
+
+  <div class="aba-loader-text">
+    Carregando<span id="dots">.</span>
+  </div>
+
+</div>
   
 <!-- ================= FOOTER ================= -->
 <footer class="ifro-footer">
@@ -1467,50 +1471,39 @@ function exportarRelatorioPDF() {
     pdf.save(`RELATORIO_DISCIPLINAS_${filtro}.pdf`);
 }
 
-let loaderTimer = null;
-let progresso = 0;
+let dotsInterval = null;
+let dotsCount = 0;
 
-function startLoader() {
+function mostrarLoaderAbas(texto = "Carregando") {
 
-  const bar = document.getElementById("topLoaderBar");
+  const loader = document.getElementById("abaLoader");
+  const dots = document.getElementById("dots");
 
-  progresso = 0;
-  bar.style.width = "0%";
+  loader.classList.remove("hidden");
 
-  loaderTimer = setInterval(() => {
+  dotsCount = 0;
 
-    if (progresso < 90) {
-      progresso += Math.random() * 6; // movimento natural
-      bar.style.width = progresso + "%";
-    }
+  if (dotsInterval) clearInterval(dotsInterval);
 
-  }, 200);
+  dotsInterval = setInterval(() => {
+
+    dotsCount = (dotsCount + 1) % 4;
+
+    dots.innerText = ".".repeat(dotsCount);
+
+  }, 400);
 }
 
-function setLoader(value) {
+function esconderLoaderAbas() {
 
-  const bar = document.getElementById("topLoaderBar");
+  const loader = document.getElementById("abaLoader");
 
-  progresso = value;
-  bar.style.width = value + "%";
-}
+  clearInterval(dotsInterval);
 
-function finishLoader() {
-
-  const bar = document.getElementById("topLoaderBar");
-
-  clearInterval(loaderTimer);
-
-  bar.style.width = "100%";
-
-  setTimeout(() => {
-    bar.style.width = "0%";
-  }, 300);
+  loader.classList.add("hidden");
 }
   
 window.onload = async () => {
-
-  startLoader(); // 🔥 inicia barra ao abrir página
 
   const btnTema = document.getElementById("btnTema");
 
@@ -1544,11 +1537,9 @@ window.onload = async () => {
 
   });
 
-  setLoader(25); // tema carregado
+  mostrarLoaderAbas(); // 🔥 aparece abaixo das abas
 
   await init();
-
-  setLoader(70); // dados carregados
 
   abrirAba(
     "dashboard",
@@ -1557,9 +1548,7 @@ window.onload = async () => {
 
   gerarDashboard();
 
-  setLoader(100); // finalizado
-
-  finishLoader(); // esconde barra
+  esconderLoaderAbas(); // 🔥 some quando tudo pronto
 };
   
 </script>
