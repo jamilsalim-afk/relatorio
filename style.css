@@ -311,73 +311,48 @@ tr.linha-vazia td{
 /* PAINEL ALTERAÇÕES */
 
 #painelAlteracoes{
-  background:var(--surface) !important;
-  color:var(--text);
-  box-shadow:var(--shadow);
-}
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
 
-#conteudoAlteracoes{
-  color:var(--text);
-}
+  border-radius: 12px;
 
-/* ===== PAINEL BASE (RECUPERA O LAYOUT BONITO) ===== */
-
-#painelAlteracoes{
-  position: fixed;
-  top: 80px;
-  right: 20px;
-
-  width: 380px;
-  max-height: 70vh;
-  overflow: hidden;
-
-  border-radius: 14px;
+  margin: 15px 0;
 
   display: none;
-
-  z-index: 9999;
-
-  display: flex;
-  flex-direction: column;
 }
 
 /* HEADER */
 #painelAlteracoes .painel-header{
   position: relative;
 
-  padding: 12px 45px 12px 15px;
-
-  font-weight: bold;
+  padding: 12px 15px;
 
   display: flex;
+  justify-content: space-between;
   align-items: center;
+
+  font-weight: bold;
 
   border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
-/* BOTÃO FECHAR (X) */
+/* BOTÃO FECHAR */
 #painelAlteracoes .painel-header button{
-  position: absolute;
-  top: 8px;
-  right: 10px;
-
   background: transparent;
   border: none;
 
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
 
   color: red;
+
   cursor: pointer;
 }
 
 /* CONTEÚDO */
 #conteudoAlteracoes{
   padding: 12px 15px;
-
-  overflow-y: auto;
-
-  flex: 1;
 
   white-space: pre-wrap;
 
@@ -388,14 +363,16 @@ tr.linha-vazia td{
 
 /* BOTÃO COPIAR */
 #painelAlteracoes > button{
-  border: none;
+  width: 100%;
+
   padding: 10px;
+
+  border: none;
+  border-top: 1px solid rgba(0,0,0,0.1);
 
   cursor: pointer;
 
   font-weight: bold;
-
-  border-top: 1px solid rgba(0,0,0,0.1);
 }
 
 /* BOTÕES RELATÓRIO */
