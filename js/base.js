@@ -85,6 +85,8 @@ carregarSemanasTurma();
 
 gerarDashboard();
 
+esconderLoaderAbas();
+
   setTimeout(() => {
     verificarMudancaAoAbrir();
   }, 200);
