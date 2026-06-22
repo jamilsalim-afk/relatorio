@@ -1026,19 +1026,19 @@ body {
   border: 1px solid #999 !important;
 }
 
-.top-loader {
-  position: fixed;
-  top: 0;
-  left: 0;
+.aba-loader {
   width: 100%;
-  height: 3px;
-  background: transparent;
-  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px 0;
+  background: var(--card-bg);
+  border-bottom: 2px solid var(--border-color);
 }
 
-.top-loader-bar {
-  height: 100%;
-  width: 0%;
-  background: #2e7d32;
-  transition: width 0.25s ease;
+.aba-loader-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 1px;
 }
