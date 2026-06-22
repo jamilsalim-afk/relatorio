@@ -480,7 +480,7 @@ tr.linha-vazia td{
 }
 
 /* ==========================
-   ABAS
+   ABAS - DESKTOP
 ========================== */
 
 .tabs-container{
@@ -488,37 +488,85 @@ tr.linha-vazia td{
   justify-content:center;
   gap:10px;
   flex-wrap:wrap;
+
   padding:10px;
+
   background:var(--bg);
   border-bottom:1px solid var(--border);
 }
 
+/* BOTÕES PADRÃO */
 .tab-btn{
   border:none;
   background:#e5e7eb;
+
   padding:12px 18px;
+
   border-radius:10px;
+
   cursor:pointer;
+
   font-weight:600;
+
   transition:.2s;
+
   box-shadow:var(--shadow);
+
+  font-size:14px;
 }
 
+/* HOVER */
 .tab-btn:hover{
   transform:translateY(-1px);
 }
 
+/* ATIVA */
 .tab-btn.active{
   background:var(--primary);
   color:white;
 }
 
+/* CONTEÚDO */
 .tab-content{
   display:none;
 }
 
 .tab-content.active{
   display:block;
+}
+
+/* ==========================
+   TABLET
+========================== */
+
+@media (max-width: 768px){
+
+  .tab-btn{
+    flex: 1 1 calc(50% - 10px);
+
+    padding:14px 10px;
+
+    font-size:13px;
+
+    text-align:center;
+  }
+}
+
+/* ==========================
+   CELULAR
+========================== */
+
+@media (max-width: 480px){
+
+  .tab-btn{
+    flex: 1 1 100%;
+
+    padding:16px 12px;
+
+    font-size:14px;
+
+    border-radius:12px;
+  }
 }
 
   /* ==========================
