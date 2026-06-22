@@ -513,19 +513,28 @@ function valorMudou(v1, v2){
   
 function verificarMudancaAoAbrir() {
 
-  if(!semanaSelecionadaEhAtual()){
+  if (!semanaSelecionadaEhAtual()) {
     return;
   }
+
   const sem = document.getElementById('selectSemana').value;
   const mod = document.getElementById('selectModalidade').value;
+
+  if (!sem || !mod) {
+    return;
+  }
 
   const chave = `snapshot_${mod}_${sem}`;
 
   const antigoRaw = localStorage.getItem(chave);
 
-  // 🔥 Se não existe snapshot → salva e sai
+  // PRIMEIRO ACESSO DA SEMANA
   if (!antigoRaw) {
+
     salvarSnapshotAtual();
+
+    document.getElementById("painelAlteracoes").style.display = "none";
+
     return;
   }
 
@@ -538,6 +547,7 @@ function verificarMudancaAoAbrir() {
   for (let i = 1; i < novo.length; i++) {
 
     if (novo[i][0]) ultimoDia = novo[i][0];
+
     const diaAtual = ultimoDia;
 
     if (!diaAtual) continue;
@@ -546,7 +556,6 @@ function verificarMudancaAoAbrir() {
     const horario = (novo[i][1] || "").trim();
     const horarioNorm = normalizarTexto(horario);
 
-    // 🔥 IGNORA INTERVALO
     if (
       !horario ||
       horarioNorm.includes("INTERVALO") ||
@@ -563,35 +572,45 @@ function verificarMudancaAoAbrir() {
       if (!valorMudou(vNovo, vAntigo)) continue;
 
       const turma = (dadosGlobais[0][j] || "").trim();
+
       if (!turma) continue;
 
       const chaveItem = `${diaAtual}__${turma}__${horario}`;
 
       if (!agrupado[chaveItem]) {
+
         agrupado[chaveItem] = {
           dia: diaAtual,
           turma,
           horario,
           alteracoes: []
         };
+
       }
 
       agrupado[chaveItem].alteracoes.push({
         antes: vAntigo || "(vazio)",
         depois: vNovo || "(vazio)"
       });
+
     }
+
   }
 
   const listaFinal = Object.values(agrupado);
 
   if (listaFinal.length > 0) {
+
     mostrarAvisoAlteracoes(listaFinal);
+
   } else {
+
     document.getElementById("painelAlteracoes").style.display = "none";
+
   }
 
   salvarSnapshotAtual();
+
 }
 
 function mostrarMensagemPainel(titulo, texto){
