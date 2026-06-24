@@ -88,18 +88,48 @@ function inicializarRelatorio() {
 }
 
 function carregarListaProfessoresRelatorio() {
-  const select = document.getElementById("selectProfessorRelatorio");
 
-  select.innerHTML = '<option value="">Selecione o professor</option>';
+    const select =
+        document.getElementById(
+            "selectProfessorRelatorio"
+        );
 
-  listaProfessores.forEach(p => {
-    select.innerHTML += `<option value="${p}">${p}</option>`;
-  });
+    if (!select) return;
 
-  select.onchange = () => {
-    Relatorio.professor = select.value;
-    gerarRelatorio();
-  };
+    select.innerHTML =
+        '<option value="">Selecione o professor</option>';
+
+    const professoresAtivos =
+        Object.keys(INDEX_PROFESSOR)
+            .map(nomeCurto =>
+                obterNomeCompletoProfessor(
+                    nomeCurto
+                )
+            )
+            .filter(nome => nome)
+            .sort((a, b) =>
+                a.localeCompare(
+                    b,
+                    "pt-BR"
+                )
+            );
+
+    professoresAtivos.forEach(nome => {
+
+        select.innerHTML += `
+            <option value="${nome}">
+                ${nome}
+            </option>
+        `;
+    });
+
+    select.onchange = () => {
+
+        Relatorio.professor =
+            select.value;
+
+        gerarRelatorio();
+    };
 }
 
 function carregarListaTurmasRelatorio() {
