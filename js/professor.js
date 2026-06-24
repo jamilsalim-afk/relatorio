@@ -84,29 +84,60 @@ function normalizarProfessor(nome) {
 }
 
 function carregarListaProfessores() {
+
     const select =
         document.getElementById("selectProfessor");
+
     if (!select) return;
+
     select.innerHTML =
         '<option value="">Selecione um professor</option>';
+
+    // Professores que realmente possuem aulas
+    const professoresAtivos =
+        Object.keys(INDEX_PROFESSOR);
+
     dadosProfessores
         .slice(1)
-        .sort((a,b)=>
+        .sort((a, b) =>
             (a[0] || "")
                 .localeCompare(
                     b[0] || "",
-                    'pt-BR'
+                    "pt-BR"
                 )
         )
         .forEach(linha => {
-            const nomeCompleto = (linha[0] || "").trim();
+
+            const nomeCompleto =
+                (linha[0] || "").trim();
+
             if (!nomeCompleto) return;
+
+            const nomeCurto =
+                normalizarProfessor(
+                    linha[1] || nomeCompleto
+                );
+
+            // Só mostra quem possui aulas
+            if (
+                !professoresAtivos.includes(
+                    nomeCurto
+                )
+            ) {
+                return;
+            }
+
             select.innerHTML += `
                 <option value="${nomeCompleto}">
                     ${nomeCompleto}
                 </option>
             `;
         });
+
+    console.log(
+        "Professores ativos:",
+        professoresAtivos.length
+    );
 }
 
 function traduzirProfessor(nomeCompleto) {
