@@ -318,7 +318,7 @@ function esconderTodosSelects() {
   document.getElementById("selectDisciplinaRelatorio").style.display = "none";
 }
 
-function classificarTipoRelatorio(valor) {
+function classificarTipoRelatorio(valor, data = null) {
 
   if (!valor) return "NORMAL";
 
@@ -328,6 +328,18 @@ function classificarTipoRelatorio(valor) {
   if (v.includes("[EX]")) return "EXAME";
   if (v.includes("[+]")) return "EXTRA";
   if (v.includes("[R]") || v.includes("[REP]")) return "REPOSIÇÃO";
+
+  // 🔥 verifica sábado
+  if (data) {
+
+    const [d, m, y] = data.split("/");
+
+    const dt = new Date(y, m - 1, d);
+
+    if (dt.getDay() === 6) {
+      return "SÁBADO";
+    }
+  }
 
   return "NORMAL";
 }
@@ -417,14 +429,43 @@ function renderTabelaDetalhadaDisciplina(dados) {
 
   dados.forEach(a => {
 
-    const tr = document.createElement("tr");
+    const tipo = classificarTipoRelatorio(a.valor, a.data);
 
-    tr.innerHTML = `
-      <td>${a.data}</td>
-      <td>${a.horario}</td>
-      <td>${obterProfessorRelatorio(a.valor)}</td>
-      <td>${classificarTipoRelatorio(a.valor)}</td>
-    `;
+let classeTipo = "";
+
+switch (tipo) {
+  case "SÁBADO":
+    classeTipo = "tipo-sabado";
+    break;
+
+  case "RECUPERAÇÃO":
+    classeTipo = "tipo-rec";
+    break;
+
+  case "EXAME":
+    classeTipo = "tipo-ex";
+    break;
+
+  case "REPOSIÇÃO":
+    classeTipo = "tipo-rep";
+    break;
+
+  case "EXTRA":
+    classeTipo = "tipo-extra";
+    break;
+
+  default:
+    classeTipo = "tipo-normal";
+}
+
+const tr = document.createElement("tr");
+
+tr.innerHTML = `
+  <td>${a.data}</td>
+  <td>${a.horario}</td>
+  <td>${obterProfessorRelatorio(a.valor)}</td>
+  <td class="${classeTipo}">${tipo}</td>
+`;
 
     tbody.appendChild(tr);
   });
@@ -736,14 +777,43 @@ function renderTabelaDetalhadaRelatorio(dados) {
 
   dados.forEach(a => {
 
-    const tr = document.createElement("tr");
+    const tipo = classificarTipoRelatorio(a.valor, a.data);
 
-    tr.innerHTML = `
-      <td>${a.data}</td>
-      <td>${a.horario}</td>
-      <td>${obterProfessorRelatorio(a.valor)}</td>
-      <td>${classificarTipoRelatorio(a.valor)}</td>
-    `;
+let classeTipo = "";
+
+switch (tipo) {
+  case "SÁBADO":
+    classeTipo = "tipo-sabado";
+    break;
+
+  case "RECUPERAÇÃO":
+    classeTipo = "tipo-rec";
+    break;
+
+  case "EXAME":
+    classeTipo = "tipo-ex";
+    break;
+
+  case "REPOSIÇÃO":
+    classeTipo = "tipo-rep";
+    break;
+
+  case "EXTRA":
+    classeTipo = "tipo-extra";
+    break;
+
+  default:
+    classeTipo = "tipo-normal";
+}
+
+const tr = document.createElement("tr");
+
+tr.innerHTML = `
+  <td>${a.data}</td>
+  <td>${a.horario}</td>
+  <td>${obterProfessorRelatorio(a.valor)}</td>
+  <td class="${classeTipo}">${tipo}</td>
+`;
 
     tbody.appendChild(tr);
   });
@@ -1236,10 +1306,10 @@ function exportarRelatorioDisciplinaPDF() {
 
         columnStyles: {
 
-            0: { cellWidth: 28 },
-            1: { cellWidth: 28 },
-            2: { cellWidth: 85 },
-            3: { cellWidth: 35 }
+            0: { cellWidth: 30 },
+            1: { cellWidth: 30 },
+            2: { cellWidth: 90 },
+            3: { cellWidth: 36 }
 
         },
 
