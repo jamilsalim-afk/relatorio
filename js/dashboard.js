@@ -14,6 +14,70 @@ const CALENDARIO_LETIVO = {
   }
 };
 
+// ======================================================
+// 🔥 OBTÉM O SEMESTRE ATUAL
+// ======================================================
+function obterSemestreAtual(modalidade){
+
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+
+    const semestres =
+        CALENDARIO_LETIVO[modalidade].semestres;
+
+    for(let i=0;i<semestres.length;i++){
+
+        const [di,mi,ai] =
+            semestres[i].inicio.split("/");
+
+        const [df,mf,af] =
+            semestres[i].fim.split("/");
+
+        const inicio =
+            new Date(ai,mi-1,di);
+
+        const fim =
+            new Date(af,mf-1,df);
+
+        inicio.setHours(0,0,0,0);
+        fim.setHours(23,59,59,999);
+
+        if(
+            hoje >= inicio &&
+            hoje <= fim
+        ){
+            return i;
+        }
+
+        // Se ainda não começou o próximo semestre,
+        // permanece no semestre anterior.
+        if(
+            i < semestres.length-1
+        ){
+
+            const [dni,mni,ani] =
+                semestres[i+1].inicio.split("/");
+
+            const proxInicio =
+                new Date(ani,mni-1,dni);
+
+            proxInicio.setHours(0,0,0,0);
+
+            if(
+                hoje > fim &&
+                hoje < proxInicio
+            ){
+                return i;
+            }
+
+        }
+
+    }
+
+    return semestres.length-1;
+
+}
+
 function dentroPeriodoLetivo(dataStr, modalidade){
 
   const [d,m,a] = dataStr.split('/');
