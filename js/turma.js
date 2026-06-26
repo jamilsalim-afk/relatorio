@@ -191,36 +191,28 @@ function carregarListaTurmas() {
 
         if (!horario) return;
 
-        const conteudoCompleto = Object.entries(aula)
-    .filter(([k, v]) =>
-        v !== null &&
-        v !== undefined &&
-        v !== "" &&
-        k !== "data" &&
-        k !== "horario"
-    )
-    .map(([k, v]) => {
-        return `<div style="font-size:11px;">
-                    <b>${k.toUpperCase()}:</b> ${v}
-                </div>`;
-    })
-    .join("");
+        const disciplina =
+        aula.disciplina || "";
 
-grade[horario][diaSemana].push(`
+    const professor =
+        aula.professor || "";
 
-    <div style="
-        margin-bottom:6px;
-        padding:4px;
-        border-left:3px solid #1565c0;
-        background:rgba(21,101,192,0.05);
-    ">
+    grade[horario][diaSemana].push(`
 
-        ${conteudoCompleto}
+        <div style="
+            margin-bottom:4px;
+            padding:3px;
+            border-left:3px solid #1565c0;
+        ">
 
-    </div>
+            <b>${disciplina}</b><br>
 
-`);
+            ${professor}
 
+        </div>
+
+    `);
+      
     });
 
     return {
