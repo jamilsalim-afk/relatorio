@@ -12,6 +12,42 @@ function obterSabadosSemana() {
             ? semanasSuperior
             : semanasIntegrado;
 
+    let inicioSemestre = null;
+    let fimSemestre = null;
+
+    // 🔥 Apenas Superior usa filtro de semestre
+    if(modalidade === "SUPERIOR"){
+
+        const indiceSemestre =
+            Number(
+                document.getElementById(
+                    "selectSemestreSabados"
+                ).value
+            );
+
+        const semestre =
+            CALENDARIO_LETIVO
+                .SUPERIOR
+                .semestres[indiceSemestre];
+
+        const [di,mi,ai] =
+            semestre.inicio.split("/");
+
+        inicioSemestre =
+            new Date(ai,mi-1,di);
+
+        inicioSemestre.setHours(0,0,0,0);
+
+        const [df,mf,af] =
+            semestre.fim.split("/");
+
+        fimSemestre =
+            new Date(af,mf-1,df);
+
+        fimSemestre.setHours(23,59,59,999);
+
+    }
+
     const resultado = {};
 
     Object.keys(baseSemanas).forEach(semana => {
@@ -25,6 +61,18 @@ function obterSabadosSemana() {
 
             const dataObj =
                 new Date(a,m-1,d);
+
+            // 🔥 Filtra semestre apenas para Superior
+            if(modalidade === "SUPERIOR"){
+
+                if(
+                    dataObj < inicioSemestre ||
+                    dataObj > fimSemestre
+                ){
+                    return;
+                }
+
+            }
 
             // Apenas sábado
             if(dataObj.getDay() !== 6)
@@ -66,6 +114,7 @@ function obterSabadosSemana() {
     });
 
     return resultado;
+
 }
 
   // ======================================================
@@ -440,6 +489,29 @@ function detectarClasse(valor){
 // ======================================================
 async function trocarModalidadeSabados() {
 
-  // renderiza sábados
-  renderSabados();
+    const modalidade =
+        document.getElementById(
+            "selectModalidadeSabados"
+        ).value;
+
+    const selectSemestre =
+        document.getElementById(
+            "selectSemestreSabados"
+        );
+
+    if(modalidade === "SUPERIOR"){
+
+        selectSemestre.style.display = "";
+
+        selectSemestre.value =
+            obterSemestreAtual("SUPERIOR");
+
+    }else{
+
+        selectSemestre.style.display = "none";
+
+    }
+
+    renderSabados();
+
 }
