@@ -110,15 +110,13 @@
 
 .header-sticky{
   position: sticky;
-  top: 70px;
-
-  z-index: 9999;
-
+  top: 55px;
+  z-index: 4999;
   background: var(--bg);
-
   padding: 10px 0;
-
   width: 100%;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 10px rgba(0,0,0,.15);
 }
 
 /* CARD DOS CONTROLES */
