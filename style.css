@@ -913,9 +913,12 @@ body {
   display: flex;
   gap: 8px;
   padding: 10px;
-  background:var(--surface);
+  background: var(--surface);
   border-bottom: 1px solid #e5e7eb;
   overflow-x: auto;
+  position: sticky;
+  top: 0;
+  z-index: 5000;
 }
 
 .tab {
