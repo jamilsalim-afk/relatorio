@@ -40,6 +40,7 @@
   <button class="tab" onclick="abrirAba('sabados',this)">📚 Sábados</button>
   <button class="tab" onclick="abrirAba('professores',this)">👨‍🏫 Professores</button>
   <button class="tab" onclick="abrirAba('turmas',this)">🏫 Turmas</button>
+  <button class="tab" onclick="abrirAba('laboratorios',this)">💻 Laboratórios</button>
   <button class="tab" onclick="abrirAba('estatisticas',this)">📈 Estatísticas</button>
   <button class="tab" onclick="abrirAba('relatorios',this)">📑 Relatórios</button>
 </nav>
@@ -182,6 +183,66 @@
 
 </section>
 
+<!-- LABORATÓRIOS -->
+<section id="laboratorios" class="tab-content">
+
+    <div class="header-sticky">
+
+        <div class="controls-card">
+
+            <select
+                id="selectLaboratorio"
+                onchange="trocarLaboratorio()">
+
+                <option value="">
+                    📌 Selecione um laboratório
+                </option>
+
+                <option value="TODOS">
+                    🗂 Visão geral (todos os laboratórios)
+                </option>
+
+            </select>
+
+            <select
+                id="selectSemanaLaboratorio"
+                onchange="renderLaboratorio()">
+            </select>
+
+            <button
+    class="btn-pdf"
+    onclick="exportarLaboratorioPDF()">
+
+    📄 Baixar PDF
+
+</button>
+
+        </div>
+
+    </div>
+
+    <div class="week-container">
+
+        <div
+            class="table-responsive"
+            id="tabelaLaboratorio">
+
+            <div style="
+                text-align:center;
+                padding:60px;
+                font-size:22px;
+                color:#777;">
+
+                💻 Selecione um laboratório para visualizar a ocupação.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
 <!-- ESTATISTICAS -->
 <section id="estatisticas" class="tab-content">
 <div class="estatistica-header">
@@ -252,12 +313,14 @@
     <div class="table-responsive">
         <table id="tabelaRelatorioEstatistica">
 <thead>
-<tr>
-<th>Disciplina</th>
-<th>Professor</th>
-<th>Turma</th>
-<th>Período</th>
-</tr>
+    <tr>
+        <th>Disciplina</th>
+        <th>Professor</th>
+        <th>Turma</th>
+        <th>Semestre</th>
+        <th>Período</th>
+    </tr>
+</thead>
 
 </thead>
 <tbody id="tabelaEstatistica"></tbody>
@@ -785,13 +848,18 @@ function montarBaseGeral(integrado, superior) {
 
                 const turma = header[c];
 
-                base.push({
-                    data,
-                    horario,
-                    turma,
-                    valor,
-                    modalidade: tipo
-                });
+                const registro = {
+    data,
+    horario,
+    turma,
+    valor,
+    modalidade: tipo
+};
+
+           base.push(registro);
+
+// Alimenta o módulo de laboratórios
+adicionarRegistroLaboratorio(registro);
             }
         }
     }
@@ -1067,6 +1135,62 @@ function abrirAba(id, botao){
         renderSabados();
     }
 }
+  
+const CALENDARIO_RELATORIO_SUPERIOR = [
+    {
+        semestre: 1,
+        inicio: "01/01/2026",
+        fim: "15/07/2026"
+    },
+    {
+        semestre: 2,
+        inicio: "16/07/2026",
+        fim: "31/12/2026"
+    }
+];
+  
+function obterPeriodoRelatorio(dataStr, modalidade){
+
+    // Integrado é anual.
+    if(modalidade === "INTEGRADO")
+        return "ANUAL";
+
+    const [d,m,a] = dataStr.split('/');
+
+    const data = new Date(a, m-1, d);
+    data.setHours(0,0,0,0);
+
+    const semestres =
+        CALENDARIO_RELATORIO_SUPERIOR;
+
+    for(let i=0;i<semestres.length;i++){
+
+        const [di,mi,ai] =
+            semestres[i].inicio.split('/');
+
+        const [df,mf,af] =
+            semestres[i].fim.split('/');
+
+        const inicio =
+            new Date(ai, mi-1, di);
+
+        const fim =
+            new Date(af, mf-1, df);
+
+        inicio.setHours(0,0,0,0);
+        fim.setHours(23,59,59,999);
+
+        if(
+            data >= inicio &&
+            data <= fim
+        ){
+            return `${i + 1}`;
+        }
+
+    }
+
+    return "FORA";
+}
 
 function montarRelatorioBase() {
 
@@ -1182,24 +1306,31 @@ professor =
     );
 
         const data =
-            parseDataBR(a.data);
+    parseDataBR(a.data);
 
-        const chave =
-            `${disciplina}__${professor}__${a.turma}`;
+const periodo =
+    obterPeriodoRelatorio(
+        a.data,
+        a.modalidade
+    );
+
+const chave =
+    `${disciplina}__${professor}__${a.turma}__${periodo}`;
 
         if (!mapa.has(chave)) {
 
             mapa.set(chave, {
 
-                disciplina,
-                professor,
-                turma: a.turma || "",
-                modalidade: a.modalidade || "",
+    disciplina,
+    professor,
+    turma: a.turma || "",
+    modalidade: a.modalidade || "",
+    periodo,
 
-                inicio: data,
-                fim: data
+    inicio: data,
+    fim: data
 
-            });
+});
 
         } else {
 
@@ -1339,11 +1470,12 @@ function montarRelatorioDisciplinas(
                 : "-";
 
         tr.innerHTML = `
-            <td>${item.disciplina}</td>
-            <td>${item.professor}</td>
-            <td>${item.turma}</td>
-            <td class="coluna-periodo">${periodo}</td>
-        `;
+    <td>${item.disciplina}</td>
+    <td>${item.professor}</td>
+    <td>${item.turma}</td>
+    <td>${item.periodo}</td>
+    <td class="coluna-periodo">${periodo}</td>
+`;
 
         fragment.appendChild(tr);
 
@@ -1437,13 +1569,15 @@ function exportarRelatorioPDF() {
 
     const linhas = dados.map(item => [
 
-        item.disciplina || "",
-        item.professor || "",
-        item.turma || "",
-        item.inicio && item.fim
-    ? `${formatarData(item.inicio)} até ${formatarData(item.fim)}`
-    : "-"
-    ]);
+    item.disciplina || "",
+    item.professor || "",
+    item.turma || "",
+    item.periodo || "",
+    item.inicio && item.fim
+        ? `${formatarData(item.inicio)} até ${formatarData(item.fim)}`
+        : "-"
+
+]);
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -1478,7 +1612,13 @@ function exportarRelatorioPDF() {
     // TABELA
     // =====================================
     pdf.autoTable({
-        head: [["Disciplina", "Professor", "Turma", "Período"]],
+        head: [[
+    "Disciplina",
+    "Professor",
+    "Turma",
+    "Semestre",
+    "Período"
+]],
         body: linhas,
         startY: 22,
         theme: "grid",
@@ -1503,11 +1643,14 @@ function exportarRelatorioPDF() {
         },
 
         columnStyles: {
-            0: { cellWidth: 62, halign: "left" },   // disciplina
-            1: { cellWidth: 50, halign: "left" },   // professor
-            2: { cellWidth: 38, halign: "left" },  // turma
-            3: { cellWidth: 35, halign: "left" }   // período
-        },
+
+    0: { cellWidth: 55, halign: "left" },
+    1: { cellWidth: 45, halign: "left" },
+    2: { cellWidth: 35, halign: "left" },
+    3: { cellWidth: 18, halign: "center" },
+    4: { cellWidth: 33, halign: "left" }
+
+},
 
         didDrawPage: function () {
             cabecalho();
@@ -1636,5 +1779,6 @@ window.onload = async () => {
 <script src="js/sabado.js"></script>
 <script src="js/horario.js"></script>
 <script src="js/relatorios.js"></script>
+<script src="js/laboratorios.js"></script>
 </body>
 </html>
