@@ -28,7 +28,7 @@ function renderizarTabela(){
             border-radius:8px;
             font-weight:bold;
             text-align:center;
-            font-size:18px;
+            font-size:11px;
         ">
             ⚠️ ATENÇÃO: ESTA É UMA SEMANA DE RECUPERAÇÃO DOS CURSOS TÉCNICOS INTEGRADOS
         </div>`;
@@ -51,7 +51,7 @@ function renderizarTabela(){
             border-radius:8px;
             font-weight:bold;
             text-align:center;
-            font-size:18px;
+            font-size:11px;
         ">
             🚨 ATENÇÃO: ESTA É UMA SEMANA DE EXAMES DOS CURSOS SUPERIORES
         </div>`;
