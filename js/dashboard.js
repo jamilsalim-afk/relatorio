@@ -6,6 +6,7 @@ const CALENDARIO_LETIVO = {
     ]
   },
 
+  
   SUPERIOR: {
     semestres: [
       { inicio: "09/02/2026", fim: "26/06/2026" },
@@ -103,9 +104,25 @@ function dentroPeriodoLetivo(dataStr, modalidade){
 
 function gerarDashboard(){
 
-    const integrado = calcularIndicadores(dadosIntegrado, "INTEGRADO");
+    const integrado =
+    calcularIndicadores(
+        dadosIntegrado,
+        "INTEGRADO"
+    );
 
-    const superior = calcularIndicadores(dadosSuperior, "SUPERIOR");
+const superior1 =
+    calcularIndicadores(
+        dadosSuperior,
+        "SUPERIOR",
+        "1"
+    );
+
+const superior2 =
+    calcularIndicadores(
+        dadosSuperior,
+        "SUPERIOR",
+        "2"
+    );
 
     const agora =
         new Date().toLocaleString("pt-BR");
@@ -146,11 +163,6 @@ function gerarDashboard(){
                     <strong>${integrado.aulas}</strong>
                 </div>
 
-                <div class="dashboard-card card-vagas">
-                    Aulas Vagas
-                    <strong>${integrado.vagas}</strong>
-                </div>
-
                 <div class="dashboard-card card-sabados">
                     Sábados Letivos
                     <strong>${integrado.sabados}</strong>
@@ -160,38 +172,61 @@ function gerarDashboard(){
 
         </div>
 
-        <!-- COLUNA SUPERIOR -->
+        <!-- COLUNA SUPERIOR 1 -->
 
-        <div class="dashboard-column">
+<div class="dashboard-column">
 
-            <div class="dashboard-panel">
+    <div class="dashboard-panel">
 
-                <h2>🎓 Superior</h2>
+        <h2>🎓 Superior 1</h2>
 
-                <div class="dashboard-card card-dias">
-                    Dias Letivos
-                    <strong>${superior.diasLetivos}</strong>
-                    ${gerarBarraProgresso(superior.diasLetivos,100)}
-                </div>
-
-                <div class="dashboard-card card-aulas">
-                    Quantidade de Aulas
-                    <strong>${superior.aulas}</strong>
-                </div>
-
-                <div class="dashboard-card card-vagas">
-                    Aulas Vagas
-                    <strong>${superior.vagas}</strong>
-                </div>
-
-                <div class="dashboard-card card-sabados">
-                    Sábados Letivos
-                    <strong>${superior.sabados}</strong>
-                </div>
-
-            </div>
-
+        <div class="dashboard-card card-dias">
+            Dias Letivos
+            <strong>${superior1.diasLetivos}</strong>
+            ${gerarBarraProgresso(superior1.diasLetivos,100)}
         </div>
+
+        <div class="dashboard-card card-aulas">
+            Quantidade de Aulas
+            <strong>${superior1.aulas}</strong>
+        </div>
+
+        <div class="dashboard-card card-sabados">
+            Sábados Letivos
+            <strong>${superior1.sabados}</strong>
+        </div>
+
+    </div>
+
+</div>
+
+ <!-- COLUNA SUPERIOR 2 -->
+
+ <div class="dashboard-column">
+
+    <div class="dashboard-panel">
+
+        <h2>🎓 Superior 2</h2>
+
+        <div class="dashboard-card card-dias">
+            Dias Letivos
+            <strong>${superior2.diasLetivos}</strong>
+            ${gerarBarraProgresso(superior2.diasLetivos,100)}
+        </div>
+
+        <div class="dashboard-card card-aulas">
+            Quantidade de Aulas
+            <strong>${superior2.aulas}</strong>
+        </div>
+
+        <div class="dashboard-card card-sabados">
+            Sábados Letivos
+            <strong>${superior2.sabados}</strong>
+        </div>
+
+    </div>
+
+</div>
 
         <!-- COLUNA GERAL -->
 
@@ -214,6 +249,9 @@ function gerarDashboard(){
         </div>
 
     </div>
+    </div>
+
+    <div class="dashboard-column">
 
     <div class="dashboard-panel">
 
@@ -228,6 +266,9 @@ function gerarDashboard(){
         </div>
 
     </div>
+    </div>
+  
+  <div class="dashboard-column">
 
     <div class="dashboard-panel">
 
@@ -265,114 +306,143 @@ return `
 <h2>${titulo}</h2>
 
 <div class="dash-item">
-  <span>Dias Letivos</span>
-  <strong>${d.diasLetivos}</strong>
+    <span>Dias Letivos</span>
+    <strong>${d.diasLetivos}</strong>
 </div>
 
 <div class="dash-item">
-  <span>Quantidade de Aulas</span>
-  <strong>${d.aulas}</strong>
+    <span>Quantidade de Aulas</span>
+    <strong>${d.aulas}</strong>
 </div>
 
 <div class="dash-item">
-  <span>Aulas Vagas</span>
-  <strong>${d.vagas}</strong>
-</div>
-
-<div class="dash-item">
-  <span>Sábados Letivos</span>
-  <strong>${d.sabados}</strong>
+    <span>Sábados Letivos</span>
+    <strong>${d.sabados}</strong>
 </div>
 
 </div>
 `;
+
 }
 
-function calcularIndicadores(dados, modalidade){
+function calcularIndicadores(dados, modalidade, periodo = null){
 
-  let diasLetivos = new Set();
-  let sabadosComAula = new Set();
+    let diasLetivos = new Set();
+    let sabadosComAula = new Set();
 
-  let aulas = 0;
-  let vagas = 0;
+    let aulas = 0;
+    let vagas = 0;
 
-  const hoje = new Date();
-  hoje.setHours(23,59,59,999);
+    const hoje = new Date();
+    hoje.setHours(23,59,59,999);
 
-  let ultimaData = "";
+    let ultimaData = "";
 
-  for(let i=1;i<dados.length;i++){
+    for(let i=1;i<dados.length;i++){
 
-      const row = dados[i];
+        const row = dados[i];
 
-      if(row[0]) ultimaData = row[0];
+        if(row[0]) ultimaData = row[0];
 
-      const dataStr = ultimaData;
-      if(!dataStr) continue;
+        const dataStr = ultimaData;
 
-      const [d,m,a] = dataStr.split('/');
-const data = new Date(a,m-1,d);
+        if(!dataStr) continue;
 
-// ignora datas futuras
-if(data > hoje) continue;
+        // 🔥 Filtra pelo período quando informado
+        if(periodo !== null){
 
-// 🔥 NOVO: ignora fora do período letivo real
-if(!dentroPeriodoLetivo(dataStr, modalidade)) continue;
+            const periodoLinha =
+                obterPeriodoRelatorio(dataStr, modalidade);
 
-// ignora feriados
-if(isFeriado(dataStr)) continue;
+            if(periodoLinha !== periodo)
+                continue;
 
-      const horario = normalizarTexto(row[1] || "");
+        }
 
-      // ignora linhas especiais
-      const linhaIgnorada =
-        horario.includes("INTERVALO") ||
-        horario.includes("[+]") ||
-        horario.includes("[R]") ||
-        horario.includes("*");
+        const [d,m,a] = dataStr.split('/');
 
-      let temAulaNoDia = false;
+        const data =
+            new Date(a,m-1,d);
 
-      if(!linhaIgnorada){
+        // ignora datas futuras
+        if(data > hoje)
+            continue;
 
-          for(let j=2;j<row.length;j++){
+        // ignora fora do calendário letivo
+        if(!dentroPeriodoLetivo(dataStr, modalidade))
+            continue;
 
-              const val = (row[j] || "").trim();
+        // ignora feriados
+        if(isFeriado(dataStr))
+            continue;
 
-              if(!val) continue;
+        const horario =
+            normalizarTexto(row[1] || "");
 
-              temAulaNoDia = true;
+        const linhaIgnorada =
+            horario.includes("INTERVALO") ||
+            horario.includes("[+]") ||
+            horario.includes("[R]") ||
+            horario.includes("*");
 
-              aulas++;
+        let temAulaNoDia = false;
 
-              const norm = normalizarTexto(val);
+        if(!linhaIgnorada){
 
-              if(
-                  norm.includes("RESERVA ENSINO") ||
-                  norm.includes("ESTUDOS INDIVIDUAIS")
-              ){
-                  vagas++;
-              }
-          }
-      }
+            for(let j=2;j<row.length;j++){
 
-      // 🔥 só conta o dia se tiver aula REAL
-      if(temAulaNoDia){
-          diasLetivos.add(dataStr);
+                const val =
+                    (row[j] || "").trim();
 
-          // 🔥 sábado letivo real (com aula)
-          if(data.getDay() === 6){
-              sabadosComAula.add(dataStr);
-          }
-      }
-  }
+                if(!val)
+                    continue;
 
-  return {
-      diasLetivos: diasLetivos.size,
-      aulas,
-      vagas,
-      sabados: sabadosComAula.size
-  };
+                temAulaNoDia = true;
+
+                aulas++;
+
+                const norm =
+                    normalizarTexto(val);
+
+                if(
+                    norm.includes("RESERVA ENSINO") ||
+                    norm.includes("ESTUDOS INDIVIDUAIS")
+                ){
+                    vagas++;
+                }
+
+            }
+
+        }
+
+        if(temAulaNoDia){
+
+            diasLetivos.add(dataStr);
+
+            if(data.getDay() === 6){
+
+                sabadosComAula.add(dataStr);
+
+            }
+
+        }
+
+    }
+
+    return{
+
+        diasLetivos:
+            diasLetivos.size,
+
+        aulas,
+
+        vagas,
+
+        sabados:
+            sabadosComAula.size
+
+    };
+
 }
 
 function gerarBarraProgresso(valor,total){
