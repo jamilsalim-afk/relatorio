@@ -1,71 +1,88 @@
 function montarIndiceProfessores() {
+
     INDEX_PROFESSOR = {};
     INDEX_TURMA = {};
     BASE_GERAL.forEach(item => {
-        const valor = item.valor || "";
-        if (!valor.includes(" - "))
-            return;
-        const [
-            disciplina,
-            professor
-        ] =
-            valor
-                .split(" - ")
-                .map(v => v.trim());
 
-        if (!professor)
-            return;
-        const profNorm = normalizarProfessor(
-                professor
-            );
+        const valor = (item.valor || "").trim();
 
-        // ====================================
-        // ÍNDICE DE PROFESSORES
-        // ====================================
+        // =====================================================
+        // ÍNDICE DE TURMAS (ENTRA TUDO)
+        // =====================================================
+
+        const turma = item.turma || "";
+
+        if (turma) {
+
+            if (!INDEX_TURMA[turma]) {
+                INDEX_TURMA[turma] = [];
+            }
+
+            let disciplina = "";
+            let professor = "";
+
+            if (valor.includes(" - ")) {
+
+                const partes = valor.split(" - ");
+
+                disciplina = partes[0].trim();
+                professor = partes.slice(1).join(" - ").trim();
+
+            }
+
+            INDEX_TURMA[turma].push({
+                data: item.data,
+                horario: item.horario,
+                turma: item.turma,
+                valor: item.valor,
+                disciplina,
+                professor,
+                modalidade: item.modalidade
+            });
+
+        }
+
+        // =====================================================
+        // ÍNDICE DE PROFESSORES (APENAS AULAS)
+        // =====================================================
+
+        if (!valor.includes(" - ")) {
+            return;
+        }
+
+        const partes = valor.split(" - ");
+
+        const disciplina = partes[0].trim();
+        const professor = partes.slice(1).join(" - ").trim();
+
+        if (!professor) return;
+
+        const profNorm = normalizarProfessor(professor);
+
         if (!INDEX_PROFESSOR[profNorm]) {
             INDEX_PROFESSOR[profNorm] = [];
         }
-        const registro = {
+
+        INDEX_PROFESSOR[profNorm].push({
             data: item.data,
             horario: item.horario,
             turma: item.turma,
+            valor: item.valor,
             disciplina,
             professor,
             modalidade: item.modalidade
-        };
+        });
 
-        INDEX_PROFESSOR[profNorm].push(
-            registro
-        );
-
-        // ====================================
-        // ÍNDICE DE TURMAS
-        // ====================================
-
-        const turma = item.turma || "";
-        if (!turma)
-            return;
-        if (!INDEX_TURMA[turma]) {
-            INDEX_TURMA[turma] = [];
-        }
-
-        INDEX_TURMA[turma].push(
-            registro
-        );
     });
 
     console.log(
         "PROF INDEX OK:",
-        Object.keys(
-            INDEX_PROFESSOR
-        ).length
+        Object.keys(INDEX_PROFESSOR).length
     );
 
     console.log(
         "TURMA INDEX OK:",
-        Object.keys(
-            INDEX_TURMA
-        ).length
+        Object.keys(INDEX_TURMA).length
     );
 }
 
@@ -324,10 +341,50 @@ function renderProfessor(){
             professor,
             semana
         );
+    
     const aulas = getDadosProfessor(
             professor,
             semana
         );
+
+// ========================================
+// Datas da semana (segunda até sábado)
+// ========================================
+
+const datasSemana = {};
+
+const [diaIni, mesIni, anoIni] = semana.split("/");
+
+const dataBase = new Date(
+    anoIni,
+    mesIni - 1,
+    diaIni
+);
+
+const nomesDias = [
+    "SEGUNDA",
+    "TERÇA",
+    "QUARTA",
+    "QUINTA",
+    "SEXTA",
+    "SÁBADO"
+];
+
+for (let i = 0; i < 6; i++) {
+
+    const data = new Date(dataBase);
+
+    data.setDate(dataBase.getDate() + i);
+
+    const dia = String(data.getDate()).padStart(2, "0");
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const ano = data.getFullYear();
+
+    datasSemana[nomesDias[i]] =
+        `${dia}/${mes}/${ano}`;
+
+}
+    
     const totalAulas = aulas.length;
     const totalTurmas = new Set(
             aulas.map(a => a.turma)
@@ -359,7 +416,7 @@ function renderProfessor(){
                 TOTAL DE AULAS
             </div>
             <div style="
-                font-size:30px;
+                font-size:20px;
                 font-weight:bold;
                 color:#2e7d32;
             ">
@@ -380,7 +437,7 @@ function renderProfessor(){
                 TURMAS
             </div>
             <div style="
-                font-size:30px;
+                font-size:20px;
                 font-weight:bold;
                 color:#1565c0;
             ">
@@ -401,7 +458,7 @@ function renderProfessor(){
                 DIAS COM AULA
             </div>
             <div style="
-                font-size:30px;
+                font-size:20px;
                 font-weight:bold;
                 color:#ef6c00;
             ">
@@ -415,7 +472,7 @@ function renderProfessor(){
     border-collapse:collapse;
     background:var(--surface);
     color:var(--text);
-    font-size:12px;
+    font-size:10px;
 ">
 
     <thead>
@@ -430,15 +487,28 @@ function renderProfessor(){
     `;
 
     dias.forEach(d => {
-        html += `
-            <th style="
-                padding:8px;
-                border:1px solid #ccc;
-            ">
+
+    html += `
+        <th style="
+            padding:8px;
+            border:1px solid #ccc;
+            text-align:center;
+            line-height:1.2;
+        ">
+            <div style="font-weight:bold">
                 ${d}
-            </th>
-        `;
-    });
+            </div>
+            <div style="
+                font-size:9px;
+                font-weight:normal;
+            ">
+                ${datasSemana[d] || ""}
+            </div>
+        </th>
+    `;
+
+});
+    
     html += `
         </tr>
         </thead>
@@ -620,6 +690,42 @@ function exportarFichaProfessorPDF() {
     if (!professor || !semana) return;
     const { dias, horarios, grade } = montarGradeProfessor(BASE_GERAL, professor, semana);
     const aulas = getDadosProfessor(professor, semana);
+    // =====================================
+// Datas do cabeçalho (segunda a sábado)
+// =====================================
+
+const datasSemana = {};
+
+const [diaIni, mesIni, anoIni] = semana.split("/");
+
+const dataBase = new Date(
+    anoIni,
+    mesIni - 1,
+    diaIni
+);
+
+const nomesDias = [
+    "SEGUNDA",
+    "TERÇA",
+    "QUARTA",
+    "QUINTA",
+    "SEXTA",
+    "SÁBADO"
+];
+
+for (let i = 0; i < 6; i++) {
+
+    const data = new Date(dataBase);
+
+    data.setDate(dataBase.getDate() + i);
+
+    const dia = String(data.getDate()).padStart(2, "0");
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const ano = data.getFullYear();
+
+    datasSemana[nomesDias[i]] =
+        `${dia}/${mes}/${ano}`;
+}
     const totalAulasSegSex = aulas.filter(a => {
             const [dia, mes, ano] = a.data.split("/");
             const dt = new Date(ano, mes - 1, dia);
@@ -770,12 +876,15 @@ function exportarFichaProfessorPDF() {
     // TABELA
     // =====================================
     pdf.autoTable({
-        head: [
-            [
-                "Horário",
-                ...dias
-            ]
-        ],
+       head: [[
+
+    "Horário",
+
+    ...dias.map(d =>
+        `${d}\n${datasSemana[d]}`
+    )
+
+]],
         body,
         startY: 62,
         theme: "grid",
@@ -787,10 +896,13 @@ function exportarFichaProfessorPDF() {
             overflow: "linebreak"
         },
         headStyles: {
-            fillColor: [21, 128, 61],
-            textColor: [255, 255, 255],
-            halign: "center"
-        },
+    fillColor: [21, 128, 61],
+    textColor: [255, 255, 255],
+    halign: "center",
+    valign: "middle",
+    minCellHeight: 10,
+    fontStyle: "bold"
+},
         columnStyles: {
         0: {cellWidth: 20,
         halign: 'center'},
